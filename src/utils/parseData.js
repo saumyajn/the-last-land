@@ -5,16 +5,15 @@ export const parseData = (rawText, desiredKeys) => {
         .filter((line) => line.length > 0);
 
    
-    const attributes = [];
+    const attributes = {};
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        for (const key of desiredKeys) {
-          if (line.toLowerCase().includes(key.toLowerCase()) && !attributes[key]) {
-            const valueLine = lines[i + 1] || "";
-            const valueMatch = valueLine.match(/\d+[\d,.]*%?/);
-            attributes[key] = valueMatch ? valueMatch[0] : "NA";
-          }
+    for (const key of desiredKeys) {
+        const matchLine = lines.find((line) => line.toLowerCase().includes(key.toLowerCase()));
+        if (matchLine) {
+          const valueMatch = matchLine.match(/\d+[\d,.]*%?/);
+          attributes[key] = valueMatch ? valueMatch[0] : "NA";
+        } else {
+          attributes[key] = "NA";
         }
       }
       desiredKeys.forEach((key) => {
