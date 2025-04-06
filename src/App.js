@@ -31,7 +31,7 @@ export default function ImageToDataApp() {
     "Lethal Hit Rate"
   ];
 
-
+  const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -87,10 +87,12 @@ export default function ImageToDataApp() {
     setText(extracted);
     setLoading(false);
     const attributes = parseData(extracted, desiredKeys);
+
     attributes["Archer Atlantis"] = '0';
     attributes["Cavalry Atlantis"] = '0';
-    attributes["Final Archer Damage"] = calcs(attributes, attributes["Archer Atlantis"])
-    attributes["Final Cavalry Damage"] = calcs(attributes, attributes["Cavalry Atlantis"])
+    attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"]));
+    
+    attributes["Final Cavalry Damage"] =getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
     const updatedTable = { ...dataTable, [name]: attributes };
     setDataTable(updatedTable);
 
