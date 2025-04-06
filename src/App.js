@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Tesseract from "tesseract.js";
-import { Container, Typography, Box, Paper, TextField } from "@mui/material";
+import { Container, Typography, Box, Paper, TextField, Grid } from "@mui/material";
 import ImageUpload from "./components/ImageUpload";
 import RawText from "./components/RawData";
 import { parseData } from "./utils/parseData";
 import DataTable from "./components/DataTable";
-import { collection, doc, getDocs,deleteDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "./utils/firebase";
+import { calcs } from "./utils/calcs";
 
 export default function ImageToDataApp() {
   const [image, setImage] = useState(null);
@@ -14,6 +15,9 @@ export default function ImageToDataApp() {
   const [loading, setLoading] = useState(false);
   const [dataTable, setDataTable] = useState({});
   const [name, setName] = useState("");
+  // const [archerAtlantis, setArcherAtlantis] = useState("");
+  // const [cavalryAtlantis, setCavalryAtlantis] = useState("");
+
   const desiredKeys = [
     "Troop Attack",
     "Troop Damage",
@@ -25,7 +29,6 @@ export default function ImageToDataApp() {
     "Cavalry Damage",
     "Cavalry Attack Blessing",
     "Lethal Hit Rate"
-
   ];
 
 
@@ -84,6 +87,10 @@ export default function ImageToDataApp() {
     setText(extracted);
     setLoading(false);
     const attributes = parseData(extracted, desiredKeys);
+    attributes["Archer Atlantis"] = '0';
+    attributes["Cavalry Atlantis"] = '0';
+    attributes["Final Archer Damage"] = calcs(attributes, attributes["Archer Atlantis"])
+    attributes["Final Cavalry Damage"] = calcs(attributes, attributes["Cavalry Atlantis"])
     const updatedTable = { ...dataTable, [name]: attributes };
     setDataTable(updatedTable);
 
@@ -93,7 +100,7 @@ export default function ImageToDataApp() {
 
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom color="primary">
         Game Image Data Extractor
       </Typography>
@@ -104,6 +111,7 @@ export default function ImageToDataApp() {
         fullWidth
         sx={{ mb: 2 }}
       />
+
       <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
         <ImageUpload
           image={image}
@@ -118,7 +126,8 @@ export default function ImageToDataApp() {
         <DataTable
           tableData={dataTable}
           desiredKeys={desiredKeys}
-          onDelete ={deletePlayer}
+          onDelete={deletePlayer}
+          onUpdate={updateFirestore}
         />
       )}
 
