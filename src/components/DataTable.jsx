@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 
 import { doc, setDoc,getDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
@@ -117,6 +117,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     if (!names.length) return null;
 
     return (
+         <Suspense fallback={<div>LOADING...</div>}>
         <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
             <Typography variant="h6" gutterBottom textAlign="center">
                 Threshold Settings
@@ -231,5 +232,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 </Table>
             </TableContainer>
         </Box>
+        </Suspense>
     );
 }

@@ -1,5 +1,6 @@
+import './App.css'
 import React, { useState, useEffect } from "react";
-import { Box, Container, Tabs, Tab } from "@mui/material";
+import { Box, Container, Tabs, Tab, Typography } from "@mui/material";
 import StatsPage from './components/StatsPage';
 import FormationPage from "./components/FormationPage";
 import ReportPage from "./components/ReportPage";
@@ -72,6 +73,7 @@ export default function App() {
   return (
     <Container maxWidth="xl">
       <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 3 }}>
+      <Typography className="App-header" variant="h4" sx={{  fontWeight: "bold" }} align="center">The Last Land</Typography>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}

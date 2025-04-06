@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Box,
     Typography,
@@ -9,14 +9,17 @@ import {
     AccordionDetails,
     Divider,
     IconButton,
-    Tooltip
+    Tooltip,
+    Grid
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import FormationForm from "./FormationForm";
 
 export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [] }) {
+    const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "" });
+    const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "" });
 
-    console.log(thresholds)
     const sortedColors = thresholds
         .slice()
         .sort((a, b) => b.limit - a.limit)
@@ -38,7 +41,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
         const groupName = colorNameMap[color] || color;
         const text = players.map(p => ` ${p.name || p}`).join(", ");
         navigator.clipboard.writeText(`${groupName}- ${text}`);
-    }; 
+    };
 
     const renderGroupAccordion = (label, data) => {
         const groups = getSortedGroups(data);
@@ -48,8 +51,8 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>{label}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    {groups.map((color, name) => {
-                        console.log(data)
+                    {groups.map((color) => {
+                
                         return (
 
                             <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
@@ -88,8 +91,17 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
 
     return (
         <Box sx={{ mt: 4 }}>
-            {renderGroupAccordion("Final Archer Damage", groupedData)}
-            {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
+
+           
+                    {renderGroupAccordion("Final Archer Damage", groupedData)}
+               
+                    {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
+               
+            <Divider sx={{ mb:2 }} />
+            <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} />
+            <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} />
+
         </Box>
+
     );
 }
