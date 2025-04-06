@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+
+import { doc, setDoc,getDoc } from 'firebase/firestore';
+import { db } from '../utils/firebase';
 import {
     Box,
     Typography,
@@ -11,30 +14,35 @@ import {
     Paper,
     IconButton,
     TextField,
+    Stack,
+    Input,
+    Grid,
     useMediaQuery,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
 import { calcs } from "../utils/calcs";
-import Thresold, { getColorByThreshold } from "./Thresold";
+
+import { getColorByThreshold } from "../utils/colorUtils";
 
 export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate }) {
 
     const [localData, setLocalData] = useState(tableData);
+    const [thresholds, setThresholds] = useState([]);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
 
-    const calculateAll = (player) => {
+    const calculateAll = useCallback((player) => {
         const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));
         const cavalry = getNumber(calcs(player, "cavalry", player["Cavalry Atlantis"]));
-        const multiplier = getNumber(player["Multiplier"])
+        const multiplier = getNumber(player["Multiplier"]);
         return {
-            "Final Archer Damage": (archer * multiplier).toFixed(5),
-            "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
+          "Final Archer Damage": (archer * multiplier).toFixed(5),
+          "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
         };
-    };
+      }, []);
 
     const handleEdit = (name, field, value) => {
         const updatedPlayer = {
@@ -56,6 +64,42 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             ...calculated,
         });
     };
+    const handleThresholdChange = async (index, field, value) => {
+        const newThresholds = [...thresholds];
+        newThresholds[index] = {
+          ...newThresholds[index],
+          [field]: field === "limit" ? parseFloat(value) || 0 : value,
+        };
+        setThresholds(newThresholds);
+    
+        try {
+          const thresholdRef = doc(db, "settings", "thresholds");
+          await setDoc(thresholdRef, {
+            thresholds: newThresholds
+          });
+        } catch (error) {
+          console.error("Error updating thresholds in Firestore:", error);
+        }
+      };
+    
+    useEffect(() => {
+        const fetchThresholds = async () => {
+            try {
+                const thresholdRef = doc(db, "settings", "thresholds");
+                const snapshot = await getDoc(thresholdRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.thresholds) {
+                        setThresholds(data.thresholds);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load thresholds from Firestore:", error);
+            }
+        };
+
+        fetchThresholds();
+    }, []);
 
     useEffect(() => {
         const updated = {};
@@ -67,14 +111,39 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             };
         });
         setLocalData(updated);
-    }, [tableData]);
+    }, [tableData, calculateAll, thresholds]);
 
     const names = useMemo(() => Object.keys(localData), [localData]);
     if (!names.length) return null;
 
     return (
         <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
-            <Thresold />
+            <Typography variant="h6" gutterBottom textAlign="center">
+                Threshold Settings
+            </Typography>
+
+            <Grid container spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+                {thresholds.map((thresh, idx) => (
+                    <Grid item xs={6} sm={4} md={2} key={idx}>
+                        <Stack spacing={1} alignItems="center">
+                            <TextField
+                                label={`Limit ${idx + 1}`}
+                                value={thresh.limit}
+                                onChange={(e) => handleThresholdChange(idx, "limit", e.target.value)}
+                                size="small"
+                                type="number"
+                                fullWidth
+                            />
+                            <Input
+                                type="color"
+                                value={thresh.color}
+                                onChange={(e) => handleThresholdChange(idx, "color", e.target.value)}
+                                sx={{ width: "100%", height: 40, borderRadius: 1, border: '1px solid #ccc' }}
+                            />
+                        </Stack>
+                    </Grid>
+                ))}
+            </Grid>
             <Typography variant="h6" gutterBottom>
                 Combined Stats Table
             </Typography>
@@ -101,8 +170,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                             const rowData = localData[name];
                             const archerVal = getNumber(rowData["Final Archer Damage"]);
                             const cavalryVal = getNumber(rowData["Final Cavalry Damage"]);
-                            const archerColor = getColorByThreshold(archerVal);
-                            const cavalryColor = getColorByThreshold(cavalryVal);
+                            const archerColor = getColorByThreshold(archerVal, thresholds);
+                            const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
 
                             return (
                                 <TableRow key={name}  >
