@@ -8,10 +8,11 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper
+    Paper,
+    IconButton
 } from "@mui/material";
-
-export default function DataTable({ tableData = {}, desiredKeys = [] }) {
+import DeleteIcon from "@mui/icons-material/Delete";
+export default function DataTable({ tableData = {}, desiredKeys = [], onDelete }) {
     const names = Object.keys(tableData);
 
     if (!names.length) return null;
@@ -35,8 +36,14 @@ export default function DataTable({ tableData = {}, desiredKeys = [] }) {
                             <TableRow key={idx}>
                                 <TableCell>{name}</TableCell>
                                 {desiredKeys.map((key, kdx) => (
-                                    <TableCell key={kdx}>{tableData[name]?.[key] || "NA"}</TableCell>
+                                    <TableCell key={kdx}>{tableData[name]?.[key] || "NA"}
+                                    </TableCell>
                                 ))}
+                                <TableCell>
+                                    <IconButton color="error" onClick={()=>onDelete(name)}>
+                                        <DeleteIcon/>
+                                    </IconButton>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

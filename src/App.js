@@ -5,7 +5,7 @@ import ImageUpload from "./components/ImageUpload";
 import RawText from "./components/RawData";
 import { parseData } from "./utils/parseData";
 import DataTable from "./components/DataTable";
-import { collection, doc, getDocs, setDoc } from "firebase/firestore";
+import { collection, doc, getDocs,deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "./utils/firebase";
 
 export default function ImageToDataApp() {
@@ -32,7 +32,7 @@ export default function ImageToDataApp() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "players"));
+        const querySnapshot = await getDocs(collection(db, "stats"));
         const data = {};
         querySnapshot.forEach((doc) => {
           data[doc.id] = doc.data();
@@ -47,14 +47,26 @@ export default function ImageToDataApp() {
     fetchData();
   }, []);
 
-  const updateFirestore = async (name, data) => {
+  const updateFirestore = async (playerName, data) => {
     try {
-      await setDoc(doc(db, "players", name), { ...data }, { merge: true });
-      console.log(`✅ Firestore updated for: ${name}`);
+      await setDoc(doc(db, "stats", playerName), { ...data }, { merge: true });
+      console.log(`✅ Firestore updated for: ${playerName}`);
     } catch (error) {
       console.error("❌ Firestore update failed:", error);
     }
   };
+
+  const deletePlayer = async (playerName) => {
+    try {
+      await deleteDoc(doc(db, "players", playerName));
+      const updatedTable = { ...dataTable };
+      delete updatedTable[playerName];
+      setDataTable(updatedTable);
+      console.log("🗑️ Deleted player:", playerName);
+    } catch (error) {
+      console.error("❌ Error deleting player:", error);
+    }
+  }
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -106,6 +118,7 @@ export default function ImageToDataApp() {
         <DataTable
           tableData={dataTable}
           desiredKeys={desiredKeys}
+          onDelete ={deletePlayer}
         />
       )}
 
