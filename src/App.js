@@ -37,8 +37,9 @@ export default function App() {
 
         playersSnap.forEach((playerDoc) => {
           const playerName = playerDoc.id;
+       
           const playerData = playerDoc.data();
-
+          
           // Archer grouping
           const archerVal = parseFloat(playerData["Final Archer Damage"]);
           const archerMatch = tData
@@ -47,7 +48,7 @@ export default function App() {
             .find((t) => archerVal >= t.limit);
           const archerColor = archerMatch ? archerMatch.color : "default";
           if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [];
-          newGroupedData[archerColor].push({ name: playerName });
+          newGroupedData[archerColor].push({ name: playerName , damage: playerData["Final Archer Damage"]});
 
           // Cavalry grouping
           const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]);
@@ -57,7 +58,7 @@ export default function App() {
             .find((t) => cavalryVal >= t.limit);
           const cavalryColor = cavalryMatch ? cavalryMatch.color : "default";
           if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [];
-          newGroupedCavalryData[cavalryColor].push({ name: playerName });
+          newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: playerData["Final Cavalry Damage"] });
         });
 
         setGroupedData(() => newGroupedData);

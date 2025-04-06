@@ -31,7 +31,7 @@ export default function FormationForm({ label, formState, setFormState }) {
   };
 
   return (
-    <Paper sx={{ p: 2, mb: 3 }}>
+    <Paper sx={{ p: 1, mb: 1 }}>
       <Typography variant="h6" gutterBottom>{label}</Typography>
       <Grid container spacing={2} sx={{justifyContent:'space-around'}}>
         <Grid xs={6} md={3}>
@@ -115,6 +115,7 @@ export default function FormationForm({ label, formState, setFormState }) {
       <Stack direction="row" justifyContent="flex-end" mt={2}>
         <Button variant="contained" onClick={handleSave}>Save</Button>
       </Stack>
+      
     </Paper>
   );
 }

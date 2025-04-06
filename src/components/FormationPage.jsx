@@ -15,6 +15,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FormationForm from "./FormationForm";
+import FormationTable from "./FormationTable";
 
 export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [] }) {
     const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
@@ -98,8 +99,14 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
             {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
 
             <Divider sx={{ mb: 2 }} />
-            <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} />
-            <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} />
+            <Box sx={{ mb: 4 }}>
+                <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} />
+                <FormationTable colorNameMap={colorNameMap} groupedData={groupedData} />
+            </Box>
+            <Box>
+                <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} />
+                <FormationTable colorNameMap={colorNameMap} groupedData={groupedData} />
+            </Box>
 
         </Box>
 

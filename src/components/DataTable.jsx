@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 
-import { doc, setDoc,getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import {
     Box,
@@ -39,10 +39,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         const cavalry = getNumber(calcs(player, "cavalry", player["Cavalry Atlantis"]));
         const multiplier = getNumber(player["Multiplier"]);
         return {
-          "Final Archer Damage": (archer * multiplier).toFixed(5),
-          "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
+            "Final Archer Damage": (archer * multiplier).toFixed(5),
+            "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
         };
-      }, []);
+    }, []);
 
     const handleEdit = (name, field, value) => {
         const updatedPlayer = {
@@ -67,21 +67,21 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const handleThresholdChange = async (index, field, value) => {
         const newThresholds = [...thresholds];
         newThresholds[index] = {
-          ...newThresholds[index],
-          [field]: field === "limit" ? parseFloat(value) || 0 : value,
+            ...newThresholds[index],
+            [field]: field === "limit" ? parseFloat(value) || 0 : value,
         };
         setThresholds(newThresholds);
-    
+
         try {
-          const thresholdRef = doc(db, "settings", "thresholds");
-          await setDoc(thresholdRef, {
-            thresholds: newThresholds
-          });
+            const thresholdRef = doc(db, "settings", "thresholds");
+            await setDoc(thresholdRef, {
+                thresholds: newThresholds
+            });
         } catch (error) {
-          console.error("Error updating thresholds in Firestore:", error);
+            console.error("Error updating thresholds in Firestore:", error);
         }
-      };
-    
+    };
+
     useEffect(() => {
         const fetchThresholds = async () => {
             try {
@@ -117,121 +117,121 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     if (!names.length) return null;
 
     return (
-         <Suspense fallback={<div>LOADING...</div>}>
-        <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
-            <Typography variant="h6" gutterBottom textAlign="center">
-                Threshold Settings
-            </Typography>
+        <Suspense fallback={<div>LOADING...</div>}>
+            <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
+                <Typography variant="h6" gutterBottom textAlign="center">
+                    Threshold Settings
+                </Typography>
 
-            <Grid container spacing={2} justifyContent="center" sx={{ mb: 3 }}>
-                {thresholds.map((thresh, idx) => (
-                    <Grid size ={{xs:6, sm:4, md:2}} key={idx}>
-                        <Stack spacing={1} alignItems="center">
-                            <TextField
-                                label={`Limit ${idx + 1}`}
-                                value={thresh.limit}
-                                onChange={(e) => handleThresholdChange(idx, "limit", e.target.value)}
-                                size="small"
-                                type="number"
-                                fullWidth
-                            />
-                            <Input
-                                type="color"
-                                value={thresh.color}
-                                onChange={(e) => handleThresholdChange(idx, "color", e.target.value)}
-                                sx={{ width: "100%", height: 40, borderRadius: 1, border: '1px solid #ccc' }}
-                            />
-                        </Stack>
-                    </Grid>
-                ))}
-            </Grid>
-            <Typography variant="h6" gutterBottom>
-                Combined Stats Table
-            </Typography>
+                <Grid container spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+                    {thresholds.map((thresh, idx) => (
+                        <Grid size={{ xs: 6, sm: 4, md: 2 }} key={idx}>
+                            <Stack spacing={1} alignItems="center">
+                                <TextField
+                                    label={`Limit ${idx + 1}`}
+                                    value={thresh.limit}
+                                    onChange={(e) => handleThresholdChange(idx, "limit", e.target.value)}
+                                    size="small"
+                                    type="number"
+                                    fullWidth
+                                />
+                                <Input
+                                    type="color"
+                                    value={thresh.color}
+                                    onChange={(e) => handleThresholdChange(idx, "color", e.target.value)}
+                                    sx={{ width: "100%", height: 40, borderRadius: 1, border: '1px solid #ccc' }}
+                                />
+                            </Stack>
+                        </Grid>
+                    ))}
+                </Grid>
+                <Typography variant="h6" gutterBottom>
+                    Combined Stats Table
+                </Typography>
 
-            <TableContainer sx={{ minWidth: isMobile ? 700 : "100%" }}>
-                <Table size="small" sx={{ minWidth: "100%" }}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell><b>Name</b></TableCell>
-                            {desiredKeys.map((key) => (
-                                <TableCell key={key}><b>{key}</b></TableCell>
-                            ))}
-                            <TableCell><b>Multiplier</b></TableCell>
-                            <TableCell><b>Archer Atlantis</b></TableCell>
-                            <TableCell><b>Cavalry Atlantis</b></TableCell>
-                            <TableCell><b>Final Archer Damage</b></TableCell>
-                            <TableCell><b>Final Cavalry Damage</b></TableCell>
-                            <TableCell><b>Actions</b></TableCell>
-                        </TableRow>
-                    </TableHead>
+                <TableContainer sx={{ minWidth: isMobile ? 700 : "100%" }}>
+                    <Table size="small" sx={{ minWidth: "100%" }}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell><b>Name</b></TableCell>
+                                {desiredKeys.map((key) => (
+                                    <TableCell key={key}><b>{key}</b></TableCell>
+                                ))}
+                                <TableCell><b>Multiplier</b></TableCell>
+                                <TableCell><b>Archer Atlantis</b></TableCell>
+                                <TableCell><b>Cavalry Atlantis</b></TableCell>
+                                <TableCell><b>Final Archer Damage</b></TableCell>
+                                <TableCell><b>Final Cavalry Damage</b></TableCell>
+                                <TableCell><b>Actions</b></TableCell>
+                            </TableRow>
+                        </TableHead>
 
-                    <TableBody>
-                        {names.map((name) => {
-                            const rowData = localData[name];
-                            const archerVal = getNumber(rowData["Final Archer Damage"]);
-                            const cavalryVal = getNumber(rowData["Final Cavalry Damage"]);
-                            const archerColor = getColorByThreshold(archerVal, thresholds);
-                            const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
+                        <TableBody>
+                            {names.map((name) => {
+                                const rowData = localData[name];
+                                const archerVal = getNumber(rowData["Final Archer Damage"]);
+                                const cavalryVal = getNumber(rowData["Final Cavalry Damage"]);
+                                const archerColor = getColorByThreshold(archerVal, thresholds);
+                                const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
 
-                            return (
-                                <TableRow key={name}  >
-                                    <TableCell>{name}</TableCell>
-                                    {desiredKeys.map((key) => (
-                                        <TableCell key={key}>
+                                return (
+                                    <TableRow key={name}  >
+                                        <TableCell>{name}</TableCell>
+                                        {desiredKeys.map((key) => (
+                                            <TableCell key={key}>
+                                                <TextField
+                                                    value={rowData[key] || ""}
+                                                    onChange={(e) => handleEdit(name, key, e.target.value)}
+                                                    size="small"
+
+                                                />
+                                            </TableCell>
+                                        ))}
+                                        <TableCell>
                                             <TextField
-                                                value={rowData[key] || ""}
-                                                onChange={(e) => handleEdit(name, key, e.target.value)}
+                                                value={rowData["Multiplier"] || ""}
+                                                onChange={(e) => handleEdit(name, "Multiplier", e.target.value)}
                                                 size="small"
-
+                                                fullWidth
                                             />
                                         </TableCell>
-                                    ))}
-                                    <TableCell>
-                                        <TextField
-                                            value={rowData["Multiplier"] || ""}
-                                            onChange={(e) => handleEdit(name, "Multiplier", e.target.value)}
-                                            size="small"
-                                            fullWidth
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            value={rowData["Archer Atlantis"] || ""}
-                                            onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            value={rowData["Cavalry Atlantis"] || ""}
-                                            onChange={(e) => handleEdit(name, "Cavalry Atlantis", e.target.value)}
-                                            size="small"
-                                        />
-                                    </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                value={rowData["Archer Atlantis"] || ""}
+                                                onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)}
+                                                size="small"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                value={rowData["Cavalry Atlantis"] || ""}
+                                                onChange={(e) => handleEdit(name, "Cavalry Atlantis", e.target.value)}
+                                                size="small"
+                                            />
+                                        </TableCell>
 
-                                    <TableCell sx={{
-                                        backgroundColor: archerColor
-                                    }} >
-                                        {archerVal}
-                                    </TableCell>
+                                        <TableCell sx={{
+                                            backgroundColor: archerColor
+                                        }} >
+                                            {archerVal}
+                                        </TableCell>
 
-                                    <TableCell sx={{ backgroundColor: cavalryColor }}>
-                                        {cavalryVal}
-                                    </TableCell>
-                                    <TableCell>
-                                        <IconButton color="error" onClick={() => onDelete(name)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })
-                        }
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
+                                        <TableCell sx={{ backgroundColor: cavalryColor }}>
+                                            {cavalryVal}
+                                        </TableCell>
+                                        <TableCell>
+                                            <IconButton color="error" onClick={() => onDelete(name)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })
+                            }
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
         </Suspense>
     );
 }
