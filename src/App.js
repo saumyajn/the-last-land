@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Tesseract from "tesseract.js";
-import { Container, Typography, Box, Paper, TextField, Grid } from "@mui/material";
+import { Container, Typography, Box, Paper, TextField } from "@mui/material";
 import ImageUpload from "./components/ImageUpload";
 import RawText from "./components/RawData";
 import { parseData } from "./utils/parseData";

@@ -36,9 +36,8 @@ export const calcs = (attributes, role, atlValue) => {
 
     const part3 = (dmg + varDmg + AtlData) / 100
     const part4 = (part1 * part2 * (1 + part3));
-    console.log("part4"+part4)
+   
     const powerScore = (part4 * (1 + (lethal / 100))) / 1000;
-    console.log(powerScore)
     return powerScore.toFixed(5);
 
 }
