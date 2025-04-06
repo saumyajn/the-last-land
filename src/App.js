@@ -1,140 +1,105 @@
-import React, { useEffect, useState } from "react";
-import Tesseract from "tesseract.js";
-import { Container, Typography, Box, Paper, TextField } from "@mui/material";
-import ImageUpload from "./components/ImageUpload";
-import RawText from "./components/RawData";
-import { parseData } from "./utils/parseData";
-import DataTable from "./components/DataTable";
-import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { Box, Container, Tabs, Tab } from "@mui/material";
+import StatsPage from './components/StatsPage';
+import FormationPage from "./components/FormationPage";
+import ReportPage from "./components/ReportPage";
+
 import { db } from "./utils/firebase";
-import { calcs } from "./utils/calcs";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
-export default function ImageToDataApp() {
-  const [image, setImage] = useState(null);
-  const [text, setText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [dataTable, setDataTable] = useState({});
-  const [name, setName] = useState("");
-  // const [archerAtlantis, setArcherAtlantis] = useState("");
-  // const [cavalryAtlantis, setCavalryAtlantis] = useState("");
+export default function App() {
+  const [activeTab, setActiveTab] = useState(0);
+  const [groupedData, setGroupedData] = useState({});
+  const [groupedCavalry, setGroupedCavalryData] = useState({});
+  const [thresholds, setThresholds] = useState([]);
 
-  const desiredKeys = [
-    "Troop Attack",
-    "Troop Damage",
-    "Troop Attack Blessing",
-    "Archer Attack",
-    "Archer Damage",
-    "Archer Attack Blessing",
-    "Cavalry Attack",
-    "Cavalry Damage",
-    "Cavalry Attack Blessing",
-    "Lethal Hit Rate"
-  ];
 
-  const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchThresholdsAndData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "stats"));
-        const data = {};
-        querySnapshot.forEach((doc) => {
-          data[doc.id] = doc.data();
+        const thresholdsRef = doc(db, "settings", "thresholds");
+        const thresholdsSnap = await getDoc(thresholdsRef);
+
+        if (!thresholdsSnap.exists()) return;
+
+        const tData = thresholdsSnap.data().thresholds || [];
+        setThresholds(tData);
+
+        const playersCollection = collection(db, "stats");
+        const playersSnap = await getDocs(playersCollection);
+
+        const newGroupedData = {};
+        const newGroupedCavalryData = {};
+
+        playersSnap.forEach((playerDoc) => {
+          const playerName = playerDoc.id;
+          const playerData = playerDoc.data();
+
+          // Archer grouping
+          const archerVal = parseFloat(playerData["Final Archer Damage"]);
+          const archerMatch = tData
+            .slice()
+            .sort((a, b) => b.limit - a.limit)
+            .find((t) => archerVal >= t.limit);
+          const archerColor = archerMatch ? archerMatch.color : "default";
+          if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [];
+          newGroupedData[archerColor].push({ name: playerName });
+
+          // Cavalry grouping
+          const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]);
+          const cavalryMatch = tData
+            .slice()
+            .sort((a, b) => b.limit - a.limit)
+            .find((t) => cavalryVal >= t.limit);
+          const cavalryColor = cavalryMatch ? cavalryMatch.color : "default";
+          if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [];
+          newGroupedCavalryData[cavalryColor].push({ name: playerName });
         });
-        setDataTable(data);
-        console.log("✅ Loaded data from Firestore");
+
+        setGroupedData(() => newGroupedData);
+        setGroupedCavalryData(() => newGroupedCavalryData);
       } catch (error) {
-        console.error("❌ Error loading data from Firestore:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
+    fetchThresholdsAndData();
   }, []);
 
-  const updateFirestore = async (playerName, data) => {
-    try {
-      await setDoc(doc(db, "stats", playerName), { ...data }, { merge: true });
-      console.log(`✅ Firestore updated for: ${playerName}`);
-    } catch (error) {
-      console.error("❌ Firestore update failed:", error);
-    }
-  };
-
-  const deletePlayer = async (playerName) => {
-    try {
-      await deleteDoc(doc(db, "players", playerName));
-      const updatedTable = { ...dataTable };
-      delete updatedTable[playerName];
-      setDataTable(updatedTable);
-      console.log("🗑️ Deleted player:", playerName);
-    } catch (error) {
-      console.error("❌ Error deleting player:", error);
-    }
-  }
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
-      setText("");
-
-    }
-  };
-
-  const extractText = async () => {
-    if (!image) return;
-    setLoading(true);
-    const result = await Tesseract.recognize(image, "eng");
-    const extracted = result.data.text;
-    setText(extracted);
-    setLoading(false);
-    const attributes = parseData(extracted, desiredKeys);
-
-    attributes["Archer Atlantis"] = '0';
-    attributes["Cavalry Atlantis"] = '0';
-    attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"]));
-    
-    attributes["Final Cavalry Damage"] =getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
-    const updatedTable = { ...dataTable, [name]: attributes };
-    setDataTable(updatedTable);
-
-    await updateFirestore(name, attributes);
-  };
-
-
-
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom color="primary">
-        Game Image Data Extractor
-      </Typography>
-      <TextField
-        label="Enter Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        fullWidth
-        sx={{ mb: 2 }}
-      />
-
-      <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
-        <ImageUpload
-          image={image}
-          onUpload={handleImageUpload}
-          onExtract={extractText}
-          loading={loading}
-          name={name}
-        />
+    <Container maxWidth="xl">
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          centered
+          textColor="secondary"
+          indicatorColor="secondary"
+          sx={{
+            "& .MuiTab-root": {
+              fontWeight: "bold",
+              fontSize: "1rem",
+              textTransform: "none",
+              px: 4,
+              py: 2
+            },
+            "& .Mui-selected": {
+              color: "#1976d2"
+            }
+          }}
+        >
+          <Tab label="Stats" />
+          <Tab label="Formation" />
+          <Tab label="Report" />
+        </Tabs>
       </Box>
 
-      {Object.entries(dataTable).length > 0 && (
-        <DataTable
-          tableData={dataTable}
-          desiredKeys={desiredKeys}
-          onDelete={deletePlayer}
-          onUpdate={updateFirestore}
-        />
-      )}
-
-      <RawText text={text} />
-
+      {activeTab === 0 && <StatsPage />}
+      {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry}thresholds={thresholds} />}
+      {activeTab === 2 && <ReportPage />}
     </Container>
   );
-};
+}
