@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Paper, Typography, Grid, TextField, Button, Stack } from "@mui/material";
+import { Paper, Typography, Grid, TextField, Button, Stack, Divider } from "@mui/material";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../utils/firebase";
 
@@ -33,7 +33,7 @@ export default function FormationForm({ label, formState, setFormState }) {
   return (
     <Paper sx={{ p: 2, mb: 3 }}>
       <Typography variant="h6" gutterBottom>{label}</Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{justifyContent:'space-around'}}>
         <Grid xs={6} md={3}>
           <TextField
             label="Total Troops"
@@ -66,6 +66,51 @@ export default function FormationForm({ label, formState, setFormState }) {
             fullWidth
           />
         </Grid>
+        
+      </Grid>
+      <Divider sx={{ m: 2 }} />
+      <Grid container spacing={2} sx={{justifyContent:'space-around'}}>
+        <Grid size={2}>
+          <TextField
+            label="T10"
+            value={formState.t10}
+            onChange={(e) => setFormState({ ...formState, t10: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T9"
+            value={formState.t9}
+            onChange={(e) => setFormState({ ...formState, t9: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T8"
+            value={formState.t8}
+            onChange={(e) => setFormState({ ...formState, t8: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T7"
+            value={formState.t7}
+            onChange={(e) => setFormState({ ...formState, t7: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T6"
+            value={formState.t6}
+            onChange={(e) => setFormState({ ...formState, t6: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        
       </Grid>
       <Stack direction="row" justifyContent="flex-end" mt={2}>
         <Button variant="contained" onClick={handleSave}>Save</Button>

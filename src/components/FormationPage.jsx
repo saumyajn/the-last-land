@@ -17,8 +17,8 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FormationForm from "./FormationForm";
 
 export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [] }) {
-    const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "" });
-    const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "" });
+    const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
+    const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
 
     const sortedColors = thresholds
         .slice()
@@ -52,7 +52,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                 </AccordionSummary>
                 <AccordionDetails>
                     {groups.map((color) => {
-                
+
                         return (
 
                             <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
@@ -92,12 +92,12 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
     return (
         <Box sx={{ mt: 4 }}>
 
-           
-                    {renderGroupAccordion("Final Archer Damage", groupedData)}
-               
-                    {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
-               
-            <Divider sx={{ mb:2 }} />
+
+            {renderGroupAccordion("Final Archer Damage", groupedData)}
+
+            {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
+
+            <Divider sx={{ mb: 2 }} />
             <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} />
             <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} />
 
