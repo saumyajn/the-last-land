@@ -21,7 +21,6 @@ import Thresold, { getColorByThreshold } from "./Thresold";
 export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate }) {
 
     const [localData, setLocalData] = useState(tableData);
-    const names = useMemo(() => Object.keys(localData), [localData]);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -30,48 +29,48 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const calculateAll = (player) => {
         const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));
         const cavalry = getNumber(calcs(player, "cavalry", player["Cavalry Atlantis"]));
+        const multiplier = getNumber(player["Multiplier"])
         return {
-            "Final Archer Damage": archer,
-            "Final Cavalry Damage": cavalry,
+            "Final Archer Damage": (archer * multiplier).toFixed(5),
+            "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
         };
+    };
+
+    const handleEdit = (name, field, value) => {
+        const updatedPlayer = {
+            ...localData[name],
+            [field]: value,
+        };
+        const calculated = calculateAll(updatedPlayer);
+        const updatedData = {
+            ...localData,
+            [name]: {
+                ...updatedPlayer,
+                ...calculated,
+            },
+        };
+
+        setLocalData(updatedData);
+        onUpdate(name, {
+            ...updatedPlayer,
+            ...calculated,
+        });
     };
 
     useEffect(() => {
         const updated = {};
         Object.entries(tableData).forEach(([name, data]) => {
-            const { "Final Archer Damage": archerDmg, "Final Cavalry Damage": cavDmg } = calculateAll(data);
+            const calculated = calculateAll(data);
             updated[name] = {
                 ...data,
-                "Final Archer Damage": archerDmg,
-                "Final Cavalry Damage": cavDmg,
+                ...calculated,
             };
         });
         setLocalData(updated);
     }, [tableData]);
 
+    const names = useMemo(() => Object.keys(localData), [localData]);
     if (!names.length) return null;
-
-    const handleEdit = (name, field, value) => {
-        const updatedPlayer = {
-            ...localData[name],
-            [field]: value
-        };
-        const { "Final Archer Damage": archerDmg, "Final Cavalry Damage": cavDmg } = calculateAll(updatedPlayer);
-
-        updatedPlayer["Final Archer Damage"] = archerDmg;
-        updatedPlayer["Final Cavalry Damage"] = cavDmg;
-        const updatedData = {
-            ...localData,
-            [name]: updatedPlayer,
-        };
-
-        setLocalData(updatedData);
-        onUpdate(name, {
-            [field]: value,
-            "Final Archer Damage": archerDmg,
-            "Final Cavalry Damage": cavDmg,
-        });
-    };
 
     return (
         <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
@@ -114,12 +113,17 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 value={rowData[key] || ""}
                                                 onChange={(e) => handleEdit(name, key, e.target.value)}
                                                 size="small"
-                                                
+
                                             />
                                         </TableCell>
                                     ))}
                                     <TableCell>
-                                        <TextField size="small" value="0" />
+                                        <TextField
+                                            value={rowData["Multiplier"] || ""}
+                                            onChange={(e) => handleEdit(name, "Multiplier", e.target.value)}
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         <TextField
