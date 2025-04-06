@@ -109,8 +109,13 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 <TableRow key={name}  >
                                     <TableCell>{name}</TableCell>
                                     {desiredKeys.map((key) => (
-                                        <TableCell key={key} >
-                                            {rowData[key] || "NA"}
+                                        <TableCell key={key}>
+                                            <TextField
+                                                value={rowData[key] || ""}
+                                                onChange={(e) => handleEdit(name, key, e.target.value)}
+                                                size="small"
+                                                
+                                            />
                                         </TableCell>
                                     ))}
                                     <TableCell>
