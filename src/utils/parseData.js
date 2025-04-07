@@ -20,7 +20,5 @@ export const parseData = (rawText, desiredKeys) => {
         if (!attributes[key]) attributes[key] = "NA";
       });
 
-    console.log(attributes)
-
     return attributes;
 };

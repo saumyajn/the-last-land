@@ -33,8 +33,8 @@ export default function FormationForm({ label, formState, setFormState }) {
   return (
     <Paper sx={{ p: 1, mb: 1 }}>
       <Typography variant="h6" gutterBottom>{label}</Typography>
-      <Grid container spacing={2} sx={{justifyContent:'space-around'}}>
-        <Grid xs={6} md={3}>
+      <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
+        <Grid size={3}>
           <TextField
             label="Total Troops"
             value={formState.total}
@@ -42,7 +42,7 @@ export default function FormationForm({ label, formState, setFormState }) {
             fullWidth
           />
         </Grid>
-        <Grid xs={6} md={3}>
+        <Grid size={3}>
           <TextField
             label="Guards"
             value={formState.guards}
@@ -50,7 +50,7 @@ export default function FormationForm({ label, formState, setFormState }) {
             fullWidth
           />
         </Grid>
-        <Grid xs={6} md={3}>
+        <Grid size={3}>
           <TextField
             label="Archers"
             value={formState.archers}
@@ -58,7 +58,7 @@ export default function FormationForm({ label, formState, setFormState }) {
             fullWidth
           />
         </Grid>
-        <Grid xs={6} md={3}>
+        <Grid size={3}>
           <TextField
             label="Cavalry"
             value={formState.cavalry}
@@ -66,10 +66,10 @@ export default function FormationForm({ label, formState, setFormState }) {
             fullWidth
           />
         </Grid>
-        
+
       </Grid>
       <Divider sx={{ m: 2 }} />
-      <Grid container spacing={2} sx={{justifyContent:'space-around'}}>
+      <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
         <Grid size={2}>
           <TextField
             label="T10"
@@ -110,12 +110,12 @@ export default function FormationForm({ label, formState, setFormState }) {
             fullWidth
           />
         </Grid>
-        
+
       </Grid>
       <Stack direction="row" justifyContent="flex-end" mt={2}>
         <Button variant="contained" onClick={handleSave}>Save</Button>
       </Stack>
-      
+
     </Paper>
   );
 }

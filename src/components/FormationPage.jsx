@@ -47,7 +47,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
     const renderGroupAccordion = (label, data) => {
         const groups = getSortedGroups(data);
         return (
-            <Accordion defaultExpanded>
+            <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>{label}</Typography>
                 </AccordionSummary>
@@ -99,13 +99,14 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
             {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
 
             <Divider sx={{ mb: 2 }} />
+            <Typography sx={{ backgroundColor: '#e8f4f8' }} variant="h5">ARCHER FORMATION</Typography>
             <Box sx={{ mb: 4 }}>
                 <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} />
-                <FormationTable colorNameMap={colorNameMap} groupedData={groupedData} />
+                <FormationTable label="tower_formation" colorNameMap={colorNameMap} groupedData={groupedData} />
             </Box>
             <Box>
                 <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} />
-                <FormationTable colorNameMap={colorNameMap} groupedData={groupedData} />
+                <FormationTable label="throne_formation" colorNameMap={colorNameMap} groupedData={groupedData} />
             </Box>
 
         </Box>
