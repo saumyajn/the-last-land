@@ -56,7 +56,8 @@ export default function FormationTable({ label, groupedData = null }) {
                         t8: data.t8 || 0,
                         t7: data.t7 || 0,
                         t6: data.t6 || 0,
-                        marchSize: data.marchSize || 0
+                        marchSize: data.marchSize || 0,
+                        total: data.total || 0
                     }));
                 } else if (groupedData) {
                     formattedRows = Object.entries(groupedData).map(([color, data]) => {
@@ -73,7 +74,8 @@ export default function FormationTable({ label, groupedData = null }) {
                             t8: 0,
                             t7: 0,
                             t6: 0,
-                            marchSize: 0
+                            marchSize: 0,
+                            total: 0
                         };
                     });
                 }
@@ -99,8 +101,8 @@ export default function FormationTable({ label, groupedData = null }) {
         const totalDamage = updated.reduce((sum, row) => sum + row.damage * row.count, 0);
 
         updated.forEach(row => {
-            const groupDamage = row.damage * row.count;
-            const share = groupDamage / totalDamage;
+            // const groupDamage = row.damage * row.count;
+            const share = row.damage / totalDamage;
             const troops = parseFloat((archerValue * share).toFixed(2));
             row.troops = troops;
             row.t10 = MathRound((troops * ratios.t10) / 1000);
@@ -109,6 +111,7 @@ export default function FormationTable({ label, groupedData = null }) {
             row.t7 = MathRound((troops * ratios.t7) / 1000);
             row.t6 = MathRound((troops * ratios.t6) / 1000);
             row.marchSize = row.t10 + row.t9 + row.t8 + row.t7 + row.t6;
+            row.total = (row.troops * row.count).toFixed(2);
         });
 
         setRows(updated);
@@ -128,7 +131,8 @@ export default function FormationTable({ label, groupedData = null }) {
                         t8: row.t8,
                         t7: row.t7,
                         t6: row.t6,
-                        marchSize: row.marchSize
+                        marchSize: row.marchSize,
+                        total: row.total
                     };
                 });
                 await setDoc(doc(db, "formation", `archer_${label}`), payload);
@@ -160,6 +164,7 @@ export default function FormationTable({ label, groupedData = null }) {
                             <TableCell><b>T7</b></TableCell>
                             <TableCell><b>T6</b></TableCell>
                             <TableCell><b>March Size</b></TableCell>
+                            <TableCell><b>Total</b></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -183,6 +188,7 @@ export default function FormationTable({ label, groupedData = null }) {
                                 <TableCell>{row.t7}</TableCell>
                                 <TableCell>{row.t6}</TableCell>
                                 <TableCell>{row.marchSize}</TableCell>
+                                <TableCell>{row.total}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
