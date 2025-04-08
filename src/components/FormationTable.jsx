@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
     Box,
     TextField,
@@ -22,8 +22,10 @@ export default function FormationTable({ label, groupedData = null }) {
     const [archerValue, setArcherValue] = useState(0);
     const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
     const [rows, setRows] = useState([]);
+    const previousGroupedData = useRef(null);
 
     useEffect(() => {
+        console.log(groupedData)
         const fetchData = async () => {
             try {
                 const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
@@ -34,7 +36,7 @@ export default function FormationTable({ label, groupedData = null }) {
 
                 const settingData = settingSnap.exists() ? settingSnap.data() : {};
                 const thresholdData = thresholdsSnap.exists() ? thresholdsSnap.data().thresholds || [] : [];
-
+                const colorOrder = thresholdData.map(t => t.name);
 
                 const archerVal = parseFloat(settingData.archers);
                 setRatios({
@@ -47,28 +49,52 @@ export default function FormationTable({ label, groupedData = null }) {
                 setArcherValue(archerVal);
 
                 const formationData = formationSnap.exists() ? formationSnap.data() : {};
-                const defaultRows = thresholdData.map(t => {
-                    const existing = formationData[t.name];
-                    const grouped = groupedData?.[t.color] || [];
-                    const avgObj = grouped.find(d => typeof d === 'object' && 'avgDamage' in d);
-                    const damage = existing?.avgDamage || avgObj?.avgDamage || 0;
-                    const count = existing?.count || 0;
-                    return {
-                        group: t.name,
-                        damage,
-                        count,
-                        troops: count > 0 ? ((damage / totalDamage) * count) / 1000 : 0,
-                        t10: 0,
-                        t9: 0,
-                        t8: 0,
-                        t7: 0,
-                        t6: 0,
-                        marchSize: 0,
-                        total: 0
-                    };
-                });
+                let formattedRows = Object.entries(formationData).map(([group, data]) => ({
+                    group,
+                    damage: data.avgDamage || 0,
+                    count: data.count || 0,
+                    troops: data.troops || 0,
+                    t10: data.t10 || 0,
+                    t9: data.t9 || 0,
+                    t8: data.t8 || 0,
+                    t7: data.t7 || 0,
+                    t6: data.t6 || 0,
+                    marchSize: data.marchSize || 0,
+                    total: data.total || 0
+                }));
 
-                setRows(defaultRows);
+                if (
+                    groupedData &&
+                    JSON.stringify(previousGroupedData.current) !== JSON.stringify(groupedData)
+                ) {
+                    const groupedRows = Object.entries(groupedData).map(([color, data]) => {
+                        const group = data[0]?.colorName || color;
+                        const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
+                        const avgDamage = parseFloat(avgObj?.avgDamage || 0);
+                        const isValid = !isNaN(avgDamage) && avgDamage > 0;
+                        return {
+                            group,
+                            damage: isValid ? avgDamage : 0,
+                            count: isValid ? 1 : 0,
+                            troops: 0,
+                            t10: 0,
+                            t9: 0,
+                            t8: 0,
+                            t7: 0,
+                            t6: 0,
+                            marchSize: 0,
+                            total: 0
+                        };
+                    });
+                    for (const row of groupedRows) {
+                        const exists = formattedRows.find(r => r.group === row.group);
+                        if (!exists) formattedRows.push(row);
+                    }
+                    previousGroupedData.current = groupedData;
+                }
+
+                formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
+                setRows(formattedRows);
             } catch (err) {
                 console.error("Error fetching data:", err);
             }
@@ -85,10 +111,10 @@ export default function FormationTable({ label, groupedData = null }) {
         if (isNaN(count) || count < 0) return;
 
         updated[idx].count = count;
-        const totalDamage = updated.reduce((sum, row) => sum + row.damage * row.count, 0);
+        const totalDamage = updated.reduce((sum, row) => (!isNaN(row.damage) && row.damage > 0) ? sum + row.damage * row.count : sum, 0);
 
         updated.forEach(row => {
-            const share = row.damage / totalDamage;
+            const share = totalDamage > 0 && row.damage > 0 ? (row.damage * row.count) / totalDamage : 0;
             const troops = parseFloat((archerValue * share).toFixed(2));
             row.troops = isNaN(troops) ? 0 : troops;
             row.t10 = MathRound((troops * ratios.t10) / 1000);
@@ -136,7 +162,6 @@ export default function FormationTable({ label, groupedData = null }) {
         navigator.clipboard.writeText(text);
     };
 
-
     const totalDamage = rows.reduce((sum, row) => sum + row.damage * row.count, 0).toFixed(2);
 
     return (
@@ -181,11 +206,13 @@ export default function FormationTable({ label, groupedData = null }) {
                                 <TableCell>{row.t6}</TableCell>
                                 <TableCell>{row.marchSize}</TableCell>
                                 <TableCell>{row.total}</TableCell>
-                                <TableCell>  <Tooltip title="Copy names">
-                                    <IconButton size="small" onClick={() => handleCopy(row)}>
-                                        <ContentCopyIcon fontSize="small" />
-                                    </IconButton>
-                                </Tooltip></TableCell>
+                                <TableCell>
+                                    <Tooltip title="Copy names">
+                                        <IconButton size="small" onClick={() => handleCopy(row)}>
+                                            <ContentCopyIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

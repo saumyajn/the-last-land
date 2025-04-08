@@ -39,12 +39,17 @@ export default function App() {
         const newGroupedData = {};
         const newGroupedCavalryData = {};
 
+        tData.forEach((t) => {
+          newGroupedData[t.color] = [{ colorName: t.name, avgDamage: 0 }];
+          newGroupedCavalryData[t.color] = [{ colorName: t.name, avgDamage: 0 }];
+        });
+
         playersSnap.forEach((playerDoc) => {
           const playerName = playerDoc.id;
           const playerData = playerDoc.data();
 
           // Archer grouping
-          const archerVal = parseFloat(playerData["Final Archer Damage"]);
+          const archerVal = parseFloat(playerData["Final Archer Damage"]) || 0;
           const archerMatch = tData
             .slice()
             .sort((a, b) => b.limit - a.limit)
@@ -58,7 +63,7 @@ export default function App() {
           );
 
           // Cavalry grouping
-          const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]);
+          const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]) ||0;
           const cavalryMatch = tData
             .slice()
             .sort((a, b) => b.limit - a.limit)
