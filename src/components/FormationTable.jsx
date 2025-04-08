@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
     Box,
     TextField,
@@ -22,6 +22,7 @@ export default function FormationTable({ label, groupedData = null }) {
     const [archerValue, setArcherValue] = useState(0);
     const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
     const [rows, setRows] = useState([]);
+    const previousGroupedData = useRef(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,25 +47,26 @@ export default function FormationTable({ label, groupedData = null }) {
                 });
                 setArcherValue(archerVal);
 
-                let formattedRows = [];
                 const formationData = formationSnap.exists() ? formationSnap.data() : {};
+                let formattedRows = Object.entries(formationData).map(([group, data]) => ({
+                    group,
+                    damage: data.avgDamage || 0,
+                    count: data.count || 0,
+                    troops: data.troops || 0,
+                    t10: data.t10 || 0,
+                    t9: data.t9 || 0,
+                    t8: data.t8 || 0,
+                    t7: data.t7 || 0,
+                    t6: data.t6 || 0,
+                    marchSize: data.marchSize || 0,
+                    total: data.total || 0
+                }));
 
-                if (Object.keys(formationData).length > 0) {
-                    formattedRows = Object.entries(formationData).map(([group, data]) => ({
-                        group,
-                        damage: data.avgDamage || 0,
-                        count: data.count || 0,
-                        troops: data.troops || 0,
-                        t10: data.t10 || 0,
-                        t9: data.t9 || 0,
-                        t8: data.t8 || 0,
-                        t7: data.t7 || 0,
-                        t6: data.t6 || 0,
-                        marchSize: data.marchSize || 0,
-                        total: data.total || 0
-                    }));
-                } else if (groupedData) {
-                    formattedRows = Object.entries(groupedData).map(([color, data]) => {
+                if (
+                    groupedData &&
+                    JSON.stringify(previousGroupedData.current) !== JSON.stringify(groupedData)
+                ) {
+                    const groupedRows = Object.entries(groupedData).map(([color, data]) => {
                         const group = data[0]?.colorName || color;
                         const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
                         const avgDamage = avgObj?.avgDamage || 0;
@@ -82,7 +84,13 @@ export default function FormationTable({ label, groupedData = null }) {
                             total: 0
                         };
                     });
+                    for (const row of groupedRows) {
+                        const exists = formattedRows.find(r => r.group === row.group);
+                        if (!exists) formattedRows.push(row);
+                    }
+                    previousGroupedData.current = groupedData;
                 }
+
 
                 formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
                 setRows(formattedRows);
