@@ -9,10 +9,14 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Typography
+    Typography,
+    Tooltip,
+    IconButton
 } from "@mui/material";
 import { db } from "../utils/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 export default function FormationTable({ label, groupedData = null }) {
     const [archerValue, setArcherValue] = useState(0);
@@ -145,6 +149,12 @@ export default function FormationTable({ label, groupedData = null }) {
         if (rows.length > 0) uploadToFirestore();
     }, [rows, label]);
 
+    const handleCopy = (row) => {
+        const text = `${row.group} - ${row.t10}k - ${row.t9}k - ${row.t8}k - ${row.t7}k - ${row.t6}k`;
+        navigator.clipboard.writeText(text);
+    };
+
+
     const totalDamage = rows.reduce((sum, row) => sum + row.damage * row.count, 0).toFixed(2);
 
     return (
@@ -189,6 +199,11 @@ export default function FormationTable({ label, groupedData = null }) {
                                 <TableCell>{row.t6}</TableCell>
                                 <TableCell>{row.marchSize}</TableCell>
                                 <TableCell>{row.total}</TableCell>
+                                <TableCell>  <Tooltip title="Copy names">
+                                    <IconButton size="small" onClick={() => handleCopy(row)}>
+                                        <ContentCopyIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
