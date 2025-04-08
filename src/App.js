@@ -14,10 +14,10 @@ export default function App() {
   const [groupedCavalry, setGroupedCavalryData] = useState({});
   const [thresholds, setThresholds] = useState([]);
 
-
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
+
   useEffect(() => {
     const fetchThresholdsAndData = async () => {
       try {
@@ -28,6 +28,10 @@ export default function App() {
 
         const tData = thresholdsSnap.data().thresholds || [];
         setThresholds(tData);
+        const colorNames = {};
+        tData.forEach(th => {
+          colorNames[th.color] = th.name;
+        });
 
         const playersCollection = collection(db, "stats");
         const playersSnap = await getDocs(playersCollection);
@@ -37,18 +41,21 @@ export default function App() {
 
         playersSnap.forEach((playerDoc) => {
           const playerName = playerDoc.id;
-       
           const playerData = playerDoc.data();
-          
+
           // Archer grouping
           const archerVal = parseFloat(playerData["Final Archer Damage"]);
           const archerMatch = tData
             .slice()
             .sort((a, b) => b.limit - a.limit)
             .find((t) => archerVal >= t.limit);
+
           const archerColor = archerMatch ? archerMatch.color : "default";
-          if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [];
-          newGroupedData[archerColor].push({ name: playerName , damage: playerData["Final Archer Damage"]});
+
+          if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [{ "colorName": colorNames[archerColor] || archerColor }];
+          newGroupedData[archerColor].push(
+            { name: playerName, damage: archerVal }
+          );
 
           // Cavalry grouping
           const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]);
@@ -57,9 +64,24 @@ export default function App() {
             .sort((a, b) => b.limit - a.limit)
             .find((t) => cavalryVal >= t.limit);
           const cavalryColor = cavalryMatch ? cavalryMatch.color : "default";
-          if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [];
-          newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: playerData["Final Cavalry Damage"] });
+          if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [{ "colorName": colorNames[cavalryColor] || cavalryColor }];
+          newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
         });
+
+        // Add average as first element in each array
+        for (const color in newGroupedData) {
+          const players = newGroupedData[color].filter(p => typeof p === 'object' && 'damage' in p);
+          const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
+          const avg = total / players.length;
+          newGroupedData[color].splice(1, 0, { avgDamage: avg });
+        }
+
+        for (const color in newGroupedCavalryData) {
+          const players = newGroupedCavalryData[color].filter(p => typeof p === 'object' && 'damage' in p);
+          const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
+          const avg = total / players.length;
+          newGroupedCavalryData[color].splice(1, 0, { avgDamage: avg });
+        }
 
         setGroupedData(() => newGroupedData);
         setGroupedCavalryData(() => newGroupedCavalryData);
@@ -74,7 +96,7 @@ export default function App() {
   return (
     <Container maxWidth="xl">
       <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 3 }}>
-      <Typography className="App-header" variant="h4" sx={{  fontWeight: "bold" }} align="center">The Last Land</Typography>
+        <Typography className="App-header" variant="h4" sx={{ fontWeight: "bold" }} align="center">The Last Land</Typography>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
@@ -101,7 +123,7 @@ export default function App() {
       </Box>
 
       {activeTab === 0 && <StatsPage />}
-      {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry}thresholds={thresholds} />}
+      {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry} thresholds={thresholds} />}
       {activeTab === 2 && <ReportPage />}
     </Container>
   );
