@@ -14,24 +14,23 @@ import {
 import { db } from "../utils/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
-export default function FormationTable({ label }) {
+export default function FormationTable({ label, groupedData = null }) {
     const [archerValue, setArcherValue] = useState(0);
     const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
     const [rows, setRows] = useState([]);
 
     useEffect(() => {
-
         const fetchData = async () => {
             try {
-                const [settingSnap, formationSnap] = await Promise.all([
+                const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
                     getDoc(doc(db, "settings", label)),
                     getDoc(doc(db, "formation", `archer_${label}`)),
-
+                    getDoc(doc(db, "settings", "thresholds"))
                 ]);
 
-                const formationData = formationSnap.exists() ? formationSnap.data() : {};
-
-                const settingData = settingSnap.exists() ? settingSnap.data() : 0;
+                const settingData = settingSnap.exists() ? settingSnap.data() : {};
+                const thresholdData = thresholdsSnap.exists() ? thresholdsSnap.data().thresholds || [] : [];
+                const colorOrder = thresholdData.map(t => t.name);
 
                 const archerVal = parseFloat(settingData.archers);
                 setRatios({
@@ -41,25 +40,45 @@ export default function FormationTable({ label }) {
                     t7: settingData.t7 / 100,
                     t6: settingData.t6 / 100
                 });
-
                 setArcherValue(archerVal);
 
+                let formattedRows = [];
+                const formationData = formationSnap.exists() ? formationSnap.data() : {};
 
+                if (Object.keys(formationData).length > 0) {
+                    formattedRows = Object.entries(formationData).map(([group, data]) => ({
+                        group,
+                        damage: data.avgDamage || 0,
+                        count: data.count || 0,
+                        troops: data.troops || 0,
+                        t10: data.t10 || 0,
+                        t9: data.t9 || 0,
+                        t8: data.t8 || 0,
+                        t7: data.t7 || 0,
+                        t6: data.t6 || 0,
+                        marchSize: data.marchSize || 0
+                    }));
+                } else if (groupedData) {
+                    formattedRows = Object.entries(groupedData).map(([color, data]) => {
+                        const group = data[0]?.colorName || color;
+                        const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
+                        const avgDamage = avgObj?.avgDamage || 0;
+                        return {
+                            group,
+                            damage: avgDamage,
+                            count: 1,
+                            troops: 0,
+                            t10: 0,
+                            t9: 0,
+                            t8: 0,
+                            t7: 0,
+                            t6: 0,
+                            marchSize: 0
+                        };
+                    });
+                }
 
-                const formattedRows = Object.entries(formationData).map(([group, data]) => ({
-                    group,
-                    damage: data.avgDamage || 0,
-                    count: data.count || 0,
-                    troops: data.troops || 0,
-                    t10: data.t10 || 0,
-                    t9: data.t9 || 0,
-                    t8: data.t8 || 0,
-                    t7: data.t7 || 0,
-                    t6: data.t6 || 0,
-                    marchSize: data.marchSize || 0
-
-                }));
-
+                formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
                 setRows(formattedRows);
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -67,9 +86,9 @@ export default function FormationTable({ label }) {
         };
 
         fetchData();
-    }, [label]);
+    }, [groupedData, label]);
 
-    const MathRound = (num) => { return Math.round(num * 2) / 2 };
+    const MathRound = (num) => Math.round(num * 2) / 2;
 
     const handleChange = (idx, value) => {
         const updated = [...rows];
@@ -78,16 +97,19 @@ export default function FormationTable({ label }) {
 
         updated[idx].count = count;
         const totalDamage = updated.reduce((sum, row) => sum + row.damage * row.count, 0);
+
         updated.forEach(row => {
-            const share = row.damage / totalDamage;
-            row.troops = parseFloat((archerValue * share).toFixed(2));
-            row.t10 = MathRound((row.troops * ratios.t10) / 1000);
-            row.t9 = MathRound((row.troops * ratios.t9) / 1000);
-            row.t8 = MathRound((row.troops * ratios.t8) / 1000);
-            row.t7 = MathRound((row.troops * ratios.t7) / 1000);
-            row.t6 = MathRound((row.troops * ratios.t6) / 1000);
-            row.marchSize = (row.t10 + row.t9 + row.t8 + row.t7 + row.t6);
-        })
+            const groupDamage = row.damage * row.count;
+            const share = groupDamage / totalDamage;
+            const troops = parseFloat((archerValue * share).toFixed(2));
+            row.troops = troops;
+            row.t10 = MathRound((troops * ratios.t10) / 1000);
+            row.t9 = MathRound((troops * ratios.t9) / 1000);
+            row.t8 = MathRound((troops * ratios.t8) / 1000);
+            row.t7 = MathRound((troops * ratios.t7) / 1000);
+            row.t6 = MathRound((troops * ratios.t6) / 1000);
+            row.marchSize = row.t10 + row.t9 + row.t8 + row.t7 + row.t6;
+        });
 
         setRows(updated);
     };
@@ -115,6 +137,7 @@ export default function FormationTable({ label }) {
                 console.error("Error uploading formation data:", error);
             }
         };
+
         if (rows.length > 0) uploadToFirestore();
     }, [rows, label]);
 
