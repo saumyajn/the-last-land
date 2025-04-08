@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { db } from "../utils/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 export default function FormationTable({ label, groupedData = null }) {
@@ -63,10 +62,7 @@ export default function FormationTable({ label, groupedData = null }) {
                     total: data.total || 0
                 }));
 
-                if (
-                    groupedData &&
-                    JSON.stringify(previousGroupedData.current) !== JSON.stringify(groupedData)
-                ) {
+                if (groupedData) {
                     const groupedRows = Object.entries(groupedData).map(([color, data]) => {
                         const group = data[0]?.colorName || color;
                         const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
@@ -75,21 +71,31 @@ export default function FormationTable({ label, groupedData = null }) {
                         return {
                             group,
                             damage: isValid ? avgDamage : 0,
-                            count: isValid ? 1 : 0,
-                            troops: 0,
-                            t10: 0,
-                            t9: 0,
-                            t8: 0,
-                            t7: 0,
-                            t6: 0,
-                            marchSize: 0,
-                            total: 0
+                            isUpdated: isValid
                         };
                     });
-                    for (const row of groupedRows) {
-                        const exists = formattedRows.find(r => r.group === row.group);
-                        if (!exists) formattedRows.push(row);
-                    }
+
+                    groupedRows.forEach((newRow) => {
+                        const idx = formattedRows.findIndex(r => r.group === newRow.group);
+                        if (idx !== -1 && newRow.isUpdated) {
+                            formattedRows[idx].damage = newRow.damage;
+                        } else if (idx === -1) {
+                            formattedRows.push({
+                                group: newRow.group,
+                                damage: newRow.damage,
+                                count: newRow.isUpdated ? 1 : 0,
+                                troops: 0,
+                                t10: 0,
+                                t9: 0,
+                                t8: 0,
+                                t7: 0,
+                                t6: 0,
+                                marchSize: 0,
+                                total: 0
+                            });
+                        }
+                    });
+
                     previousGroupedData.current = groupedData;
                 }
 

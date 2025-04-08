@@ -45,7 +45,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                     {groups.map((color) => {
                         const meta = data[color];
                         const colorName = meta[0]?.colorName || color;
-                        const avgDamage = Math.round(meta[1]?.avgDamage || 0);
+                        const avgDamage = Math.round(meta[0]?.avgDamage || 0);
 
                         return (
                             <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
@@ -54,7 +54,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                                 </Typography>
                                 <Divider sx={{ mb: 0.5 }} />
                                 <Stack direction="row" spacing={1}>
-                                    {meta.slice(2).map((player, idx) => (
+                                    {meta.slice(1).map((player, idx) => (
                                         <Box
                                             key={idx}
                                             sx={{

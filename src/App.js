@@ -73,19 +73,19 @@ export default function App() {
           newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
         });
 
-        // Add average as first element in each array
+        // Set average damage
         for (const color in newGroupedData) {
           const players = newGroupedData[color].filter(p => typeof p === 'object' && 'damage' in p);
           const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
           const avg = total / players.length;
-          newGroupedData[color].splice(1, 0, { avgDamage: avg });
+          newGroupedData[color][0].avgDamage = parseFloat(avg.toFixed(2));
         }
 
         for (const color in newGroupedCavalryData) {
           const players = newGroupedCavalryData[color].filter(p => typeof p === 'object' && 'damage' in p);
           const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
           const avg = total / players.length;
-          newGroupedCavalryData[color].splice(1, 0, { avgDamage: avg });
+          newGroupedCavalryData[color][0].avgDamage = parseFloat(avg.toFixed(2));
         }
 
         setGroupedData(() => newGroupedData);
