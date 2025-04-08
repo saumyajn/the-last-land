@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Box,
     TextField,
@@ -22,7 +22,6 @@ export default function FormationTable({ label, groupedData = null }) {
     const [archerValue, setArcherValue] = useState(0);
     const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
     const [rows, setRows] = useState([]);
-    const previousGroupedData = useRef(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,7 +34,7 @@ export default function FormationTable({ label, groupedData = null }) {
 
                 const settingData = settingSnap.exists() ? settingSnap.data() : {};
                 const thresholdData = thresholdsSnap.exists() ? thresholdsSnap.data().thresholds || [] : [];
-                const colorOrder = thresholdData.map(t => t.name);
+
 
                 const archerVal = parseFloat(settingData.archers);
                 setRatios({
@@ -48,52 +47,28 @@ export default function FormationTable({ label, groupedData = null }) {
                 setArcherValue(archerVal);
 
                 const formationData = formationSnap.exists() ? formationSnap.data() : {};
-                let formattedRows = Object.entries(formationData).map(([group, data]) => ({
-                    group,
-                    damage: data.avgDamage || 0,
-                    count: data.count || 0,
-                    troops: data.troops || 0,
-                    t10: data.t10 || 0,
-                    t9: data.t9 || 0,
-                    t8: data.t8 || 0,
-                    t7: data.t7 || 0,
-                    t6: data.t6 || 0,
-                    marchSize: data.marchSize || 0,
-                    total: data.total || 0
-                }));
+                const defaultRows = thresholdData.map(t => {
+                    const existing = formationData[t.name];
+                    const grouped = groupedData?.[t.color] || [];
+                    const avgObj = grouped.find(d => typeof d === 'object' && 'avgDamage' in d);
+                    const damage = existing?.avgDamage || avgObj?.avgDamage || 0;
+                    const count = existing?.count || 0;
+                    return {
+                        group: t.name,
+                        damage,
+                        count,
+                        troops: count > 0 ? ((damage / totalDamage) * count) / 1000 : 0,
+                        t10: 0,
+                        t9: 0,
+                        t8: 0,
+                        t7: 0,
+                        t6: 0,
+                        marchSize: 0,
+                        total: 0
+                    };
+                });
 
-                if (
-                    groupedData &&
-                    JSON.stringify(previousGroupedData.current) !== JSON.stringify(groupedData)
-                ) {
-                    const groupedRows = Object.entries(groupedData).map(([color, data]) => {
-                        const group = data[0]?.colorName || color;
-                        const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
-                        const avgDamage = avgObj?.avgDamage || 0;
-                        return {
-                            group,
-                            damage: avgDamage,
-                            count: 1,
-                            troops: 0,
-                            t10: 0,
-                            t9: 0,
-                            t8: 0,
-                            t7: 0,
-                            t6: 0,
-                            marchSize: 0,
-                            total: 0
-                        };
-                    });
-                    for (const row of groupedRows) {
-                        const exists = formattedRows.find(r => r.group === row.group);
-                        if (!exists) formattedRows.push(row);
-                    }
-                    previousGroupedData.current = groupedData;
-                }
-
-
-                formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
-                setRows(formattedRows);
+                setRows(defaultRows);
             } catch (err) {
                 console.error("Error fetching data:", err);
             }
@@ -113,10 +88,9 @@ export default function FormationTable({ label, groupedData = null }) {
         const totalDamage = updated.reduce((sum, row) => sum + row.damage * row.count, 0);
 
         updated.forEach(row => {
-            // const groupDamage = row.damage * row.count;
             const share = row.damage / totalDamage;
             const troops = parseFloat((archerValue * share).toFixed(2));
-            row.troops = troops;
+            row.troops = isNaN(troops) ? 0 : troops;
             row.t10 = MathRound((troops * ratios.t10) / 1000);
             row.t9 = MathRound((troops * ratios.t9) / 1000);
             row.t8 = MathRound((troops * ratios.t8) / 1000);
