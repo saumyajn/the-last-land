@@ -9,7 +9,7 @@ import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(2);
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalry, setGroupedCavalryData] = useState({});
   const [thresholds, setThresholds] = useState([]);

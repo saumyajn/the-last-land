@@ -24,6 +24,9 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
+    "globals": {
+      "cv": "readonly"
+    },
     "extends": [
       "react-app",
       "react-app/jest"
