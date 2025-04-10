@@ -181,13 +181,62 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
                                 return (
                                     <TableRow key={name} >
-                                        <TableCell align="left"
+                                        <TableCell
+                                            align="left"
                                             style={{
                                                 position: 'sticky',
                                                 left: 0,
                                                 background: 'white',
                                                 zIndex: 800,
-                                            }}>{name}</TableCell>
+                                            }}
+                                        >
+                                            <TextField
+                                                value={rowData.tempName || name}
+                                                onChange={(e) => {
+                                                    const newName = e.target.value;
+                                                    setLocalData((prev) => ({
+                                                        ...prev,
+                                                        [name]: {
+                                                            ...prev[name],
+                                                            tempName: newName,
+                                                        },
+                                                    }));
+                                                }}
+                                                onBlur={async (e) => {
+                                                    const newName = e.target.value.trim();
+                                                    if (!newName || newName === name) return;
+
+                                                    try {
+                                                        const oldDoc = doc(db, "reports", name);
+                                                        const newDoc = doc(db, "reports", newName);
+
+                                                        const oldSnap = await getDoc(oldDoc);
+                                                        if (!oldSnap.exists()) return;
+
+                                                        await setDoc(newDoc, oldSnap.data());
+                                                        await setDoc(oldDoc, {}); // optionally delete with: await deleteDoc(oldDoc);
+
+                                                        // Update localData
+                                                        setLocalData((prev) => {
+                                                            const updated = { ...prev };
+                                                            updated[newName] = {
+                                                                ...updated[name],
+                                                                tempName: undefined
+                                                            };
+                                                            delete updated[name];
+                                                            return updated;
+                                                        });
+
+                                                        onUpdate(newName, localData[name]); // propagate update
+                                                    } catch (err) {
+                                                        console.error("Failed to rename document:", err);
+                                                    }
+                                                }}
+                                                size="small"
+                                                sx={{ width: '120px' }}
+                                            />
+                                        </TableCell>
+
                                         {desiredKeys.map((key) => (
                                             <TableCell key={key}>
                                                 <TextField
