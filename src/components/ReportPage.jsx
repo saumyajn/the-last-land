@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { db } from "../utils/firebase";
-import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
-import { fileToBase64, detectText } from '../utils/googleVisions'
+import { detectText,fileToBase64 } from "../utils/googleVisions";
+import { doc, setDoc,  deleteDoc, getDocs, collection } from "firebase/firestore";
 import {
   Box,
   TextField,
@@ -18,6 +18,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+
+
 export default function ReportPage() {
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
@@ -25,27 +27,32 @@ export default function ReportPage() {
   const [playerName, setPlayerName] = useState("");
   const canvasRef = useRef();
 
-  const templates = [
-    "T10_cavalry1", "T9_cavalry", "T8_cavalry", "T7_cavalry",
-    "T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"
-  ];
+  
+  const templateMap = {
+    T10_cavalry: ["T10_cavalry", "T10_cavalry1"],
+    T9_cavalry: ["T9_cavalry","T9_cavalry1" ],
+    T8_cavalry: ["T8_cavalry","T8_cavalry1"],
+    T7_cavalry: ["T7_cavalry","T7_cavalry1"],
+    T10_archer: ["T10_archer","T10_archer1"],
+    T9_archer: ["T9_archer","T9_archer1"],
+    T8_archer: ["T8_archer","T8_archer1"],
+    T7_archer: ["T7_archer","T7_archer1"],
+    T6_archer: ["T6_archer","T6_archer1"]
+  };
+
 
   const labels = ["Kills", "Losses", "Wounded", "Survivors"];
 
   useEffect(() => {
     const fetchAllReports = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "reports"));
-        const allResults = [];
-        snapshot.forEach(docSnap => {
-          const name = docSnap.id;
-          const data = Object.values(docSnap.data())[0];
-          allResults.push({ name, data });
-        });
-        setStructuredResults(allResults);
-      } catch (err) {
-        console.error("Error fetching report data:", err);
-      }
+      const snapshot = await getDocs(collection(db, "reports"));
+      const allResults = [];
+      snapshot.forEach(docSnap => {
+        const name = docSnap.id;
+        const data = docSnap.data();
+        allResults.push({ name, data });
+      });
+      setStructuredResults(allResults);
     };
     fetchAllReports();
   }, []);
@@ -80,90 +87,91 @@ export default function ReportPage() {
       const srcColor = cv.imread(mainImage);
       const src = new cv.Mat();
       cv.cvtColor(srcColor, src, cv.COLOR_RGBA2GRAY);
+      srcColor.delete();
 
-      const results = [];
+      const resultData = {};
 
-      for (let i = 0; i < templates.length; i++) {
-        const tmplName = templates[i];
-        setStatus(`🔍 Matching ${tmplName}...`);
+      for (const [troopType, variants] of Object.entries(templateMap)) {
+        let matchFound = false;
 
-        const tmplImg = new Image();
-        tmplImg.crossOrigin = "anonymous";
-        tmplImg.src = `/images/${tmplName}.jpg`;
+        for (const variant of variants) {
+          setStatus(`🔍 Matching ${variant}...`);
 
-        await new Promise((res, rej) => {
-          tmplImg.onload = res;
-          tmplImg.onerror = rej;
-        });
+          const tmplImg = new Image();
+          tmplImg.crossOrigin = "anonymous";
+          tmplImg.src = `/images/${variant}.jpg`;
 
-        const templateColor = cv.imread(tmplImg);
-        const template = new cv.Mat();
-        cv.cvtColor(templateColor, template, cv.COLOR_RGBA2GRAY);
-
-        const result = new cv.Mat();
-
-        cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
-        const { maxVal, maxLoc } = cv.minMaxLoc(result);
-        const threshold = 0.5;
-
-        if (maxVal >= threshold) {
-          console.log(maxVal)
-          const x = maxLoc.x;
-          const y = maxLoc.y;
-          const h = template.rows;
-          const rightWidth = mainImage.width - (x + template.cols);
-
-          const cropCanvas = document.createElement("canvas");
-          cropCanvas.width = rightWidth;
-          cropCanvas.height = h;
-          const cropCtx = cropCanvas.getContext("2d");
-          cropCtx.drawImage(
-            mainImage,
-            x + template.cols, y,
-            rightWidth, h,
-            0, 0,
-            rightWidth, h
-          );
-
-          const base64 = await fileToBase64(await fetch(cropCanvas.toDataURL()).then(r => r.blob()));
-          const text = await detectText(base64);
-          console.log(text)
-
-          const cleanValues = text
-            .replace(/[^0-9\s]/g, '')
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, labels.length);
-
-          const entry = { name: tmplName };
-          labels.forEach((label, i) => {
-            entry[label] = cleanValues[i] || "0";
+          await new Promise((res, rej) => {
+            tmplImg.onload = res;
+            tmplImg.onerror = rej;
           });
 
-          results.push(entry);
+          const tmplColor = cv.imread(tmplImg);
+          const template = new cv.Mat();
+          cv.cvtColor(tmplColor, template, cv.COLOR_RGBA2GRAY);
+          tmplColor.delete();
+
+          const result = new cv.Mat();
+          cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
+          const { maxVal, maxLoc } = cv.minMaxLoc(result);
+          const threshold = 0.8;
+
+          if (maxVal >= threshold) {
+            const x = maxLoc.x;
+            const y = maxLoc.y;
+            const h = template.rows;
+            const rightWidth = mainImage.width - (x + template.cols);
+
+            const cropCanvas = document.createElement("canvas");
+            cropCanvas.width = rightWidth;
+            cropCanvas.height = h;
+            const cropCtx = cropCanvas.getContext("2d");
+            cropCtx.drawImage(
+              mainImage,
+              x + template.cols, y,
+              rightWidth, h,
+              0, 0,
+              rightWidth, h
+            );
+
+            const base64 = await fileToBase64(await fetch(cropCanvas.toDataURL()).then(r => r.blob()));
+            const ocrText = await detectText(base64);
+
+            const cleanValues = ocrText
+              .replace(/[^0-9\s]/g, '')
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, labels.length);
+
+            const entry = {};
+            labels.forEach((label, i) => {
+              entry[label] = cleanValues[i] || "0";
+            });
+
+            resultData[troopType] = entry;
+            matchFound = true;
+          }
+
+          template.delete();
+          result.delete();
+
+          if (matchFound) break;
         }
-        console.log("not found")
-        template.delete();
-        templateColor.delete();
-        result.delete();
-        srcColor.delete()
       }
 
       src.delete();
-      const payload = { [playerName]: results };
-      await setDoc(doc(db, "reports", playerName), payload);
 
+      await setDoc(doc(db, "reports", playerName), resultData);
       setStructuredResults((prev) => {
         const updated = [...prev];
         const index = updated.findIndex(p => p.name === playerName);
         if (index !== -1) {
-          updated[index].data = results;
+          updated[index].data = resultData;
         } else {
-          updated.push({ name: playerName, data: results });
+          updated.push({ name: playerName, data: resultData });
         }
         return updated;
       });
-
       setStatus("✅ Match results saved.");
     } catch (err) {
       console.error("Matching failed", err);
@@ -171,10 +179,12 @@ export default function ReportPage() {
     }
   };
 
-  const handleEdit = (playerIdx, rowIdx, key, value) => {
+  const handleEdit = (playerIdx, tmplKey, key, value) => {
     const updated = [...structuredResults];
-    updated[playerIdx].data[rowIdx][key] = value;
-    setStructuredResults(updated);
+    if (updated[playerIdx]?.data?.[tmplKey]) {
+      updated[playerIdx].data[tmplKey][key] = value;
+      setStructuredResults(updated);
+    }
   };
 
   const handleDelete = async (name) => {
@@ -201,12 +211,7 @@ export default function ReportPage() {
 
       {structuredResults.map((player, pIdx) => (
         <Box key={player.name} sx={{ mt: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">📊 {player.name}</Typography>
-            <IconButton color="error" onClick={() => handleDelete(player.name)}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
+          <Typography variant="h6">📊 {player.name}</Typography>
           <TableContainer component={Paper} sx={{ mt: 1 }}>
             <Table size="small">
               <TableHead>
@@ -215,24 +220,31 @@ export default function ReportPage() {
                   {labels.map((label) => (
                     <TableCell key={label}><b>{label}</b></TableCell>
                   ))}
+                  <TableCell><b>Action</b></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {player.data.map((row, rIdx) => (
-                  <TableRow key={rIdx}>
-                    <TableCell>{row.name}</TableCell>
-                    {labels.map((label) => (
-                      <TableCell key={label}>
-                        <TextField
-                          size="small"
-                          value={row[label]}
-                          onChange={(e) => handleEdit(pIdx, rIdx, label, e.target.value)}
-                          fullWidth
-                        />
+                {player.data && typeof player.data === "object" &&
+                  Object.entries(player.data).map(([tmplKey, row]) => (
+                    <TableRow key={tmplKey}>
+                      <TableCell>{tmplKey}</TableCell>
+                      {labels.map((label) => (
+                        <TableCell key={label}>
+                          <TextField
+                            size="small"
+                            value={row[label] || "0"}
+                            onChange={(e) => handleEdit(pIdx, tmplKey, label, e.target.value)}
+                            fullWidth
+                          />
+                        </TableCell>
+                      ))}
+                      <TableCell>
+                        <IconButton color="error" onClick={() => handleDelete(player.name)}>
+                          <DeleteIcon />
+                        </IconButton>
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
