@@ -4,7 +4,6 @@ import { Box, Container, Tabs, Tab, Typography } from "@mui/material";
 import StatsPage from './components/StatsPage';
 import FormationPage from "./components/FormationPage";
 import ReportPage from "./components/ReportPage";
-
 import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
@@ -63,7 +62,7 @@ export default function App() {
           );
 
           // Cavalry grouping
-          const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]) ||0;
+          const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]) || 0;
           const cavalryMatch = tData
             .slice()
             .sort((a, b) => b.limit - a.limit)

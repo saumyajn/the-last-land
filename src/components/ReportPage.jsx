@@ -5,18 +5,11 @@ import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore"
 import {
   Box,
   TextField,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Typography,
-  IconButton,
   Button
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+
+import ReportResultTable from "./ReportResults";
 
 
 
@@ -63,7 +56,7 @@ export default function ReportPage() {
       setStructuredResults(allResults);
     };
     fetchAllReports();
-  }, []);
+  }, [labels, templateKeys]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -187,11 +180,17 @@ export default function ReportPage() {
     }
   };
 
-  const handleEdit = (playerIdx, tmplKey, key, value) => {
+  const handleEdit = async (playerIdx, tmplKey, key, value) => {
     const updated = [...structuredResults];
     if (updated[playerIdx]?.data?.[tmplKey]) {
       updated[playerIdx].data[tmplKey][key] = value;
       setStructuredResults(updated);
+      try {
+        await setDoc(doc(db, "reports", updated[playerIdx].name), updated[playerIdx].data);
+        console.log(`✅ Updated ${key} for ${tmplKey} of ${updated[playerIdx].name} in Firestore`);
+      } catch (err) {
+        console.error("❌ Failed to update Firestore:", err);
+      }
     }
   };
 
@@ -217,47 +216,7 @@ export default function ReportPage() {
       <Typography variant="body2" color="text.secondary">{status}</Typography>
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      {structuredResults.map((player, pIdx) => (
-        <Box key={player.name} sx={{ mt: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">📊 {player.name}</Typography>
-            <IconButton color="error" onClick={() => handleDelete(player.name)}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-          <TableContainer component={Paper} sx={{ mt: 1 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell><b>Type</b></TableCell>
-                  {labels.map((label) => (
-                    <TableCell key={label}><b>{label}</b></TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {player.data && typeof player.data === "object" &&
-                  Object.entries(player.data).map(([tmplKey, row]) => (
-                    <TableRow key={tmplKey}>
-                      <TableCell>{tmplKey}</TableCell>
-                      {labels.map((label) => (
-                        <TableCell key={label}>
-                          <TextField
-                            size="small"
-                            value={row[label] || "0"}
-                            onChange={(e) => handleEdit(pIdx, tmplKey, label, e.target.value)}
-                            fullWidth
-                          />
-                        </TableCell>
-                      ))}
-
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      ))}
+      <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />
     </Box>
   );
 }
