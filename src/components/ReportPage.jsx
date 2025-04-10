@@ -225,7 +225,6 @@ export default function ReportPage() {
                   {labels.map((label) => (
                     <TableCell key={label}><b>{label}</b></TableCell>
                   ))}
-                  <TableCell><b>Action</b></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
