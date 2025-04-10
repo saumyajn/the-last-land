@@ -21,10 +21,17 @@ export default function ReportResultTable({
   onEdit,
   onDelete
 }) {
-  
+  const handleKPT = (data) => {
+    const kills = parseInt(data?.Kills || "0");
+    const losses = parseInt(data?.Losses || "0");
+    const wounded = parseInt(data?.Wounded || "0");
+    const survivors = parseInt(data?.Survivors || "0");
+    const denominator = losses + wounded + survivors;
+    if (denominator === 0) return "0.00";
+    return (kills / denominator).toFixed(2);
+  }
   return (
     <>
-    
       {structuredResults.map((player, pIdx) => (
         <Box key={player.name} sx={{ mt: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -41,25 +48,34 @@ export default function ReportResultTable({
                   {labels.map((label) => (
                     <TableCell key={label}><b>{label}</b></TableCell>
                   ))}
+                  <TableCell><b>KPT</b></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {templateKeys.map((tmplKey) => (
+                {templateKeys.map((tmplKey) => {
+                  const rowData = player.data?.[tmplKey] || {};
+                  const kpt = handleKPT(rowData);
+
+                  return (
                     <TableRow key={tmplKey}>
                       <TableCell>{tmplKey}</TableCell>
                       {labels.map((label) => (
                         <TableCell key={label}>
                           <TextField
                             size="small"
-                            value={player.data?.[tmplKey]?.[label] || "0"}
+                            value={rowData[label] || "0"}
                             onChange={(e) => onEdit(pIdx, tmplKey, label, e.target.value)}
-                            style={{width:'100px'}}
+                            style={{ width: '100px' }}
                           />
                         </TableCell>
                       ))}
 
+
+                      <TableCell> {kpt}</TableCell>
+
                     </TableRow>
-                  ))}
+                  )
+                })}
               </TableBody>
             </Table>
           </TableContainer>
