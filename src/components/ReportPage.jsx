@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { db } from "../utils/firebase";
 import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
-import {fileToBase64, detectText} from '../utils/googleVisions'
+import { fileToBase64, detectText } from '../utils/googleVisions'
 import {
   Box,
   TextField,
@@ -26,7 +26,7 @@ export default function ReportPage() {
   const canvasRef = useRef();
 
   const templates = [
-    "T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry",
+    "T10_cavalry1", "T9_cavalry", "T8_cavalry", "T7_cavalry",
     "T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"
   ];
 
@@ -77,7 +77,10 @@ export default function ReportPage() {
       canvas.height = mainImage.height;
       ctx.drawImage(mainImage, 0, 0);
 
-      const src = cv.imread(mainImage);
+      const srcColor = cv.imread(mainImage);
+      const src = new cv.Mat();
+      cv.cvtColor(srcColor, src, cv.COLOR_RGBA2GRAY);
+
       const results = [];
 
       for (let i = 0; i < templates.length; i++) {
@@ -93,14 +96,18 @@ export default function ReportPage() {
           tmplImg.onerror = rej;
         });
 
-        const template = cv.imread(tmplImg);
+        const templateColor = cv.imread(tmplImg);
+        const template = new cv.Mat();
+        cv.cvtColor(templateColor, template, cv.COLOR_RGBA2GRAY);
+
         const result = new cv.Mat();
 
         cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
         const { maxVal, maxLoc } = cv.minMaxLoc(result);
-        const threshold = 0.8;
+        const threshold = 0.5;
 
         if (maxVal >= threshold) {
+          console.log(maxVal)
           const x = maxLoc.x;
           const y = maxLoc.y;
           const h = template.rows;
@@ -135,9 +142,11 @@ export default function ReportPage() {
 
           results.push(entry);
         }
-
+        console.log("not found")
         template.delete();
+        templateColor.delete();
         result.delete();
+        srcColor.delete()
       }
 
       src.delete();
@@ -154,7 +163,7 @@ export default function ReportPage() {
         }
         return updated;
       });
-      
+
       setStatus("✅ Match results saved.");
     } catch (err) {
       console.error("Matching failed", err);
