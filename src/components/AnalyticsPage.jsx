@@ -13,9 +13,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Divider
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AnalyticsSummary from "./AnalyticsSummary";
 export default function AnalyticsPage() {
     const [combinedData, setCombinedData] = useState({});
 
@@ -63,7 +65,7 @@ export default function AnalyticsPage() {
     }, [])
     return (
         <Box>
-            <Accordion defaultExpanded>
+            <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h6">Troop Type KPT Summary</Typography>
                 </AccordionSummary>
@@ -96,6 +98,8 @@ export default function AnalyticsPage() {
                     </TableContainer>
                 </AccordionDetails>
             </Accordion>
+             <Divider sx={{ m: 2 }} />
+            <AnalyticsSummary/>
         </Box>
     )
 }
