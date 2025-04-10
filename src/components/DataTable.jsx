@@ -116,6 +116,13 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const names = useMemo(() => Object.keys(localData), [localData]);
     if (!names.length) return null;
 
+    // Utility to remove percentage symbol from string value
+const removePercentage = (value) => {
+    if (typeof value === "string") {
+      return value.replace(/%/g, "");
+    }
+    return value;
+  };
     return (
         <Suspense fallback={<div>LOADING...</div>}>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
@@ -180,9 +187,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                         {desiredKeys.map((key) => (
                                             <TableCell key={key}>
                                                 <TextField
-                                                    value={rowData[key] || ""}
+                                                    value={removePercentage(rowData[key] )|| ""}
                                                     onChange={(e) => handleEdit(name, key, e.target.value)}
                                                     size="small"
+                                                    sx={{width:'100px'}}
 
                                                 />
                                             </TableCell>
