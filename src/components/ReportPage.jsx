@@ -30,17 +30,17 @@ export default function ReportPage() {
 
   const templateMap = {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1"],
-    T9_cavalry: ["T9_cavalry", "T9_cavalry1"],
-    T8_cavalry: ["T8_cavalry", "T8_cavalry1"],
-    T7_cavalry: ["T7_cavalry", "T7_cavalry1"],
     T10_archer: ["T10_archer", "T10_archer1"],
+    T9_cavalry: ["T9_cavalry", "T9_cavalry1"],
     T9_archer: ["T9_archer", "T9_archer1"],
+    T8_cavalry: ["T8_cavalry", "T8_cavalry1"],
     T8_archer: ["T8_archer", "T8_archer1"],
+    T7_cavalry: ["T7_cavalry", "T7_cavalry1"],
     T7_archer: ["T7_archer", "T7_archer1"],
     T6_archer: ["T6_archer", "T6_archer1"]
   };
 
-
+  const templateKeys = Object.keys(templateMap);
   const labels = ["Kills", "Losses", "Wounded", "Survivors"];
 
   useEffect(() => {
@@ -50,6 +50,14 @@ export default function ReportPage() {
       snapshot.forEach(docSnap => {
         const name = docSnap.id;
         const data = docSnap.data();
+        templateKeys.forEach(key => {
+          if (!data[key]) {
+            data[key] = labels.reduce((acc, label) => {
+              acc[label] = "0";
+              return acc;
+            }, {});
+          }
+        });
         allResults.push({ name, data });
       });
       setStructuredResults(allResults);
@@ -242,7 +250,7 @@ export default function ReportPage() {
                           />
                         </TableCell>
                       ))}
-                     
+
                     </TableRow>
                   ))}
               </TableBody>
