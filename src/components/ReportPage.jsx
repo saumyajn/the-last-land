@@ -223,17 +223,56 @@ export default function ReportPage() {
 
   const handleEdit = async (playerIdx, tmplKey, key, value) => {
     const updated = [...structuredResults];
-    if (updated[playerIdx]?.data?.[tmplKey]) {
-      updated[playerIdx].data[tmplKey][key] = value;
-      setStructuredResults(updated);
-      try {
-        await setDoc(doc(db, "reports", updated[playerIdx].name), updated[playerIdx].data);
-        console.log(`✅ Updated ${key} for ${tmplKey} of ${updated[playerIdx].name} in Firestore`);
-      } catch (err) {
-        console.error("❌ Failed to update Firestore:", err);
-      }
+    const player = updated[playerIdx];
+  
+    if (!player || !player.data?.[tmplKey]) return;
+  
+    player.data[tmplKey][key] = value;
+  
+    // 🔁 Recalculate KPT per row
+    const getKPT = (data) => {
+      const kills = parseInt(data?.Kills || "0");
+      const losses = parseInt(data?.Losses || "0");
+      const wounded = parseInt(data?.Wounded || "0");
+      const survivors = parseInt(data?.Survivors || "0");
+      const total = losses + wounded + survivors;
+      return total === 0 ? "0.00" : (kills / total).toFixed(2);
+    };
+  
+    // 🔁 Calculate group-level KPTs
+    const calcGroupKPT = (keys) => {
+      let kills = 0, troops = 0;
+      keys.forEach(k => {
+        const d = player.data[k] || {};
+        kills += parseInt(d.Kills || 0);
+        troops += parseInt(d.Losses || 0) + parseInt(d.Wounded || 0) + parseInt(d.Survivors || 0);
+      });
+      return troops === 0 ? "0.00" : (kills / troops).toFixed(2);
+    };
+  
+    const rowKPT = getKPT(player.data[tmplKey]);
+    const archerKPT = calcGroupKPT(["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
+    const cavalryKPT = calcGroupKPT(["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
+  
+    player.data[tmplKey].KPT = rowKPT;
+    player.archerKPT = archerKPT;
+    player.cavalryKPT = cavalryKPT;
+  
+    setStructuredResults(updated);
+  
+    // 🔥 Update to Firebase
+    try {
+      await setDoc(doc(db, "reports", player.name), {
+        ...player.data,
+        archerKPT,
+        cavalryKPT
+      });
+      console.log("✅ Updated Firestore with KPTs");
+    } catch (err) {
+      console.error("❌ Error updating Firestore:", err);
     }
   };
+  
 
   const handleDelete = async (name) => {
     await deleteDoc(doc(db, "reports", name));
