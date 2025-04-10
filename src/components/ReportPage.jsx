@@ -6,18 +6,22 @@ import {
   Box,
   TextField,
   Typography,
-  Button
+  Button,
+  Select,
+  FormControl,
+  InputLabel
+
 } from "@mui/material";
 
 import ReportResultTable from "./ReportResults";
-
-
 
 export default function ReportPage() {
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImage, setMainImage] = useState(null);
   const [playerName, setPlayerName] = useState("");
+  const [customPlayerName, setCustomPlayerName] = useState("");
+  const [playerOptions, setPlayerOptions] = useState([]);
   const canvasRef = useRef();
 
 
@@ -59,10 +63,19 @@ export default function ReportPage() {
   }, [labels, templateKeys]);
 
   useEffect(() => {
+    const fetchPlayerOptions = async () => {
+      const snapshot = await getDocs(collection(db, "stats"));
+      const names = snapshot.docs.map(doc => doc.id);
+      setPlayerOptions(names);
+    };
+    fetchPlayerOptions();
+  }, []);
+
+  useEffect(() => {
     const handlePaste = (event) => {
       const items = event.clipboardData?.items;
       if (!items) return;
-  
+
       for (const item of items) {
         if (item.type.startsWith("image/")) {
           const file = item.getAsFile();
@@ -75,11 +88,11 @@ export default function ReportPage() {
         }
       }
     };
-  
+
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
   }, []);
-  
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -89,7 +102,10 @@ export default function ReportPage() {
   };
 
   const processImage = async () => {
-    if (!mainImage || !playerName) {
+    const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
+
+
+    if (!mainImage || !finalPlayerName) {
       setStatus("❌ Please select an image and enter a player name.");
       return;
     }
@@ -186,14 +202,14 @@ export default function ReportPage() {
 
       src.delete();
 
-      await setDoc(doc(db, "reports", playerName), resultData);
+      await setDoc(doc(db, "reports", finalPlayerName), resultData);
       setStructuredResults((prev) => {
         const updated = [...prev];
-        const index = updated.findIndex(p => p.name === playerName);
+        const index = updated.findIndex(p => p.name === finalPlayerName);
         if (index !== -1) {
           updated[index].data = resultData;
         } else {
-          updated.push({ name: playerName, data: resultData });
+          updated.push({ name: finalPlayerName, data: resultData });
         }
         return updated;
       });
@@ -225,22 +241,39 @@ export default function ReportPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5">🧠 Image Match & Data Extraction</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
-        <TextField
-          label="Player Name"
+    <Typography variant="h5">🧠 Image Match & Data Extraction</Typography>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
+      <FormControl sx={{ minWidth: 200 }}>
+        <InputLabel>Player Name</InputLabel>
+        <Select
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
+          label="Player Name"
+          native
+        >
+          <option value="">-- Choose a player --</option>
+          {playerOptions.map((name) => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+          <option value="__custom__">Other...</option>
+        </Select>
+      </FormControl>
+      {playerName === "__custom__" && (
+        <TextField
+          label="Enter Custom Name"
+          value={customPlayerName}
+          onChange={(e) => setCustomPlayerName(e.target.value)}
         />
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
-        <Button variant="contained" onClick={processImage}>
-          Upload & Scan
-        </Button>
-      </Box>
-      <Typography variant="body2" color="text.secondary">{status}</Typography>
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-
-      <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />
+      )}
+      <input type="file" accept="image/*" onChange={handleImageUpload} />
+      <Button variant="contained" onClick={processImage}>
+        Upload & Scan
+      </Button>
     </Box>
+    <Typography variant="body2" color="text.secondary">{status}</Typography>
+    <canvas ref={canvasRef} style={{ display: "none" }} />
+
+    <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />
+  </Box>
   );
 }
