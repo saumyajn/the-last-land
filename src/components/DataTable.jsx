@@ -117,12 +117,12 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     if (!names.length) return null;
 
     // Utility to remove percentage symbol from string value
-const removePercentage = (value) => {
-    if (typeof value === "string") {
-      return value.replace(/%/g, "");
-    }
-    return value;
-  };
+    const removePercentage = (value) => {
+        if (typeof value === "string") {
+            return value.replace(/%/g, "");
+        }
+        return value;
+    };
     return (
         <Suspense fallback={<div>LOADING...</div>}>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
@@ -182,15 +182,21 @@ const removePercentage = (value) => {
                                 const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
 
                                 return (
-                                    <TableRow key={name}  >
-                                        <TableCell>{name}</TableCell>
+                                    <TableRow key={name} >
+                                        <TableCell align="left"
+                                            style={{
+                                                position: 'sticky',
+                                                left: 0,
+                                                background: 'white',
+                                                zIndex: 800,
+                                            }}>{name}</TableCell>
                                         {desiredKeys.map((key) => (
                                             <TableCell key={key}>
                                                 <TextField
-                                                    value={removePercentage(rowData[key] )|| ""}
+                                                    value={removePercentage(rowData[key]) || ""}
                                                     onChange={(e) => handleEdit(name, key, e.target.value)}
                                                     size="small"
-                                                    sx={{width:'100px'}}
+                                                    sx={{ width: '100px' }}
 
                                                 />
                                             </TableCell>
@@ -208,6 +214,7 @@ const removePercentage = (value) => {
                                                 value={rowData["Archer Atlantis"] || ""}
                                                 onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)}
                                                 size="small"
+                                                sx={{ width: '70px' }}
                                             />
                                         </TableCell>
                                         <TableCell>
@@ -215,6 +222,7 @@ const removePercentage = (value) => {
                                                 value={rowData["Cavalry Atlantis"] || ""}
                                                 onChange={(e) => handleEdit(name, "Cavalry Atlantis", e.target.value)}
                                                 size="small"
+                                                sx={{ width: '70px' }}
                                             />
                                         </TableCell>
 
