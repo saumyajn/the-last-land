@@ -9,8 +9,8 @@ import {
   Button,
   Select,
   FormControl,
-  InputLabel
-
+  InputLabel,
+  CircularProgress
 } from "@mui/material";
 
 import ReportResultTable from "./ReportResults";
@@ -22,8 +22,8 @@ export default function ReportPage() {
   const [playerName, setPlayerName] = useState("");
   const [customPlayerName, setCustomPlayerName] = useState("");
   const [playerOptions, setPlayerOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const canvasRef = useRef();
-
 
   const templateMap = {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1"],
@@ -58,6 +58,7 @@ export default function ReportPage() {
         allResults.push({ name, data });
       });
       setStructuredResults(allResults);
+      setLoading(false);
     };
     fetchAllReports();
   }, [labels, templateKeys]);
@@ -104,7 +105,6 @@ export default function ReportPage() {
   const processImage = async () => {
     const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
 
-
     if (!mainImage || !finalPlayerName) {
       setStatus("❌ Please select an image and enter a player name.");
       return;
@@ -116,6 +116,7 @@ export default function ReportPage() {
     }
 
     try {
+      setLoading(true);
       setStatus("📸 Processing image...");
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
@@ -154,7 +155,6 @@ export default function ReportPage() {
           cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
           const { maxVal, maxLoc } = cv.minMaxLoc(result);
           const threshold = 0.8;
-          console.log(maxVal)
 
           if (maxVal >= threshold) {
             const x = maxLoc.x;
@@ -176,7 +176,6 @@ export default function ReportPage() {
 
             const base64 = await fileToBase64(await fetch(cropCanvas.toDataURL()).then(r => r.blob()));
             const ocrText = await detectText(base64);
-            console.log(ocrText)
 
             const cleanValues = ocrText
               .replace(/[^0-9\s]/g, '')
@@ -217,6 +216,8 @@ export default function ReportPage() {
     } catch (err) {
       console.error("Matching failed", err);
       setStatus("❌ Error during image processing");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -241,39 +242,41 @@ export default function ReportPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-    <Typography variant="h5">🧠 Image Match & Data Extraction</Typography>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
-      <FormControl sx={{ minWidth: 200 }}>
-        <InputLabel>Player Name</InputLabel>
-        <Select
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          label="Player Name"
-          native
-        >
-          <option value="">-- Choose a player --</option>
-          {playerOptions.map((name) => (
-            <option key={name} value={name}>{name}</option>
-          ))}
-          <option value="__custom__">Other...</option>
-        </Select>
-      </FormControl>
-      {playerName === "__custom__" && (
-        <TextField
-          label="Enter Custom Name"
-          value={customPlayerName}
-          onChange={(e) => setCustomPlayerName(e.target.value)}
-        />
-      )}
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
-      <Button variant="contained" onClick={processImage}>
-        Upload & Scan
-      </Button>
-    </Box>
-    <Typography variant="body2" color="text.secondary">{status}</Typography>
-    <canvas ref={canvasRef} style={{ display: "none" }} />
+      <Typography variant="h5">🧠 Image Match & Data Extraction</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Player Name</InputLabel>
+          <Select
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            label="Player Name"
+            native
+          >
+            <option value=""> </option>
+            {playerOptions.map((name) => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+            <option value=" ">Other...</option>
+          </Select>
+        </FormControl>
+        {playerName === " " && (
+          <TextField
+            label="Enter Custom Name"
+            value={customPlayerName}
+            onChange={(e) => setCustomPlayerName(e.target.value)}
+          />
+        )}
+        <input type="file" accept="image/*" onChange={handleImageUpload} />
+        <Button variant="contained" onClick={processImage} disabled={loading}>
+          {loading ? <CircularProgress size={20} /> : "Upload & Scan"}
+        </Button>
+      </Box>
+      <Typography variant="body2" color="text.secondary">{status}</Typography>
+      <canvas ref={canvasRef} style={{ display: "none" }} />
 
-    <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />
-  </Box>
+      {loading ? <CircularProgress color="secondary"/> : (
+        <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />
+      )}
+    </Box>
   );
 }
