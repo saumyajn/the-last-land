@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { db } from "../utils/firebase";
-import { detectText,fileToBase64 } from "../utils/googleVisions";
-import { doc, setDoc,  deleteDoc, getDocs, collection } from "firebase/firestore";
+import { detectText, fileToBase64 } from "../utils/googleVisions";
+import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import {
   Box,
   TextField,
@@ -27,17 +27,17 @@ export default function ReportPage() {
   const [playerName, setPlayerName] = useState("");
   const canvasRef = useRef();
 
-  
+
   const templateMap = {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1"],
-    T9_cavalry: ["T9_cavalry","T9_cavalry1" ],
-    T8_cavalry: ["T8_cavalry","T8_cavalry1"],
-    T7_cavalry: ["T7_cavalry","T7_cavalry1"],
-    T10_archer: ["T10_archer","T10_archer1"],
-    T9_archer: ["T9_archer","T9_archer1"],
-    T8_archer: ["T8_archer","T8_archer1"],
-    T7_archer: ["T7_archer","T7_archer1"],
-    T6_archer: ["T6_archer","T6_archer1"]
+    T9_cavalry: ["T9_cavalry", "T9_cavalry1"],
+    T8_cavalry: ["T8_cavalry", "T8_cavalry1"],
+    T7_cavalry: ["T7_cavalry", "T7_cavalry1"],
+    T10_archer: ["T10_archer", "T10_archer1"],
+    T9_archer: ["T9_archer", "T9_archer1"],
+    T8_archer: ["T8_archer", "T8_archer1"],
+    T7_archer: ["T7_archer", "T7_archer1"],
+    T6_archer: ["T6_archer", "T6_archer1"]
   };
 
 
@@ -211,7 +211,12 @@ export default function ReportPage() {
 
       {structuredResults.map((player, pIdx) => (
         <Box key={player.name} sx={{ mt: 4 }}>
-          <Typography variant="h6">📊 {player.name}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6">📊 {player.name}</Typography>
+            <IconButton color="error" onClick={() => handleDelete(player.name)}>
+              <DeleteIcon />
+            </IconButton>
+          </Box>
           <TableContainer component={Paper} sx={{ mt: 1 }}>
             <Table size="small">
               <TableHead>
@@ -238,11 +243,7 @@ export default function ReportPage() {
                           />
                         </TableCell>
                       ))}
-                      <TableCell>
-                        <IconButton color="error" onClick={() => handleDelete(player.name)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
+                     
                     </TableRow>
                   ))}
               </TableBody>
