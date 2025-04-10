@@ -53,7 +53,7 @@ export default function ReportResultTable({
                             size="small"
                             value={player.data?.[tmplKey]?.[label] || "0"}
                             onChange={(e) => onEdit(pIdx, tmplKey, label, e.target.value)}
-                            fullWidth
+                            style={{width:'100px'}}
                           />
                         </TableCell>
                       ))}
