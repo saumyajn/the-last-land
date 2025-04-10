@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
-import { calcs } from "../utils/calcs";
+import { calcs, getNumber } from "../utils/calcs";
 
 import { getColorByThreshold } from "../utils/colorUtils";
 
@@ -31,8 +31,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const [thresholds, setThresholds] = useState([]);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-    const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
 
     const calculateAll = useCallback((player) => {
         const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));

@@ -7,7 +7,7 @@ import { parseData } from "../utils/parseData";
 import DataTable from "./DataTable";
 import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "../utils/firebase";
-import { calcs } from '../utils/calcs';
+import { calcs, getNumber } from '../utils/calcs';
 
 export default function StatsPage() {
   const [image, setImage] = useState(null);
@@ -31,7 +31,6 @@ export default function StatsPage() {
     "Lethal Hit Rate"
   ];
 
-  const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
   useEffect(() => {
     const fetchData = async () => {
       try {

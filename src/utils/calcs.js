@@ -1,13 +1,14 @@
+export const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
 export const calcs = (attributes, role, atlValue) => {
 
-    const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
+
     const atk = getNumber(attributes["Troop Attack"]);
     const dmg = getNumber(attributes["Troop Damage"]);
     const bless = getNumber(attributes["Troop Attack Blessing"]);
     let varAtk, varDmg, varBless;
- 
+
     if (role === "archer") {
-  
+
         varAtk = getNumber(attributes["Archer Attack"]);
         varDmg = getNumber(attributes["Archer Damage"]);
         varBless = getNumber(attributes["Archer Attack Blessing"]);
@@ -36,7 +37,7 @@ export const calcs = (attributes, role, atlValue) => {
 
     const part3 = (dmg + varDmg + AtlData) / 100
     const part4 = (part1 * part2 * (1 + part3));
-   
+
     const powerScore = (part4 * (1 + (lethal / 100))) / 1000;
     return powerScore.toFixed(5);
 

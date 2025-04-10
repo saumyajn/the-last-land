@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import Tesseract from "tesseract.js";
 import { db } from "../utils/firebase";
-import { doc, setDoc, getDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
+import {fileToBase64, detectText} from '../utils/googleVisions'
 import {
   Box,
   TextField,
@@ -17,35 +17,7 @@ import {
   Button
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
-const detectText = async (base64Image) => {
-  const apiKey = process.env.REACT_APP_VISION_API_KEY;
-  const response = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        requests: [
-          {
-            image: { content: base64Image },
-            features: [{ type: "TEXT_DETECTION" }],
-          },
-        ],
-      }),
-    }
-  );
-
-  const result = await response.json();
-  return result?.responses?.[0]?.fullTextAnnotation?.text || "No text found.";
-};
 export default function ReportPage() {
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
@@ -172,7 +144,17 @@ export default function ReportPage() {
       const payload = { [playerName]: results };
       await setDoc(doc(db, "reports", playerName), payload);
 
-      setStructuredResults((prev) => [...prev, { name: playerName, data: results }]);
+      setStructuredResults((prev) => {
+        const updated = [...prev];
+        const index = updated.findIndex(p => p.name === playerName);
+        if (index !== -1) {
+          updated[index].data = results;
+        } else {
+          updated.push({ name: playerName, data: results });
+        }
+        return updated;
+      });
+      
       setStatus("✅ Match results saved.");
     } catch (err) {
       console.error("Matching failed", err);
