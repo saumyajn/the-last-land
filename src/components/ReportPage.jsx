@@ -58,6 +58,28 @@ export default function ReportPage() {
     fetchAllReports();
   }, [labels, templateKeys]);
 
+  useEffect(() => {
+    const handlePaste = (event) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+  
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => setMainImage(img);
+            setStatus("📥 Image pasted from clipboard");
+          }
+        }
+      }
+    };
+  
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
+  
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -116,6 +138,7 @@ export default function ReportPage() {
           cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
           const { maxVal, maxLoc } = cv.minMaxLoc(result);
           const threshold = 0.8;
+          console.log(maxVal)
 
           if (maxVal >= threshold) {
             const x = maxLoc.x;
@@ -137,6 +160,7 @@ export default function ReportPage() {
 
             const base64 = await fileToBase64(await fetch(cropCanvas.toDataURL()).then(r => r.blob()));
             const ocrText = await detectText(base64);
+            console.log(ocrText)
 
             const cleanValues = ocrText
               .replace(/[^0-9\s]/g, '')
