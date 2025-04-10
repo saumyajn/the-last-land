@@ -4,11 +4,12 @@ import { Box, Container, Tabs, Tab, Typography } from "@mui/material";
 import StatsPage from './components/StatsPage';
 import FormationPage from "./components/FormationPage";
 import ReportPage from "./components/ReportPage";
+import AnalyticsPage from './components/AnalyticsPage'
 import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState(2);
+  const [activeTab, setActiveTab] = useState(3);
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalry, setGroupedCavalryData] = useState({});
   const [thresholds, setThresholds] = useState([]);
@@ -123,12 +124,14 @@ export default function App() {
           <Tab label="Stats" />
           <Tab label="Formation" />
           <Tab label="Report" />
+          <Tab label="Analytics" />
         </Tabs>
       </Box>
 
       {activeTab === 0 && <StatsPage />}
       {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry} thresholds={thresholds} />}
       {activeTab === 2 && <ReportPage />}
+      {activeTab === 3 && <AnalyticsPage />}
     </Container>
   );
 }
