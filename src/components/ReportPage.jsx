@@ -17,7 +17,35 @@ import {
   Button
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
+const detectText = async (base64Image) => {
+  const apiKey = process.env.REACT_APP_VISION_API_KEY;
+  const response = await fetch(
+    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requests: [
+          {
+            image: { content: base64Image },
+            features: [{ type: "TEXT_DETECTION" }],
+          },
+        ],
+      }),
+    }
+  );
+
+  const result = await response.json();
+  return result?.responses?.[0]?.fullTextAnnotation?.text || "No text found.";
+};
 export default function ReportPage() {
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
@@ -118,13 +146,9 @@ export default function ReportPage() {
             rightWidth, h
           );
 
-          const text = await new Promise((resolve) => {
-            cropCanvas.toBlob(async (blob) => {
-              if (!blob) return resolve("");
-              const { data: { text } } = await Tesseract.recognize(blob, "eng", {});
-              resolve(text.trim());
-            });
-          });
+          const base64 = await fileToBase64(await fetch(cropCanvas.toDataURL()).then(r => r.blob()));
+          const text = await detectText(base64);
+          console.log(text)
 
           const cleanValues = text
             .replace(/[^0-9\s]/g, '')
