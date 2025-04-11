@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
-
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import {
     Box,
@@ -18,6 +17,7 @@ import {
     Input,
     Grid,
     useMediaQuery,
+    Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
@@ -29,6 +29,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const [localData, setLocalData] = useState(tableData);
     const [thresholds, setThresholds] = useState([]);
+    const [renamePrompt, setRenamePrompt] = useState(null); // { oldName, newName }
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -121,6 +122,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         }
         return value;
     };
+
+
     return (
         <Suspense fallback={<div>LOADING...</div>}>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
@@ -191,7 +194,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                             }}
                                         >
                                             <TextField
-                                                value={rowData.tempName || name}
+                                                value={localData[name]?.tempName ?? name}
                                                 onChange={(e) => {
                                                     const newName = e.target.value;
                                                     setLocalData((prev) => ({
@@ -202,40 +205,18 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                         },
                                                     }));
                                                 }}
-                                                onBlur={async (e) => {
+                                                onBlur={(e) => {
                                                     const newName = e.target.value.trim();
-                                                    if (!newName || newName === name) return;
-
-                                                    try {
-                                                        const oldDoc = doc(db, "reports", name);
-                                                        const newDoc = doc(db, "reports", newName);
-
-                                                        const oldSnap = await getDoc(oldDoc);
-                                                        if (!oldSnap.exists()) return;
-
-                                                        await setDoc(newDoc, oldSnap.data());
-                                                        await setDoc(oldDoc, {}); // optionally delete with: await deleteDoc(oldDoc);
-
-                                                        // Update localData
-                                                        setLocalData((prev) => {
-                                                            const updated = { ...prev };
-                                                            updated[newName] = {
-                                                                ...updated[name],
-                                                                tempName: undefined
-                                                            };
-                                                            delete updated[name];
-                                                            return updated;
-                                                        });
-
-                                                        onUpdate(newName, localData[name]); // propagate update
-                                                    } catch (err) {
-                                                        console.error("Failed to rename document:", err);
+                                                    if (newName && newName !== name) {
+                                                        setRenamePrompt({ oldName: name, newName });
                                                     }
                                                 }}
                                                 size="small"
                                                 sx={{ width: '120px' }}
                                             />
                                         </TableCell>
+
+
 
                                         {desiredKeys.map((key) => (
                                             <TableCell key={key}>
@@ -295,6 +276,56 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     </Table>
                 </TableContainer>
             </Box>
+            {renamePrompt && (
+                <Dialog open onClose={() => setRenamePrompt(null)}>
+                    <DialogTitle>Confirm Rename</DialogTitle>
+                    <DialogContent>
+                        Rename <b>{renamePrompt.oldName}</b> to <b>{renamePrompt.newName}</b>?
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setRenamePrompt(null)}>Cancel</Button>
+                        <Button
+                            variant="contained"
+                            onClick={async () => {
+                                const { oldName, newName } = renamePrompt;
+                                try {
+                                    const oldRef = doc(db, "stats", oldName);
+                                    const snap = await getDoc(oldRef);
+
+                                    if (!snap.exists()) throw new Error("Original player not found");
+
+                                    const data = snap.data();
+
+                                    await setDoc(doc(db, "stats", newName), data);
+                                    await deleteDoc(oldRef);
+
+                                    setLocalData((prev) => {
+                                        const updated = { ...prev };
+                                        updated[newName] = {
+                                            ...updated[oldName],
+                                            tempName: undefined,
+                                        };
+                                        delete updated[oldName];
+                                        return updated;
+                                    });
+
+                                    onUpdate(newName, {
+                                        ...localData[oldName],
+                                        tempName: undefined,
+                                    });
+
+                                    setRenamePrompt(null);
+                                } catch (err) {
+                                    console.error("Rename failed:", err);
+                                    setRenamePrompt(null);
+                                }
+                            }}
+                        >
+                            Confirm
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            )}
         </Suspense>
     );
 }
