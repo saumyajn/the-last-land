@@ -14,7 +14,8 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TableSortLabel
+  TableSortLabel,
+  Divider
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -153,14 +154,21 @@ export default function AnalyticsSummary() {
 
   if (loading) return <Typography>Loading data...</Typography>;
 
-  const renderRankedTable = (title, data, keys, prefix) => {
+  const renderRankedTable = (title, data, keys, prefix, kptKey) => {
+    const averageKPT = (data, key) => (
+      data.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) /
+      data.filter(row => parseFloat(row[key]) > 0).length
+    ).toFixed(2);
     const sorted = applySorting(data, prefix);
     return (
       <Accordion defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6">{title}</Typography>
+          {/* <Typography variant="h7">Av KPT-</Typography> */}
         </AccordionSummary>
         <AccordionDetails>
+          <Typography variant="h7">Av KPT-{averageKPT(data, kptKey)}</Typography>
+          <Divider sx={{ mb: 2 }} />
           <TableContainer component={Paper}>
             <Table size="small">
               <TableHead>
@@ -202,8 +210,8 @@ export default function AnalyticsSummary() {
 
   return (
     <Box>
-      {renderRankedTable("Archer Kills Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerDamage"], "archer")}
-      {renderRankedTable("Cavalry Kills Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry")}
+      {renderRankedTable("Cavalry Kills Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry", "cavalryKPT")}
+      {renderRankedTable("Archer Kills Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerDamage"], "archer", "archerKPT")}
     </Box>
   );
 }
