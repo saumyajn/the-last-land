@@ -2,22 +2,23 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import {
-  Box,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Divider
+    Box,
+    Typography,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Divider
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AnalyticsSummary from "./AnalyticsSummary";
+import ExportToGoogleSheet  from './ExportSheets';
 export default function AnalyticsPage() {
     const [combinedData, setCombinedData] = useState({});
 
@@ -36,7 +37,7 @@ export default function AnalyticsPage() {
                         Losses: 0,
                         Wounded: 0,
                         Survivors: 0,
-                        KPT:"0.00"
+                        KPT: "0.00"
                     };
                 });
                 reportSnapshot.forEach(docSnap => {
@@ -65,6 +66,7 @@ export default function AnalyticsPage() {
     }, [])
     return (
         <Box>
+           
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h6">Troop Type KPT Summary</Typography>
@@ -98,8 +100,9 @@ export default function AnalyticsPage() {
                     </TableContainer>
                 </AccordionDetails>
             </Accordion>
-             <Divider sx={{ m: 2 }} />
-            <AnalyticsSummary/>
+            <Divider sx={{ m: 2 }} />
+            <ExportToGoogleSheet />
+            <AnalyticsSummary />
         </Box>
     )
 }

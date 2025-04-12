@@ -23,6 +23,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "https://script.google.com",
   "eslintConfig": {
     "globals": {
       "cv": "readonly"
