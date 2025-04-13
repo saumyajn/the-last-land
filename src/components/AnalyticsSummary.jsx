@@ -19,11 +19,14 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-export default function AnalyticsSummary() {
+import { getAuth } from "firebase/auth";
+
+export default function AnalyticsSummary({ isAdmin }) {
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "desc" });
-
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
   useEffect(() => {
     const fetchAllPlayerStats = async () => {
       try {
@@ -100,7 +103,7 @@ export default function AnalyticsSummary() {
         }));
 
         setSummaryData(rankedSummary);
-
+     
         const archerFinal = {};
         const cavalryFinal = {};
 
@@ -118,7 +121,9 @@ export default function AnalyticsSummary() {
             damage: player.cavalryDamage
           };
         });
-
+        if (!currentUser) {
+          return;
+        }
         await Promise.all([
           setDoc(doc(db, "analytics", "archer_final"), archerFinal),
           setDoc(doc(db, "analytics", "cavalry_final"), cavalryFinal)
@@ -163,7 +168,7 @@ export default function AnalyticsSummary() {
     return (
       <Accordion defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">{title}</Typography>
+          <Typography variant="h6" gutterBottom color="primary">{title} </Typography>
           {/* <Typography variant="h7">Av KPT-</Typography> */}
         </AccordionSummary>
         <AccordionDetails>

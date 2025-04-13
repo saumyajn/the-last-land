@@ -22,16 +22,19 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
 import { calcs, getNumber } from "../utils/calcs";
+import { usePermissionSnackbar } from "./Permissions";
 
 import { getColorByThreshold } from "../utils/colorUtils";
 
-export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate }) {
+export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin }) {
 
     const [localData, setLocalData] = useState(tableData);
     const [thresholds, setThresholds] = useState([]);
     const [renamePrompt, setRenamePrompt] = useState(null); // { oldName, newName }
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+    const { showNoPermission } = usePermissionSnackbar();
 
     const calculateAll = useCallback((player) => {
         const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));
@@ -44,6 +47,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     }, []);
 
     const handleEdit = (name, field, value) => {
+        if (!isAdmin) {
+            showNoPermission();
+            return;
+        }
         const updatedPlayer = {
             ...localData[name],
             [field]: value,
@@ -64,6 +71,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         });
     };
     const handleThresholdChange = async (index, field, value) => {
+        if (!isAdmin) {
+            showNoPermission();
+            return;
+        }
         const newThresholds = [...thresholds];
         newThresholds[index] = {
             ...newThresholds[index],
@@ -127,7 +138,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     return (
         <Suspense fallback={<div>LOADING...</div>}>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
-                <Typography variant="h6" gutterBottom textAlign="center">
+                <Typography variant="h5" gutterBottom color="primary">
+
                     Threshold Settings
                 </Typography>
 
@@ -153,7 +165,9 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                         </Grid>
                     ))}
                 </Grid>
-                <Typography variant="h6" gutterBottom>
+            </Box>
+            <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
+            <Typography variant="h5" gutterBottom color="primary">
                     Combined Stats Table
                 </Typography>
 

@@ -18,8 +18,8 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AnalyticsSummary from "./AnalyticsSummary";
-import ExportToGoogleSheet  from './ExportSheets';
-export default function AnalyticsPage() {
+import ExportToGoogleSheet from './ExportSheets';
+export default function AnalyticsPage({ isAdmin }) {
     const [combinedData, setCombinedData] = useState({});
 
     useEffect(() => {
@@ -56,6 +56,7 @@ export default function AnalyticsPage() {
                     const total = Losses + Wounded + Survivors;
                     troopTotals[type].KPT = total === 0 ? "0.00" : (Kills / total).toFixed(2);
                 }
+                if (!isAdmin) return;
                 await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);
                 setCombinedData(troopTotals);
             } catch (error) {
@@ -66,7 +67,7 @@ export default function AnalyticsPage() {
     }, [])
     return (
         <Box>
-           
+
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h6">Troop Type KPT Summary</Typography>
@@ -101,8 +102,8 @@ export default function AnalyticsPage() {
                 </AccordionDetails>
             </Accordion>
             <Divider sx={{ m: 2 }} />
-            <ExportToGoogleSheet />
-            <AnalyticsSummary />
+            {isAdmin ? <> <ExportToGoogleSheet /> <AnalyticsSummary isAdmin={isAdmin}/></> : <AnalyticsSummary isAdmin={isAdmin}/>}
+
         </Box>
     )
 }

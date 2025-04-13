@@ -1,18 +1,32 @@
 import './App.css'
 import React, { useState, useEffect } from "react";
-import { Box, Container, Tabs, Tab, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  Tabs,
+  Tab,
+  Typography
+} from "@mui/material";
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
 import StatsPage from './components/StatsPage';
 import FormationPage from "./components/FormationPage";
 import ReportPage from "./components/ReportPage";
 import AnalyticsPage from './components/AnalyticsPage'
 import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { signInWithGoogle, logout, onUserChange, getCurrentUser } from './utils/auth';
+import { ADMIN_EMAILS } from './utils/config';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(3);
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalry, setGroupedCavalryData] = useState({});
   const [thresholds, setThresholds] = useState([]);
+  const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -20,6 +34,10 @@ export default function App() {
 
   useEffect(() => {
     const fetchThresholdsAndData = async () => {
+      getCurrentUser().then((user) => {
+        setUser(user);
+        setIsAdmin(user && ADMIN_EMAILS.includes(user.email))
+      })
       try {
         const thresholdsRef = doc(db, "settings", "thresholds");
         const thresholdsSnap = await getDoc(thresholdsRef);
@@ -98,10 +116,35 @@ export default function App() {
     fetchThresholdsAndData();
   }, []);
 
+  useEffect(() => {
+    onUserChange((u) => {
+      setUser(u);
+      setIsAdmin(ADMIN_EMAILS.includes(u?.email));
+    });
+  }, []);
+
+
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 3 }}>
-        <Typography className="App-header" variant="h4" sx={{ fontWeight: "bold" }} align="center">The Last Land</Typography>
+    <Container maxWidth="xl" sx={{paddingLeft:0}}>
+      <Box className="App-header">
+        <Box sx={{ position: "absolute", top: 0, right: 0, p: 2 }}>
+          {user ? (
+            <Stack direction="row" alignItems="center">
+
+              <Typography>{user.displayName} ({isAdmin ? "Admin" : "View only"})</Typography>
+              <Button size="small" variant="outlined" onClick={logout}><LogoutIcon /></Button>
+            </Stack>
+          ) : (
+            <Button onClick={signInWithGoogle}><LoginIcon /></Button>
+          )}
+
+
+        </Box>
+        <Typography variant="h4" sx={{ fontWeight: "bold" }} align="center">The Last Land
+
+        </Typography>
+      </Box>
+      <Box>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
@@ -127,11 +170,10 @@ export default function App() {
           <Tab label="Analytics" />
         </Tabs>
       </Box>
-
-      {activeTab === 0 && <StatsPage />}
-      {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry} thresholds={thresholds} />}
-      {activeTab === 2 && <ReportPage />}
-      {activeTab === 3 && <AnalyticsPage />}
+      {activeTab === 0 && <StatsPage isAdmin={isAdmin} />}
+      {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry} thresholds={thresholds} isAdmin={isAdmin} />}
+      {activeTab === 2 && <ReportPage isAdmin={isAdmin} />}
+      {activeTab === 3 && <AnalyticsPage isAdmin={isAdmin} />}
     </Container>
   );
 }

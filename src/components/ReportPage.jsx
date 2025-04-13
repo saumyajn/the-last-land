@@ -12,10 +12,10 @@ import {
   InputLabel,
   CircularProgress
 } from "@mui/material";
-
+import { usePermissionSnackbar } from "./Permissions";
 import ReportResultTable from "./ReportResults";
 
-export default function ReportPage() {
+export default function ReportPage({ isAdmin }) {
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImage, setMainImage] = useState(null);
@@ -24,6 +24,7 @@ export default function ReportPage() {
   const [playerOptions, setPlayerOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const canvasRef = useRef();
+  const { showNoPermission } = usePermissionSnackbar();
 
   const templateMap = {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1"],
@@ -200,7 +201,10 @@ export default function ReportPage() {
       }
 
       src.delete();
-
+      if (!isAdmin) {
+        showNoPermission();
+        return;
+      }
       await setDoc(doc(db, "reports", finalPlayerName), resultData);
       setStructuredResults((prev) => {
         const updated = [...prev];
@@ -222,13 +226,17 @@ export default function ReportPage() {
   };
 
   const handleEdit = async (playerIdx, tmplKey, key, value) => {
+    if (!isAdmin) {
+      showNoPermission();
+      return;
+    }
     const updated = [...structuredResults];
     const player = updated[playerIdx];
-  
+
     if (!player || !player.data?.[tmplKey]) return;
-  
+
     player.data[tmplKey][key] = value;
-  
+
     // 🔁 Recalculate KPT per row
     const getKPT = (data) => {
       const kills = parseInt(data?.Kills || "0");
@@ -238,7 +246,7 @@ export default function ReportPage() {
       const total = losses + wounded + survivors;
       return total === 0 ? "0.00" : (kills / total).toFixed(2);
     };
-  
+
     // 🔁 Calculate group-level KPTs
     const calcGroupKPT = (keys) => {
       let kills = 0, troops = 0;
@@ -249,17 +257,20 @@ export default function ReportPage() {
       });
       return troops === 0 ? "0.00" : (kills / troops).toFixed(2);
     };
-  
+
     const rowKPT = getKPT(player.data[tmplKey]);
     const archerKPT = calcGroupKPT(["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
     const cavalryKPT = calcGroupKPT(["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
-  
+
     player.data[tmplKey].KPT = rowKPT;
     player.archerKPT = archerKPT;
     player.cavalryKPT = cavalryKPT;
-  
+
     setStructuredResults(updated);
-  
+    if (!isAdmin) {
+      showNoPermission();
+      return;
+    }
     // 🔥 Update to Firebase
     try {
       await setDoc(doc(db, "reports", player.name), {
@@ -272,16 +283,20 @@ export default function ReportPage() {
       console.error("❌ Error updating Firestore:", err);
     }
   };
-  
+
 
   const handleDelete = async (name) => {
+    if (!isAdmin) {
+      showNoPermission();
+      return;
+    }
     await deleteDoc(doc(db, "reports", name));
     setStructuredResults((prev) => prev.filter((p) => p.name !== name));
   };
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5">🧠 Image Match & Data Extraction</Typography>
+      <Typography variant="h5" gutterBottom color="primary">🧠 Report Extraction</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Player Name</InputLabel>
@@ -313,7 +328,7 @@ export default function ReportPage() {
       <Typography variant="body2" color="text.secondary">{status}</Typography>
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      {loading ? <CircularProgress color="secondary"/> : (
+      {loading ? <CircularProgress color="secondary" /> : (
         <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />
       )}
     </Box>

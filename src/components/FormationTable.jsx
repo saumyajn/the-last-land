@@ -16,15 +16,18 @@ import {
 import { db } from "../utils/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { usePermissionSnackbar } from "./Permissions";
 
-export default function FormationTable({ label, groupedData = null }) {
+export default function FormationTable({ label, groupedData = null, isAdmin }) {
     const [archerValue, setArcherValue] = useState(0);
     const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
     const [rows, setRows] = useState([]);
     const previousGroupedData = useRef(null);
+    const { showNoPermission } = usePermissionSnackbar();
+
+    const MathRound = (num) => Math.round(num * 2) / 2;
 
     useEffect(() => {
-        console.log(groupedData)
         const fetchData = async () => {
             try {
                 const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
@@ -38,6 +41,7 @@ export default function FormationTable({ label, groupedData = null }) {
                 const colorOrder = thresholdData.map(t => t.name);
 
                 const archerVal = parseFloat(settingData.archers);
+                setArcherValue(archerVal);
                 setRatios({
                     t10: settingData.t10 / 100,
                     t9: settingData.t9 / 100,
@@ -45,8 +49,7 @@ export default function FormationTable({ label, groupedData = null }) {
                     t7: settingData.t7 / 100,
                     t6: settingData.t6 / 100
                 });
-                setArcherValue(archerVal);
-
+               
                 const formationData = formationSnap.exists() ? formationSnap.data() : {};
                 let formattedRows = Object.entries(formationData).map(([group, data]) => ({
                     group,
@@ -62,7 +65,7 @@ export default function FormationTable({ label, groupedData = null }) {
                     total: data.total || 0
                 }));
 
-                if (groupedData) {
+                if (groupedData && groupedData !== previousGroupedData.current) {
                     const groupedRows = Object.entries(groupedData).map(([color, data]) => {
                         const group = data[0]?.colorName || color;
                         const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
@@ -109,9 +112,12 @@ export default function FormationTable({ label, groupedData = null }) {
         fetchData();
     }, [groupedData, label]);
 
-    const MathRound = (num) => Math.round(num * 2) / 2;
-
+  
     const handleChange = (idx, value) => {
+        if (!isAdmin) {
+            showNoPermission();
+            return;
+          }
         const updated = [...rows];
         const count = parseInt(value);
         if (isNaN(count) || count < 0) return;
@@ -137,7 +143,9 @@ export default function FormationTable({ label, groupedData = null }) {
 
     useEffect(() => {
         const uploadToFirestore = async () => {
+            if (!isAdmin) return;
             try {
+                
                 const payload = {};
                 rows.forEach(row => {
                     payload[row.group] = {
@@ -177,17 +185,9 @@ export default function FormationTable({ label, groupedData = null }) {
                 <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell><b>Group</b></TableCell>
-                            <TableCell><b>Avg Archer Damage</b></TableCell>
-                            <TableCell><b>Count</b></TableCell>
-                            <TableCell><b>Troops</b></TableCell>
-                            <TableCell><b>T10</b></TableCell>
-                            <TableCell><b>T9</b></TableCell>
-                            <TableCell><b>T8</b></TableCell>
-                            <TableCell><b>T7</b></TableCell>
-                            <TableCell><b>T6</b></TableCell>
-                            <TableCell><b>March Size</b></TableCell>
-                            <TableCell><b>Total</b></TableCell>
+                        {["Group", "Avg Archer Damage", "Count", "Troops", "T10", "T9", "T8", "T7", "T6", "March Size", "Total", ""].map((head, i) => (
+                <TableCell key={i}><b>{head}</b></TableCell>
+              ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>

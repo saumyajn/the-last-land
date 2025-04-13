@@ -3,9 +3,11 @@ import { Paper, Typography, Grid, TextField, Button, Stack, Divider } from "@mui
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../utils/firebase";
 
-export default function FormationForm({ label, formState, setFormState }) {
+import { usePermissionSnackbar } from "./Permissions";
+export default function FormationForm({ label, formState, setFormState , isAdmin}) {
   const docName = label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation";
 
+  const { showNoPermission } = usePermissionSnackbar();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -23,6 +25,10 @@ export default function FormationForm({ label, formState, setFormState }) {
 
   const handleSave = async () => {
     try {
+      if (!isAdmin) {
+        showNoPermission();
+        return;
+      }
       await setDoc(doc(db, "settings", docName), formState);
       console.log("Saved", docName);
     } catch (error) {

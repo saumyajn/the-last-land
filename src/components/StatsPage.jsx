@@ -8,13 +8,15 @@ import DataTable from "./DataTable";
 import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { calcs, getNumber } from '../utils/calcs';
+import { usePermissionSnackbar } from "./Permissions";
 
-export default function StatsPage() {
+export default function StatsPage({ isAdmin }) {
   const [image, setImage] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [dataTable, setDataTable] = useState({});
   const [name, setName] = useState("");
+  const { showNoPermission } = usePermissionSnackbar();
   // const [archerAtlantis, setArcherAtlantis] = useState("");
   // const [cavalryAtlantis, setCavalryAtlantis] = useState("");
 
@@ -51,6 +53,10 @@ export default function StatsPage() {
 
   const updateFirestore = async (playerName, data) => {
     try {
+      if (!isAdmin) {
+        showNoPermission();
+        return;
+      }
       await setDoc(doc(db, "stats", playerName), { ...data }, { merge: true });
       console.log(`✅ Firestore updated for: ${playerName}`);
     } catch (error) {
@@ -59,7 +65,12 @@ export default function StatsPage() {
   };
 
   const deletePlayer = async (playerName) => {
+
     try {
+      if (!isAdmin) {
+        showNoPermission();
+        return;
+      }
       await deleteDoc(doc(db, "players", playerName));
       const updatedTable = { ...dataTable };
       delete updatedTable[playerName];
@@ -79,6 +90,10 @@ export default function StatsPage() {
   };
 
   const extractText = async () => {
+    // if (!isAdmin) {
+    //   showNoPermission();
+    //   return;
+    // }
     if (!image) return;
     setLoading(true);
     const result = await Tesseract.recognize(image, "eng");
@@ -90,8 +105,8 @@ export default function StatsPage() {
     attributes["Archer Atlantis"] = '0';
     attributes["Cavalry Atlantis"] = '0';
     attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"]));
-    
-    attributes["Final Cavalry Damage"] =getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
+
+    attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
     const updatedTable = { ...dataTable, [name]: attributes };
     setDataTable(updatedTable);
 
@@ -101,39 +116,45 @@ export default function StatsPage() {
 
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom color="primary">
-        Game Image Data Extractor
-      </Typography>
-      <TextField
-        label="Enter Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        fullWidth
-        sx={{ mb: 2 }}
-      />
+    <div>
+    
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+       
+        
 
-      <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
-        <ImageUpload
-          image={image}
-          onUpload={handleImageUpload}
-          onExtract={extractText}
-          loading={loading}
-          name={name}
+        <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h5" gutterBottom color="primary">
+          Image Stats Extractor
+        </Typography>
+        <TextField
+          label="Enter Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          fullWidth
+          sx={{ mb: 2 }}
         />
-      </Box>
+          <ImageUpload
+            image={image}
+            onUpload={handleImageUpload}
+            onExtract={extractText}
+            loading={loading}
+            name={name}
+          />
+        </Box>
 
-      {Object.entries(dataTable).length > 0 && (
-        <DataTable
-          tableData={dataTable}
-          desiredKeys={desiredKeys}
-          onDelete={deletePlayer}
-          onUpdate={updateFirestore}
-        />
-      )}
+        {Object.entries(dataTable).length > 0 && (
+          <DataTable
+            tableData={dataTable}
+            desiredKeys={desiredKeys}
+            onDelete={deletePlayer}
+            onUpdate={updateFirestore}
+            isAdmin={isAdmin}
+          />
+        )}
 
-      <RawText text={text} />
+        <RawText text={text} />
 
-    </Container>
+      </Container>
+    </div>
   );
 };
