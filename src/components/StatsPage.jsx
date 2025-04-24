@@ -71,7 +71,7 @@ export default function StatsPage({ isAdmin }) {
         showNoPermission();
         return;
       }
-      await deleteDoc(doc(db, "players", playerName));
+      await deleteDoc(doc(db, "stats", playerName));
       const updatedTable = { ...dataTable };
       delete updatedTable[playerName];
       setDataTable(updatedTable);
