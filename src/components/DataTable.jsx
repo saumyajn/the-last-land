@@ -97,7 +97,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 const optionsSnap = await getDoc(optionsRef);
                 if (optionsSnap.exists()) {
                     const data = optionsSnap.data();
-                    const optionsArr = Object.entries(data)
+                    const optionsArr = Object.entries(data).sort((a, b) => Number(a[1]) - Number(b[1]));
+
                     setArcherOptions(optionsArr);
                     setCavalryOptions(optionsArr);
                 }
