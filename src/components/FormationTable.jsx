@@ -169,7 +169,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin }) {
         };
 
         if (rows.length > 0) uploadToFirestore();
-    }, [rows, label]);
+    }, [rows, label, isAdmin]);
 
     const handleCopy = (row) => {
         const text = `${row.group} - ${row.t10}k - ${row.t9}k - ${row.t8}k - ${row.t7}k - ${row.t6}k`;
@@ -201,7 +201,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin }) {
                                         value={row.count}
                                         onChange={(e) => handleChange(idx, e.target.value)}
                                         size="small"
-                                        fullWidth
+                                        sx={{width:"20px"}}
                                     />
                                 </TableCell>
                                 <TableCell>{row.troops}</TableCell>

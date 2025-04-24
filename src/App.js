@@ -125,7 +125,7 @@ export default function App() {
 
 
   return (
-    <Container maxWidth="xl" sx={{paddingLeft:0}}>
+    <Container maxWidth="xl" sx={{ paddingLeft: 0 }}>
       <Box className="App-header">
         <Box sx={{ position: "absolute", top: 0, right: 0, p: 2 }}>
           {user ? (
@@ -148,7 +148,8 @@ export default function App() {
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
-          centered
+           variant="scrollable"
+    scrollButtons="auto"
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
@@ -163,13 +164,14 @@ export default function App() {
               color: "#1976d2"
             }
           }}
-        >
+        > 
           <Tab label="Stats" />
           <Tab label="Formation" />
           <Tab label="Report" />
           <Tab label="Analytics" />
         </Tabs>
       </Box>
+     
       {activeTab === 0 && <StatsPage isAdmin={isAdmin} />}
       {activeTab === 1 && <FormationPage groupedData={groupedData} groupedCavalryData={groupedCavalry} thresholds={thresholds} isAdmin={isAdmin} />}
       {activeTab === 2 && <ReportPage isAdmin={isAdmin} />}

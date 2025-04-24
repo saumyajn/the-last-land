@@ -17,7 +17,8 @@ import {
     Input,
     Grid,
     useMediaQuery,
-    Dialog, DialogTitle, DialogContent, DialogActions, Button
+    Dialog, DialogTitle, DialogContent, DialogActions, Button,
+    CircularProgress
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
@@ -32,8 +33,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const [thresholds, setThresholds] = useState([]);
     const [renamePrompt, setRenamePrompt] = useState(null); // { oldName, newName }
     const theme = useTheme();
+    const [isLoading, setIsLoading] = useState(true);
+    const [archerOptions, setArcherOptions] = useState([]);
+    const [cavalryOptions, setCavalryOptions] = useState([]);
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
     const { showNoPermission } = usePermissionSnackbar();
 
     const calculateAll = useCallback((player) => {
@@ -94,6 +97,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     useEffect(() => {
         const fetchThresholds = async () => {
+            setIsLoading(true);
             try {
                 const thresholdRef = doc(db, "settings", "thresholds");
                 const snapshot = await getDoc(thresholdRef);
@@ -103,8 +107,13 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                         setThresholds(data.thresholds);
                     }
                 }
+                //add options here
+                const optionsRef = doc(db, "settings", "atlantis_damage");
+                
             } catch (error) {
                 console.error("Failed to load thresholds from Firestore:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -134,7 +143,11 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         return value;
     };
 
-
+    if (isLoading) {
+        return <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+            <CircularProgress size={40} color="inherit" />
+        </Box>
+    }
     return (
         <Suspense fallback={<div>LOADING...</div>}>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
@@ -167,7 +180,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 </Grid>
             </Box>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
-            <Typography variant="h5" gutterBottom color="primary">
+                <Typography variant="h5" gutterBottom color="primary">
                     Combined Stats Table
                 </Typography>
 
