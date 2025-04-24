@@ -5,7 +5,7 @@ import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
 
     apiKey: "AIzaSyBbgIniFQ7WEySILgrl1tBb9EIBIrtp8Ho",
-    authDomain: "the-last-land-analytics.vercel.app",
+    authDomain: "image-to-data-9a90b.firebaseapp.com",
     projectId: "image-to-data-9a90b",
     storageBucket: "image-to-data-9a90b.firebasestorage.app",
     messagingSenderId: "1008359466151",
