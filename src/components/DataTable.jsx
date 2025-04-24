@@ -2,23 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback, Suspense } from "reac
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import {
-    Box,
-    Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    IconButton,
-    TextField,
-    Stack,
-    Input,
-    Grid,
-    useMediaQuery,
-    Dialog, DialogTitle, DialogContent, DialogActions, Button,
-    CircularProgress
+    Box, Typography, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Paper, IconButton, TextField, Stack, Input, Grid, Select, MenuItem, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
@@ -109,7 +94,13 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 }
                 //add options here
                 const optionsRef = doc(db, "settings", "atlantis_damage");
-                
+                const optionsSnap = await getDoc(optionsRef);
+                if (optionsSnap.exists()) {
+                    const data = optionsSnap.data();
+                    const optionsArr = Object.entries(data)
+                    setArcherOptions(optionsArr);
+                    setCavalryOptions(optionsArr);
+                }
             } catch (error) {
                 console.error("Failed to load thresholds from Firestore:", error);
             } finally {
@@ -265,20 +256,68 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <TextField
-                                                value={rowData["Archer Atlantis"] || ""}
-                                                onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)}
-                                                size="small"
-                                                sx={{ width: '70px' }}
-                                            />
+                                            {archerOptions.length > 0 ? (
+                                                (() => {
+                                                    const selectedArcher = String(rowData["Archer Atlantis"] || "0");
+                                                    const validArcherValues = archerOptions.map(([_, value]) => String(value));
+                                                    const safeArcherValue = validArcherValues.includes(selectedArcher)
+                                                        ? selectedArcher
+                                                        : "0"; // fallback to "0" if value not found
+
+                                                    return (
+                                                        <Select
+                                                            value={safeArcherValue}
+                                                            onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)}
+                                                            size="small"
+                                                            fullWidth
+                                                        >
+                                                            {archerOptions.map(([label, value]) => (
+                                                                <MenuItem key={label} value={String(value)}>
+                                                                    {label}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    );
+                                                })()
+                                            ) : (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Loading...
+                                                </Typography>
+                                            )}
+
+
                                         </TableCell>
                                         <TableCell>
-                                            <TextField
-                                                value={rowData["Cavalry Atlantis"] || ""}
-                                                onChange={(e) => handleEdit(name, "Cavalry Atlantis", e.target.value)}
-                                                size="small"
-                                                sx={{ width: '70px' }}
-                                            />
+                                            {cavalryOptions.length > 0 ? (
+                                                (() => {
+                                                    const selectedCavalry = String(rowData["Cavalry Atlantis"] || "0");
+                                                    const validCavalryValues = cavalryOptions.map(([_, value]) => String(value));
+                                                    const safeCavalryValue = validCavalryValues.includes(selectedCavalry)
+                                                        ? selectedCavalry
+                                                        : "0";
+
+                                                    return (
+                                                        <Select
+                                                            value={safeCavalryValue}
+                                                            onChange={(e) => handleEdit(name, "Cavalry Atlantis", e.target.value)}
+                                                            size="small"
+                                                            fullWidth
+                                                        >
+                                                            {cavalryOptions.map(([label, value]) => (
+                                                                <MenuItem key={label} value={String(value)}>
+                                                                    {label}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    );
+                                                })()
+                                            ) : (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Loading..
+                                                </Typography>
+                                            )}
+
+
                                         </TableCell>
 
                                         <TableCell sx={{
