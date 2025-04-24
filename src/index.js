@@ -4,7 +4,9 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { PermissionSnackbarProvider } from './components/Permissions';
-
+window.close = () => {
+  console.log("🔒 window.close() was blocked but caught safely.");
+};
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
