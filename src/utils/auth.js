@@ -3,6 +3,9 @@ import { app } from "./firebase"; // make sure this path is correct
 
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({
+    prompt: "select_account"
+  });
 
 // Opens the Google sign-in popup
 
