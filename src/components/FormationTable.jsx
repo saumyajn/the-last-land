@@ -160,7 +160,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
             ? sum + row.damage * row.count : sum, 0);
 
         updated.forEach(row => {
-            const share = totalDamage > 0 && row.damage > 0 ? (row.damage * row.count) / totalDamage : 0;
+            const share = totalDamage > 0 && row.damage > 0 ? (row.damage) / totalDamage : 0;
             const troops = parseFloat((totalTroopValue * share).toFixed(2));
             row.troops = isNaN(troops) ? 0 : troops;
             row.t10 = MathRound(troops * ratios.t10 / 1000);
