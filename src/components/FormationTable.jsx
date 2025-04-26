@@ -201,7 +201,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin }) {
                                         value={row.count}
                                         onChange={(e) => handleChange(idx, e.target.value)}
                                         size="small"
-                                        sx={{width:"20px"}}
+                                        sx={{width:"100px"}}
                                     />
                                 </TableCell>
                                 <TableCell>{row.troops}</TableCell>
