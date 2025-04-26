@@ -4,8 +4,10 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../utils/firebase";
 
 import { usePermissionSnackbar } from "./Permissions";
-export default function FormationForm({ label, formState, setFormState , isAdmin}) {
-  const docName = label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation";
+export default function FormationForm({ label, formState, setFormState , isAdmin , type }) {
+  const docName = type === "archer"
+  ? (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
+  : (label.toLowerCase().includes("throne") ? "cavalry_throne_formation" : "cavalry_tower_formation");
 
   const { showNoPermission } = usePermissionSnackbar();
   useEffect(() => {

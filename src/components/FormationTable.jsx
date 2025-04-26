@@ -19,7 +19,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { usePermissionSnackbar } from "./Permissions";
 
-export default function FormationTable({ label, groupedData = null, isAdmin }) {
+export default function FormationTable({ label, groupedData = null, isAdmin, type }) {
   const [archerValue, setArcherValue] = useState(0);
   const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
   const [rows, setRows] = useState([]);
@@ -35,7 +35,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin }) {
       try {
         const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
           getDoc(doc(db, "settings", label)),
-          getDoc(doc(db, "formation", `archer_${label}`)),
+          getDoc(doc(db, "formation", `${type}_${label}`)),
           getDoc(doc(db, "settings", "thresholds"))
         ]);
 

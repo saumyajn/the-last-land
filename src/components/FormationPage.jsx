@@ -20,6 +20,8 @@ import FormationTable from "./FormationTable";
 export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [], isAdmin }) {
     const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
     const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
+    const [form3, setForm3] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
+    const [form4, setForm4] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
 
     const sortedColors = thresholds
         .slice()
@@ -88,15 +90,26 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
             {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
 
             <Divider sx={{ mb: 2 }} />
-            <Typography sx={{ backgroundColor: '#e8f4f8', p:2 }} variant="h5">ARCHER FORMATION</Typography>
+            <Typography sx={{ backgroundColor: '#e8f4f8', p: 2 }} variant="h5">ARCHER FORMATION</Typography>
             <Box sx={{ mb: 4 }}>
-                <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} />
-                <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} />
+                <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
+                <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
             </Box>
             <Box>
-                <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} />
-                <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} />
+                <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
+                <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
             </Box>
+
+            <Typography sx={{ backgroundColor: '#e8f4f8', p: 2 }} variant="h5">CAVALRY FORMATION</Typography>
+            <Box sx={{ mb: 4 }}>
+                <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
+                <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
+            </Box>
+            <Box>
+                <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
+                <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
+            </Box>
+
         </Box>
     );
 }
