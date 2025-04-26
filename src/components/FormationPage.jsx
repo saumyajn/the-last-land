@@ -56,7 +56,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                                     {colorName} - Avg Damage: {avgDamage}
                                 </Typography>
                                 <Divider sx={{ mb: 0.5 }} />
-                                <Stack direction="row" spacing={1}>
+                                <Stack direction="row" spacing={1}  sx={{ flexWrap: "wrap" }}>
                                     {meta.slice(1).map((player, idx) => (
                                         <Box
                                             key={idx}
