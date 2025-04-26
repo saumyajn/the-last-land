@@ -69,14 +69,14 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
             let formattedRows = Object.entries(formationData).map(([group, data]) => {
                 const count = data.count || 0;
                 const damage = data.avgDamage || 0;
-                const share = totalDamage > 0 && damage > 0 ? (damage * count) / totalDamage : 0;
+                const share = totalDamage > 0 && damage > 0 ? (damage) / totalDamage : 0;
                 const troops = parseFloat((totalTroops * share).toFixed(2));
 
-                const t10 = MathRound(troops * (settingData.t10 || 0) / 1000);
-                const t9 = MathRound(troops * (settingData.t9 || 0) / 1000);
-                const t8 = MathRound(troops * (settingData.t8 || 0) / 1000);
-                const t7 = MathRound(troops * (settingData.t7 || 0) / 1000);
-                const t6 = MathRound(troops * (settingData.t6 || 0) / 1000);
+                const t10 = MathRound((troops * (settingData.t10 || 0) /100)/ 1000);
+                const t9 = MathRound((troops * (settingData.t9 || 0)/100) / 1000);
+                const t8 = MathRound((troops * (settingData.t8 || 0) /100)/ 1000);
+                const t7 = MathRound((troops * (settingData.t7 || 0) /100)/ 1000);
+                const t6 = MathRound((troops * (settingData.t6 || 0)/100) / 1000);
 
                 return {
                     group,
