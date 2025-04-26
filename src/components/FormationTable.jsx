@@ -19,7 +19,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { usePermissionSnackbar } from "./Permissions";
 
-export default function FormationTable({ label, groupedData = null, isAdmin, type = "archer" }) {
+export default function FormationTable({ label, groupedData = null, isAdmin, type }) {
     const [totalTroopValue, setTotalTroopValue] = useState(0);
     const [ratios, setRatios] = useState({ t10: 0, t9: 0, t8: 0, t7: 0, t6: 0 });
     const [rows, setRows] = useState([]);
@@ -35,6 +35,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
     const loadFormationData = async () => {
         try {
+            console.log(groupedData)
             const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
                 getDoc(doc(db, "settings", settingDocName)),
                 getDoc(doc(db, "formation", `${type}_${label}`)),
@@ -65,18 +66,18 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                     : sum,
                 0
             );
-
+            console.log(formationData)
             let formattedRows = Object.entries(formationData).map(([group, data]) => {
                 const count = data.count || 0;
                 const damage = data.avgDamage || 0;
                 const share = totalDamage > 0 && damage > 0 ? (damage) / totalDamage : 0;
                 const troops = parseFloat((totalTroops * share).toFixed(2));
 
-                const t10 = MathRound((troops * (settingData.t10 || 0) /100)/ 1000);
-                const t9 = MathRound((troops * (settingData.t9 || 0)/100) / 1000);
-                const t8 = MathRound((troops * (settingData.t8 || 0) /100)/ 1000);
-                const t7 = MathRound((troops * (settingData.t7 || 0) /100)/ 1000);
-                const t6 = MathRound((troops * (settingData.t6 || 0)/100) / 1000);
+                const t10 = MathRound((troops * (settingData.t10 || 0) / 100) / 1000);
+                const t9 = MathRound((troops * (settingData.t9 || 0) / 100) / 1000);
+                const t8 = MathRound((troops * (settingData.t8 || 0) / 100) / 1000);
+                const t7 = MathRound((troops * (settingData.t7 || 0) / 100) / 1000);
+                const t6 = MathRound((troops * (settingData.t6 || 0) / 100) / 1000);
 
                 return {
                     group,
@@ -93,7 +94,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                 };
             });
 
-            if (groupedData && groupedData !== previousGroupedData.current) {
+            if (groupedData && Object.keys(groupedData).length > 0) {
                 const groupedRows = Object.entries(groupedData).map(([color, data]) => {
                     const group = data[0]?.colorName || color;
                     const avgObj = data.find(d => typeof d === 'object' && 'avgDamage' in d);
