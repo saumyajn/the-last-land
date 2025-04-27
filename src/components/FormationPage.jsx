@@ -49,14 +49,24 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                         const meta = data[color];
                         const colorName = meta[0]?.colorName || color;
                         const avgDamage = Math.round(meta[0]?.avgDamage || 0);
-
+                        console.log(meta[0])
+                        if (!meta || meta.length <= 1 || isNaN(avgDamage) || avgDamage === 0) {
+                            return (
+                                <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
+                                    <Typography variant="subtitle2" sx={{ ml: 1 }}>
+                                        {colorName} - No Data
+                                    </Typography>
+                                    <Divider sx={{ mb: 0.5 }} />
+                                </Paper>
+                            );
+                        }
                         return (
                             <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
                                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
                                     {colorName} - Avg Damage: {avgDamage}
                                 </Typography>
                                 <Divider sx={{ mb: 0.5 }} />
-                                <Stack direction="row" spacing={1}  sx={{ flexWrap: "wrap" }}>
+                                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
                                     {meta.slice(1).map((player, idx) => (
                                         <Box
                                             key={idx}

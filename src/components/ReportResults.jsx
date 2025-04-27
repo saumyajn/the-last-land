@@ -29,27 +29,33 @@ export default function ReportResultTable({
     const losses = parseInt(data?.Losses || "0");
     const wounded = parseInt(data?.Wounded || "0");
     const survivors = parseInt(data?.Survivors || "0");
-    const denominator = losses + wounded + survivors;
-    if (denominator === 0) return "0.00";
-    return (kills / denominator).toFixed(2);
+    return computeKPT(kills, losses, wounded, survivors);
   }
 
-  const calcKPT = (data, keys) => {
-    let kills = 0;
-    let troops = 0;
+  const computeKPT = (kills, losses, wounded, survivors) => {
+    const total = kills - (losses + wounded);
+    if (survivors === 0) return "0.00";
+    return (total / survivors).toFixed(2);
+  };
 
+  const calcKPT = (data, keys) => {
+    let totalKillsMinusLossWound = 0;
+    let totalSurvivors = 0;
+  
     keys.forEach((key) => {
       const entry = data[key];
       if (entry) {
-        kills += parseInt(entry.Kills || 0);
+        const kills = parseInt(entry.Kills || 0);
         const losses = parseInt(entry.Losses || 0);
         const wounded = parseInt(entry.Wounded || 0);
         const survivors = parseInt(entry.Survivors || 0);
-        troops += losses + wounded + survivors;
+  
+        totalKillsMinusLossWound += (kills - (losses + wounded));
+        totalSurvivors += survivors;
       }
     });
-
-    return troops === 0 ? "0.00" : (kills / troops).toFixed(2);
+  
+    return computeKPT(totalKillsMinusLossWound, 0, 0, totalSurvivors);
   };
   return (
     <>
@@ -61,8 +67,8 @@ export default function ReportResultTable({
           <Box key={player.name} sx={{ mt: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6">📊 {player.name}</Typography>
-              <Typography variant="h8">Archer- {archerKPT}</Typography>
-              <Typography variant="h8">Calavry-{cavalryKPT}</Typography>
+              <Typography variant="h8">Archer: {archerKPT}</Typography>
+              <Typography variant="h8">Calavry: {cavalryKPT}</Typography>
               <IconButton color="error" onClick={() => onDelete(player.name)}>
                 <DeleteIcon />
               </IconButton>

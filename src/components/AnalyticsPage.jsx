@@ -53,9 +53,10 @@ export default function AnalyticsPage({ isAdmin }) {
                 });
                 for (const type of troopTypes) {
                     const { Kills, Losses, Wounded, Survivors } = troopTotals[type];
-                    const total = Losses + Wounded + Survivors;
-                    troopTotals[type].KPT = total === 0 ? "0.00" : (Kills / total).toFixed(2);
+                    const numerator = Kills - (Losses + Wounded);
+                    troopTotals[type].KPT = Survivors === 0 ? "0.00" : (numerator / Survivors).toFixed(2);
                 }
+                
                 setCombinedData(troopTotals);
                 if (!isAdmin) return;
                 await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);

@@ -236,15 +236,15 @@ export default function ReportPage({ isAdmin }) {
     if (!player || !player.data?.[tmplKey]) return;
 
     player.data[tmplKey][key] = value;
-
+ //(kills-(losses+wounded))/survivors
     // 🔁 Recalculate KPT per row
     const getKPT = (data) => {
       const kills = parseInt(data?.Kills || "0");
       const losses = parseInt(data?.Losses || "0");
       const wounded = parseInt(data?.Wounded || "0");
       const survivors = parseInt(data?.Survivors || "0");
-      const total = losses + wounded + survivors;
-      return total === 0 ? "0.00" : (kills / total).toFixed(2);
+      const total = kills- (losses + wounded);
+      return survivors === 0 ? "0.00" : (total / survivors).toFixed(2);
     };
 
     // 🔁 Calculate group-level KPTs
