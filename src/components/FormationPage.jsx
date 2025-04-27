@@ -54,7 +54,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                             return (
                                 <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
                                     <Typography variant="subtitle2" sx={{ ml: 1 }}>
-                                        {colorName} - No Data
+                                        {colorName} - Avg Damage: 0
                                     </Typography>
                                     <Divider sx={{ mb: 0.5 }} />
                                 </Paper>
@@ -105,11 +105,12 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                 <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
                 <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
             </Box>
+            
             <Box>
                 <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
                 <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
             </Box>
-
+  <Divider sx={{ mb: 2 }} />
             <Typography sx={{ backgroundColor: '#e8f4f8', p: 2 }} variant="h5">CAVALRY FORMATION</Typography>
             <Box sx={{ mb: 4 }}>
                 <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />

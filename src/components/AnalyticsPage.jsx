@@ -56,11 +56,11 @@ export default function AnalyticsPage({ isAdmin }) {
                     const numerator = Kills - (Losses + Wounded);
                     troopTotals[type].KPT = Survivors === 0 ? "0.00" : (numerator / Survivors).toFixed(2);
                 }
-                
+
                 setCombinedData(troopTotals);
                 if (!isAdmin) return;
                 await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);
-                
+
             } catch (error) {
                 console.error("Error fetching troop data:", error);
             }
@@ -104,7 +104,7 @@ export default function AnalyticsPage({ isAdmin }) {
                 </AccordionDetails>
             </Accordion>
             <Divider sx={{ m: 2 }} />
-            {isAdmin ? <> <ExportToGoogleSheet /> <AnalyticsSummary isAdmin={isAdmin}/></> : <AnalyticsSummary isAdmin={isAdmin}/>}
+            {isAdmin ? <> <ExportToGoogleSheet /> <AnalyticsSummary isAdmin={isAdmin} /></> : <AnalyticsSummary isAdmin={isAdmin} />}
 
         </Box>
     )

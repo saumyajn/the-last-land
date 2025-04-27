@@ -33,29 +33,27 @@ export default function ReportResultTable({
   }
 
   const computeKPT = (kills, losses, wounded, survivors) => {
-    const total = kills - (losses + wounded);
-    if (survivors === 0) return "0.00";
-    return (total / survivors).toFixed(2);
+    const total = losses + wounded + survivors;
+    if (total === 0) return "0.00";
+    return (kills / total).toFixed(2);
   };
 
   const calcKPT = (data, keys) => {
-    let totalKillsMinusLossWound = 0;
-    let totalSurvivors = 0;
-  
+    let kills = 0, losses = 0, wounded = 0, survivors=0;
+
+
     keys.forEach((key) => {
       const entry = data[key];
       if (entry) {
-        const kills = parseInt(entry.Kills || 0);
-        const losses = parseInt(entry.Losses || 0);
-        const wounded = parseInt(entry.Wounded || 0);
-        const survivors = parseInt(entry.Survivors || 0);
-  
-        totalKillsMinusLossWound += (kills - (losses + wounded));
-        totalSurvivors += survivors;
+        kills += parseInt(entry.Kills || 0);
+        losses += parseInt(entry.Losses || 0);
+        wounded += parseInt(entry.Wounded || 0);
+        survivors += parseInt(entry.Survivors || 0);
+
       }
     });
-  
-    return computeKPT(totalKillsMinusLossWound, 0, 0, totalSurvivors);
+
+    return computeKPT(kills, losses, wounded, survivors);
   };
   return (
     <>
@@ -73,7 +71,7 @@ export default function ReportResultTable({
                 <DeleteIcon />
               </IconButton>
             </Box>
-            
+
             <TableContainer component={Paper} sx={{ mt: 1 }}>
               <Table size="small">
                 <TableHead>

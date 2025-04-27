@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+
 import { db } from '../utils/firebase';
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
@@ -11,6 +14,7 @@ import { calcs, getNumber } from "../utils/calcs";
 import { usePermissionSnackbar } from "./Permissions";
 
 import { getColorByThreshold } from "../utils/colorUtils";
+import { buildCopyableTable, removePercentage } from "../utils/helpers";
 
 export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin }) {
 
@@ -23,6 +27,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const [cavalryOptions, setCavalryOptions] = useState([]);
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const { showNoPermission } = usePermissionSnackbar();
+    const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
+
 
     const calculateAll = useCallback((player) => {
         const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));
@@ -34,6 +40,18 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         };
     }, []);
 
+    const handleCopyTable = () => {
+        const tsvContent = buildCopyableTable(names, localData, desiredKeys);
+      
+        navigator.clipboard.writeText(tsvContent)
+          .then(() => {
+            setCopySnackbarOpen(true);
+          })
+          .catch((err) => {
+            console.error("Failed to copy:", err);
+          });
+      };
+      
     const handleEdit = (name, field, value) => {
         if (!isAdmin) {
             showNoPermission();
@@ -127,13 +145,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const names = useMemo(() => Object.keys(localData), [localData]);
     if (!names.length) return null;
 
-    // Utility to remove percentage symbol from string value
-    const removePercentage = (value) => {
-        if (typeof value === "string") {
-            return value.replace(/%/g, "");
-        }
-        return value;
-    };
+  
 
     if (isLoading) {
         return <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -144,7 +156,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         <Suspense fallback={<div>LOADING...</div>}>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
                 <Typography variant="h5" gutterBottom color="primary">
-
                     Threshold Settings
                 </Typography>
 
@@ -171,10 +182,17 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     ))}
                 </Grid>
             </Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+                    <Button variant="outlined" size="small" onClick={handleCopyTable}>
+                        Copy Table
+                    </Button>
+                </Box>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
                 <Typography variant="h5" gutterBottom color="primary">
                     Combined Stats Table
                 </Typography>
+               
+
 
                 <TableContainer sx={{ minWidth: isMobile ? 700 : "100%" }}>
                     <Table size="small" sx={{ minWidth: "100%" }}>
@@ -342,6 +360,23 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <Snackbar
+  open={copySnackbarOpen}
+  autoHideDuration={2000}
+  onClose={() => setCopySnackbarOpen(false)}
+  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+>
+  <MuiAlert
+    elevation={6}
+    variant="filled"
+    severity="success"
+    onClose={() => setCopySnackbarOpen(false)}
+    sx={{ width: "100%" }}
+  >
+    Table copied! Paste it into Excel.
+  </MuiAlert>
+</Snackbar>
+
             </Box>
             {renamePrompt && (
                 <Dialog open onClose={() => setRenamePrompt(null)}>
