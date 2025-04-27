@@ -1,4 +1,5 @@
 import DeleteIcon from "@mui/icons-material/Delete";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
   TextField,
@@ -11,9 +12,10 @@ import {
   TableRow,
   Typography,
   IconButton,
-
 } from "@mui/material";
-
+import { useState } from "react";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 const archerKeys = ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"];
 const cavalryKeys = ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"];
 
@@ -24,6 +26,33 @@ export default function ReportResultTable({
   onEdit,
   onDelete
 }) {
+  const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
+  const handleCopy = (player) => {
+    let text = `📋 ${player.name}\n\n`;
+
+    text += "Type\t" + labels.join("\t") + "\tKPT\n";
+
+    templateKeys.forEach((tmplKey) => {
+      const rowData = player.data?.[tmplKey] || {};
+      const kpt = handleKPT(rowData);
+
+      text += tmplKey + "\t";
+      labels.forEach((label) => {
+        text += (rowData[label] || "0") + "\t";
+      });
+      text += kpt + "\n";
+    });
+
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopySnackbarOpen(true);
+      })
+      .catch((err) => {
+        console.error('Failed to copy text: ', err);
+      });
+  };
+
+
   const handleKPT = (data) => {
     const kills = parseInt(data?.Kills || "0");
     const losses = parseInt(data?.Losses || "0");
@@ -39,7 +68,7 @@ export default function ReportResultTable({
   };
 
   const calcKPT = (data, keys) => {
-    let kills = 0, losses = 0, wounded = 0, survivors=0;
+    let kills = 0, losses = 0, wounded = 0, survivors = 0;
 
 
     keys.forEach((key) => {
@@ -67,6 +96,9 @@ export default function ReportResultTable({
               <Typography variant="h6">📊 {player.name}</Typography>
               <Typography variant="h8">Archer: {archerKPT}</Typography>
               <Typography variant="h8">Calavry: {cavalryKPT}</Typography>
+              <IconButton color="primary" onClick={() => handleCopy(player)}>
+                <ContentCopyIcon />
+              </IconButton>
               <IconButton color="error" onClick={() => onDelete(player.name)}>
                 <DeleteIcon />
               </IconButton>
@@ -111,9 +143,27 @@ export default function ReportResultTable({
                 </TableBody>
               </Table>
             </TableContainer>
+
           </Box>
+
         )
       }
-      )}</>
+      )}
+      <Snackbar
+        open={copySnackbarOpen}
+        autoHideDuration={2000}
+        onClose={() => setCopySnackbarOpen(false)}
+        message="Table copied!"
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          severity="success"
+          onClose={() => setCopySnackbarOpen(false)}
+          sx={{ width: "100%" }}
+        >
+          Table copied!
+        </MuiAlert></Snackbar></>
   )
 }
