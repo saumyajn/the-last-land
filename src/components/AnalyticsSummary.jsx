@@ -56,7 +56,7 @@ export default function AnalyticsSummary({ isAdmin }) {
           const cavalryKills = troopTypes
             .filter(([key]) => key.includes("cavalry"))
             .reduce((sum, [_, val]) => sum + parseInt(val.Kills || "0"), 0);
-
+          //(kills-(losses+wounded))/survivors
           const archerTroops = troopTypes
             .filter(([key]) => key.includes("archer"))
             .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0) + parseInt(val.Wounded || 0) + parseInt(val.Survivors || 0), 0);
@@ -64,9 +64,31 @@ export default function AnalyticsSummary({ isAdmin }) {
           const cavalryTroops = troopTypes
             .filter(([key]) => key.includes("cavalry"))
             .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0) + parseInt(val.Wounded || 0) + parseInt(val.Survivors || 0), 0);
+          const archerStats = troopTypes
+            .filter(([key]) => key.includes("archer"))
+            .reduce((acc, [_, val]) => {
+              acc.losses += parseInt(val.Losses || 0);
+              acc.wounded += parseInt(val.Wounded || 0);
+              acc.survivors += parseInt(val.Survivors || 0);
+              return acc;
+            }, { losses: 0, wounded: 0, survivors: 0 });
 
-          const archerKPT = archerTroops ? (archerKills / archerTroops).toFixed(2) : "0.00";
-          const cavalryKPT = cavalryTroops ? (cavalryKills / cavalryTroops).toFixed(2) : "0.00";
+          const cavalryStats = troopTypes
+            .filter(([key]) => key.includes("cavalry"))
+            .reduce((acc, [_, val]) => {
+              acc.losses += parseInt(val.Losses || 0);
+              acc.wounded += parseInt(val.Wounded || 0);
+              acc.survivors += parseInt(val.Survivors || 0);
+              return acc;
+            }, { losses: 0, wounded: 0, survivors: 0 });
+
+          const archerKPT = archerStats.survivors
+            ? ((archerKills - (archerStats.losses + archerStats.wounded)) / archerStats.survivors).toFixed(2)
+            : "0.00";
+
+          const cavalryKPT = cavalryStats.survivors
+            ? ((cavalryKills - (cavalryStats.losses + cavalryStats.wounded)) / cavalryStats.survivors).toFixed(2)
+            : "0.00";
 
           return {
             name,
@@ -103,7 +125,7 @@ export default function AnalyticsSummary({ isAdmin }) {
         }));
 
         setSummaryData(rankedSummary);
-     
+
         const archerFinal = {};
         const cavalryFinal = {};
 
