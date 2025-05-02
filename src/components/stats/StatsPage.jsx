@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Tesseract from "tesseract.js";
 import { Container, Typography, Box, Paper, TextField } from "@mui/material";
-import ImageUpload from "./ImageUpload";
-import RawText from "./RawData";
-import { parseData } from "../utils/parseData";
-import DataTable from "./DataTable";
 import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
-import { db } from "../utils/firebase";
-import { calcs, getNumber } from '../utils/calcs';
-import { usePermissionSnackbar } from "./Permissions";
+import ImageUpload from "./ImageUpload";
+import { usePermissionSnackbar } from "../Permissions";
+import RawText from "./RawData";
+import DataTable from "./DataTable";
+import { parseData } from "../../utils/parseData";
+import { db } from "../../utils/firebase";
+import { calcs, getNumber } from '../../utils/calcs';
 
 export default function StatsPage({ isAdmin }) {
   const [image, setImage] = useState(null);
@@ -117,22 +117,22 @@ export default function StatsPage({ isAdmin }) {
 
   return (
     <div>
-    
+
       <Container maxWidth="xl" sx={{ py: 4 }}>
-       
-        
+
+
 
         <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h5" gutterBottom color="primary">
-          Image Stats Extractor
-        </Typography>
-        <TextField
-          label="Enter Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          fullWidth
-          sx={{ mb: 2 }}
-        />
+          <Typography variant="h5" gutterBottom color="primary">
+            Image Stats Extractor
+          </Typography>
+          <TextField
+            label="Enter Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+            sx={{ mb: 2 }}
+          />
           <ImageUpload
             image={image}
             onUpload={handleImageUpload}

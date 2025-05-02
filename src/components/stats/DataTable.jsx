@@ -3,18 +3,18 @@ import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-import { db } from '../utils/firebase';
+import { db } from '../../utils/firebase';
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Paper, IconButton, TextField, Stack, Input, Grid, Select, MenuItem, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
-import { calcs, getNumber } from "../utils/calcs";
-import { usePermissionSnackbar } from "./Permissions";
+import { calcs, getNumber } from "../../utils/calcs";
+import { usePermissionSnackbar } from "../Permissions";
 
-import { getColorByThreshold } from "../utils/colorUtils";
-import { buildCopyableTable, removePercentage } from "../utils/helpers";
+import { getColorByThreshold } from "../../utils/colorUtils";
+import { buildCopyableTable, removePercentage } from "../../utils/helpers";
 
 export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin }) {
 

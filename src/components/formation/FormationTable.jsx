@@ -14,10 +14,10 @@ import {
     IconButton,
     Button
 } from "@mui/material";
-import { db } from "../utils/firebase";
+import { db } from "../../utils/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { usePermissionSnackbar } from "./Permissions";
+import { usePermissionSnackbar } from "../Permissions";
 
 export default function FormationTable({ label, groupedData = null, isAdmin, type }) {
     const [totalTroopValue, setTotalTroopValue] = useState(0);

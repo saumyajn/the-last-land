@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { db } from "../utils/firebase";
-import { detectText, fileToBase64 } from "../utils/googleVisions";
+import { db } from "../../utils/firebase";
+import { detectText, fileToBase64 } from "../../utils/googleVisions";
 import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import {
   Box,
@@ -12,7 +12,7 @@ import {
   InputLabel,
   CircularProgress
 } from "@mui/material";
-import { usePermissionSnackbar } from "./Permissions";
+import { usePermissionSnackbar } from "../Permissions";
 import ReportResultTable from "./ReportResults";
 
 export default function ReportPage({ isAdmin }) {

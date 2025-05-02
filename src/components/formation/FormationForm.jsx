@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { Paper, Typography, Grid, TextField, Button, Stack, Divider } from "@mui/material";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../utils/firebase";
+import { db } from "../../utils/firebase";
 
-import { usePermissionSnackbar } from "./Permissions";
+import { usePermissionSnackbar } from "../Permissions";
+
 export default function FormationForm({ label, formState, setFormState , isAdmin , type }) {
   const docName = type === "archer"
   ? (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")

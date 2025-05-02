@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Typography, Box, CircularProgress, Stack } from "@mui/material";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../utils/firebase";
+import { db } from "../../utils/firebase";
 
 export default function ExportToGoogleSheet() {
   const [loading, setLoading] = useState(false);

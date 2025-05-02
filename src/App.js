@@ -5,16 +5,17 @@ import {
   Button,
   Container,
   Stack,
+  Paper,
   Tabs,
   Tab,
   Typography
 } from "@mui/material";
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
-import StatsPage from './components/StatsPage';
-import FormationPage from "./components/FormationPage";
-import ReportPage from "./components/ReportPage";
-import AnalyticsPage from './components/AnalyticsPage';
+import StatsPage from './components/stats/StatsPage';
+import FormationPage from "./components/formation/FormationPage";
+import ReportPage from "./components/report/ReportPage";
+import AnalyticsPage from './components/analytics/AnalyticsPage';
 import { db } from "./utils/firebase";
 import { getRedirectResult, getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
@@ -143,6 +144,16 @@ export default function App() {
           )}
         </Box>
         <Typography variant="h4" sx={{ fontWeight: "bold" }} align="center">The Last Land</Typography>
+      </Box>
+      <Box component={Paper} sx={{ mt: 3, p: 2 }}>
+        <Typography variant="h5" gutterBottom>About This App</Typography>
+        <Typography variant="body1">
+          <b>The Last Land</b> is a custom-built analytics and stats dashboard designed to help strategy game players optimize performance.
+          Users can track damage statistics, unit formations, and customize thresholds for performance tiers.
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Built using <b>React</b>, <b>Firebase Auth</b>, and <b>Firestore</b> with role-based access and real-time updates.
+        </Typography>
       </Box>
       <Box>
         <Tabs
