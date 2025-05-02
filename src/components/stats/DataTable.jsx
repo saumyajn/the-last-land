@@ -10,11 +10,11 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
-import { calcs, getNumber } from "../../utils/calcs";
+import { calcs, getNumber, buildCopyableTable, removePercentage  } from "../../utils/calcs";
 import { usePermissionSnackbar } from "../Permissions";
 
 import { getColorByThreshold } from "../../utils/colorUtils";
-import { buildCopyableTable, removePercentage } from "../../utils/helpers";
+
 
 export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin }) {
 

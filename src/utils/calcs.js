@@ -22,16 +22,6 @@ export const calcs = (attributes, role, atlValue) => {
     const AtlData = getNumber(atlValue);
     const lethal = getNumber(attributes["Lethal Hit Rate"]);
 
-
-    // const part1 = Math.pow(archerAtk + atk, 0.95);
-    // console.log(part1);
-    // const part2 = Math.pow(bless + archerBless, 0.9);
-    // console.log(part2);
-    // const part3 = (1 + ((dmg + archerDmg + archerAtl) / 100)) * ((1 + lethal) / 100);
-    // console.log(part3)
-    // const powerScore = (part1 * part2 * part3) / 1000;
-    // console.log(powerScore)
-
     const part1 = Math.pow(varAtk + atk, 0.95);
     const part2 = Math.pow(bless + varBless, 0.9);
 
@@ -42,3 +32,35 @@ export const calcs = (attributes, role, atlValue) => {
     return powerScore.toFixed(5);
 
 }
+// Helper to build copyable TSV content
+export const buildCopyableTable = (names, localData, desiredKeys) => {
+    const headers = ["Name", ...desiredKeys, "Multiplier", "Archer Atlantis", "Cavalry Atlantis", "Final Archer Damage", "Final Cavalry Damage"];
+    
+    const rows = names.map((name) => {
+      const rowData = localData[name];
+      return [
+        name,
+        ...desiredKeys.map((key) => removePercentage(rowData[key]) ?? ""),
+        removePercentage(rowData["Multiplier"]) ?? "",
+        removePercentage(rowData["Archer Atlantis"]) ?? "",
+        removePercentage(rowData["Cavalry Atlantis"]) ?? "",
+        removePercentage(rowData["Final Archer Damage"]) ?? "",
+        removePercentage(rowData["Final Cavalry Damage"]) ?? ""
+      ];
+    });
+  
+    const tsvContent = [headers, ...rows]
+      .map(row => row.join("\t"))
+      .join("\n");
+  
+    return tsvContent;
+  };
+  
+  
+  // Utility to remove percentage symbol from string value
+  export const removePercentage = (value) => {
+    if (typeof value === "string") {
+      return value.replace(/%/g, "");
+    }
+    return value;
+  };
