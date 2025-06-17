@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { PermissionSnackbarProvider } from './components/Permissions';
+import { AuthProvider } from './utils/authContext';
 window.close = () => {
   console.log("🔒 window.close() was blocked but caught safely.");
 };
@@ -11,9 +12,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Suspense fallback={<div>LOADING...</div>}>
-      <PermissionSnackbarProvider>
-        <App />
-      </PermissionSnackbarProvider>
+      <AuthProvider>
+        <PermissionSnackbarProvider>
+          <App />
+        </PermissionSnackbarProvider>
+      </AuthProvider>
     </Suspense>
   </React.StrictMode>
 );

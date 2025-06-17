@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import {
@@ -19,7 +19,9 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AnalyticsSummary from "./AnalyticsSummary";
 import ExportToGoogleSheet from './ExportSheets';
-export default function AnalyticsPage({ isAdmin }) {
+import { AuthContext } from "../../utils/authContext";
+export default function AnalyticsPage() {
+    const { user, isAdmin } = useContext(AuthContext);
     const [combinedData, setCombinedData] = useState({});
 
     useEffect(() => {

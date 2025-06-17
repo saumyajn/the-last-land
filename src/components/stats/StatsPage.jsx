@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Tesseract from "tesseract.js";
 import { Container, Typography, Box, Paper, TextField } from "@mui/material";
 import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
@@ -9,8 +9,10 @@ import DataTable from "./DataTable";
 import { parseData } from "../../utils/parseData";
 import { db } from "../../utils/firebase";
 import { calcs, getNumber } from '../../utils/calcs';
+import { AuthContext } from "../../utils/authContext";
 
-export default function StatsPage({ isAdmin }) {
+export default function StatsPage() {
+  const { user, isAdmin } = useContext(AuthContext);
   const [image, setImage] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,6 +56,7 @@ export default function StatsPage({ isAdmin }) {
   const updateFirestore = async (playerName, data) => {
     try {
       if (!isAdmin) {
+        console.log(isAdmin)
         showNoPermission();
         return;
       }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
     Box,
     Typography,
@@ -15,9 +15,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FormationForm from "./FormationForm";
 import FormationTable from "./FormationTable";
+import { AuthContext } from "../../utils/authContext";
 
-
-export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [], isAdmin }) {
+export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [] }) {
+    const { user, isAdmin } = useContext(AuthContext);
     const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
     const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
     const [form3, setForm3] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });

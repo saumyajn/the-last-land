@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { db } from "../../utils/firebase";
 import { detectText, fileToBase64 } from "../../utils/googleVisions";
 import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
@@ -14,8 +14,10 @@ import {
 } from "@mui/material";
 import { usePermissionSnackbar } from "../Permissions";
 import ReportResultTable from "./ReportResults";
+import { AuthContext } from "../../utils/authContext";
 
-export default function ReportPage({ isAdmin }) {
+export default function ReportPage() {
+  const { user, isAdmin } = useContext(AuthContext);
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImage, setMainImage] = useState(null);

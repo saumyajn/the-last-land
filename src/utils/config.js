@@ -6,6 +6,6 @@ export const ADMIN_EMAILS = [
     "evil.micha.777@gmail.com",
     "selistongama194@gmail.com",
     "silenttkkiller2@gmail.com",
-     "angelaquino621@gmail.com",
+    "angelaquino621@gmail.com",
     "coemaincastle@gmail.com"
 ]
