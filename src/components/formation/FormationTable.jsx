@@ -35,7 +35,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
     const loadFormationData = async () => {
         try {
-            console.log(groupedData)
+           
             const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
                 getDoc(doc(db, "settings", settingDocName)),
                 getDoc(doc(db, "formation", `${type}_${label}`)),
@@ -66,7 +66,6 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                     : sum,
                 0
             );
-            console.log(formationData)
             let formattedRows = Object.entries(formationData).map(([group, data]) => {
                 const count = data.count || 0;
                 const damage = data.avgDamage || 0;
