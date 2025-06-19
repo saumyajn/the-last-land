@@ -212,58 +212,74 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
     const totalDamage = rows.reduce((sum, row) => sum + row.damage * row.count, 0).toFixed(2);
 
-    return (
-        <Box sx={{ mt: 4 }}>
-            <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography variant="h6">Total Damage: {totalDamage}</Typography>
-                <Button variant="outlined" size="small" onClick={handleReload}>
-                    Reload Data
-                </Button>
-            </Box>
+   return (
+  <Box sx={{ mt: 4 }}>
+    <Paper
+      elevation={3}
+      sx={{
+        p: 2,
+        mb: 2,
+        borderRadius: 3,
+        backgroundColor: "#fdfdfd",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      }}
+    >
+      <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h6" fontWeight="bold">
+          Total Damage: {totalDamage}
+        </Typography>
+        <Button variant="outlined" size="small" onClick={handleReload}>
+          Reload Data
+        </Button>
+      </Box>
 
-            <TableContainer component={Paper}>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            {["Group", "Avg Damage", "Count", "Troops", "T10", "T9", "T8", "T7", "T6", "March Size", "Total", ""].map((head, i) => (
-                                <TableCell key={i}><b>{head}</b></TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {rows.map((row, idx) => (
-                            <TableRow key={idx}>
-                                <TableCell>{row.group}</TableCell>
-                                <TableCell>{row.damage}</TableCell>
-                                <TableCell>
-                                    <TextField
-                                        type="number"
-                                        value={row.count}
-                                        onChange={(e) => handleChange(idx, e.target.value)}
-                                        size="small"
-                                        sx={{ width: "80px" }}
-                                    />
-                                </TableCell>
-                                <TableCell>{row.troops}</TableCell>
-                                <TableCell>{row.t10}</TableCell>
-                                <TableCell>{row.t9}</TableCell>
-                                <TableCell>{row.t8}</TableCell>
-                                <TableCell>{row.t7}</TableCell>
-                                <TableCell>{row.t6}</TableCell>
-                                <TableCell>{row.marchSize}</TableCell>
-                                <TableCell>{row.total}</TableCell>
-                                <TableCell>
-                                    <Tooltip title="Copy names">
-                                        <IconButton size="small" onClick={() => handleCopy(row)}>
-                                            <ContentCopyIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
-    );
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              {["Group", "Avg Damage", "Count", "Troops", "T10", "T9", "T8", "T7", "T6", "March Size", "Total", ""].map((head, i) => (
+                <TableCell key={i} sx={{ fontWeight: "bold", py: 1 }}>
+                  {head}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((row, idx) => (
+              <TableRow key={idx} hover>
+                <TableCell>{row.group}</TableCell>
+                <TableCell>{row.damage}</TableCell>
+                <TableCell>
+                  <TextField
+                    type="number"
+                    value={row.count}
+                    onChange={(e) => handleChange(idx, e.target.value)}
+                    size="small"
+                    sx={{ width: 80, mx: 1 }}
+                  />
+                </TableCell>
+                <TableCell>{row.troops}</TableCell>
+                <TableCell>{row.t10}</TableCell>
+                <TableCell>{row.t9}</TableCell>
+                <TableCell>{row.t8}</TableCell>
+                <TableCell>{row.t7}</TableCell>
+                <TableCell>{row.t6}</TableCell>
+                <TableCell>{row.marchSize}</TableCell>
+                <TableCell>{row.total}</TableCell>
+                <TableCell>
+                  <Tooltip title="Copy values">
+                    <IconButton size="small" onClick={() => handleCopy(row)}>
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  </Box>
+);
+
 }

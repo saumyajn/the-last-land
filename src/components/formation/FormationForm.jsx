@@ -7,8 +7,8 @@ import { usePermissionSnackbar } from "../Permissions";
 
 export default function FormationForm({ label, formState, setFormState , isAdmin , type }) {
   const docName = type === "archer"
-  ? (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
-  : (label.toLowerCase().includes("throne") ? "cavalry_throne_formation" : "cavalry_tower_formation");
+    ? (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
+    : (label.toLowerCase().includes("throne") ? "cavalry_throne_formation" : "cavalry_tower_formation");
 
   const { showNoPermission } = usePermissionSnackbar();
   useEffect(() => {
@@ -40,10 +40,17 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
   };
 
   return (
-    <Paper sx={{ p: 1, mb: 1 }}>
-      <Typography variant="h6" gutterBottom>{label}</Typography>
+    <Paper  elevation={2}  sx={{
+        p: 3,
+        mb: 3,
+        borderRadius: 3,
+        backgroundColor: "#fdfdfd",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      }}
+    >
+     
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid size={3}>
+        <Grid size={3} container spacing={2}>
           <TextField
             label="Total Troops"
             value={formState.total}
@@ -75,7 +82,6 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-
       </Grid>
       <Divider sx={{ m: 2 }} />
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
@@ -119,12 +125,10 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-
       </Grid>
-      <Stack direction="row" justifyContent="flex-end" mt={2}>
+      <Stack direction="row" justifyContent="flex-end" mt={3}>
         <Button variant="contained" onClick={handleSave}>Save</Button>
       </Stack>
-
     </Paper>
   );
 }

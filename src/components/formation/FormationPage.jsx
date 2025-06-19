@@ -3,6 +3,7 @@ import {
     Box,
     Typography,
     Stack,
+    Grid,
     Paper,
     Accordion,
     AccordionSummary,
@@ -18,19 +19,47 @@ import FormationTable from "./FormationTable";
 import { AuthContext } from "../../utils/authContext";
 
 export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [] }) {
+    const groupedAverageData = {};
+    const sortedColors = thresholds.slice().sort((a, b) => b.limit - a.limit);
+    const colorMap = Object.fromEntries(sortedColors.map(t => [t.color, t.name]));
+
+    Object.entries(groupedData).forEach(([_, archerGroup]) => {
+        archerGroup.slice(1).forEach((archerPlayer) => {
+            const name = archerPlayer.name;
+            const archerDmg = archerPlayer.damage || 0;
+            const cavalryDmg = Object.values(groupedCavalryData)
+                .flat()
+                .find(p => p.name === name)?.damage || 0;
+            const avg = (archerDmg + cavalryDmg) / 2;
+
+            const matchedThreshold = sortedColors.find(t => avg >= t.limit);
+            const color = matchedThreshold?.color || "default";
+            const colorName = matchedThreshold?.name || "Default";
+
+            if (!groupedAverageData[color]) {
+                groupedAverageData[color] = [{ colorName, avgDamage: 0 }];
+            }
+            groupedAverageData[color].push({ name, damage: avg });
+        });
+    });
+
+    // Compute average per color group
+    for (const color in groupedAverageData) {
+        const players = groupedAverageData[color].slice(1);
+        const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
+        const avg = players.length ? total / players.length : 0;
+        groupedAverageData[color][0].avgDamage = parseFloat(avg.toFixed(2));
+    }
+
     const { user, isAdmin } = useContext(AuthContext);
     const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
     const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
     const [form3, setForm3] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
     const [form4, setForm4] = useState({ total: "", guards: "", archers: "", cavalry: "", t10: "", t9: "", t8: "", t7: "", t6: "" });
 
-    const sortedColors = thresholds
-        .slice()
-        .sort((a, b) => b.limit - a.limit)
-        .map((t) => t.color);
-
+    const colorSortOrder = thresholds.map(t => t.color);
     const getSortedGroups = (data) =>
-        Object.keys(data).sort((a, b) => sortedColors.indexOf(a) - sortedColors.indexOf(b));
+        Object.keys(data).sort((a, b) => colorSortOrder.indexOf(b) - colorSortOrder.indexOf(a));
 
     const handleCopy = (players, color) => {
         const groupName = players[0]?.colorName || color;
@@ -50,7 +79,6 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
                         const meta = data[color];
                         const colorName = meta[0]?.colorName || color;
                         const avgDamage = Math.round(meta[0]?.avgDamage || 0);
-                        console.log(meta[0])
                         if (!meta || meta.length <= 1 || isNaN(avgDamage) || avgDamage === 0) {
                             return (
                                 <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
@@ -99,28 +127,100 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
         <Box sx={{ mt: 4 }}>
             {renderGroupAccordion("Final Archer Damage", groupedData)}
             {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
+            {renderGroupAccordion("Average Damage", groupedAverageData)}
 
             <Divider sx={{ mb: 2 }} />
-            <Typography sx={{ backgroundColor: '#e8f4f8', p: 2 }} variant="h5">ARCHER FORMATION</Typography>
-            <Box sx={{ mb: 4 }}>
-                <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
-                <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
-            </Box>
-            
-            <Box>
-                <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
-                <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
-            </Box>
-  <Divider sx={{ mb: 2 }} />
-            <Typography sx={{ backgroundColor: '#e8f4f8', p: 2 }} variant="h5">CAVALRY FORMATION</Typography>
-            <Box sx={{ mb: 4 }}>
-                <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
-                <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
-            </Box>
-            <Box>
-                <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
-                <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
-            </Box>
+         <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
+  <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>ARCHER FORMATION</Typography>
+  <Grid container spacing={3}>
+    <Grid item xs={12} md={6}>
+      <Paper
+        elevation={1}
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          border: '1px solid #e0e0e0',
+          transition: 'box-shadow 0.3s',
+          '&:hover': {
+            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
+          },
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Tower Formation</Typography>
+        <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
+        <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
+      </Paper>
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <Paper
+        elevation={1}
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          border: '1px solid #e0e0e0',
+          transition: 'box-shadow 0.3s',
+          '&:hover': {
+            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
+          },
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Throne Formation</Typography>
+        <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
+        <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
+      </Paper>
+    </Grid>
+  </Grid>
+</Box>
+
+
+
+           <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
+  <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>CAVALRY FORMATION</Typography>
+  <Grid container spacing={3}>
+    <Grid item xs={12} md={6}>
+      <Paper
+        elevation={1}
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          border: '1px solid #e0e0e0',
+          transition: 'box-shadow 0.3s',
+          '&:hover': {
+            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
+          },
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Tower Formation</Typography>
+        <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
+        <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
+      </Paper>
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <Paper
+        elevation={1}
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          border: '1px solid #e0e0e0',
+          transition: 'box-shadow 0.3s',
+          '&:hover': {
+            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
+          },
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Throne Formation</Typography>
+        <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
+        <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
+      </Paper>
+    </Grid>
+  </Grid>
+</Box>
 
         </Box>
     );

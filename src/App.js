@@ -1,10 +1,7 @@
 // src/App.js
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import {
-  Box,
-  Container
-} from "@mui/material";
+import { Box, Container } from "@mui/material";
 
 import Header from "./components/Header";
 import HomeTabs from "./components/HomeTabs";
@@ -18,78 +15,100 @@ import AboutPage from "./components/AboutPage";
 
 import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, getRedirectResult } from "firebase/auth";
+import { ADMIN_EMAILS } from './utils/config';
 
 export default function App() {
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalry, setGroupedCavalryData] = useState({});
+  const [groupedAverageData, setGroupedAverageData] = useState({});
   const [thresholds, setThresholds] = useState([]);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log("🔥 Auth state changed:", firebaseUser);
+      getRedirectResult(auth)
+        .then((result) => {
+          if (result?.user) {
+            console.log("✅ Logged in via redirect:", result.user);
+          } else {
+            console.log("ℹ️ No user from redirect.");
+          }
+        })
+        .catch((error) => {
+          console.error("❌ Redirect login failed:", error.message, error);
+        });
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchThresholdsAndData = async () => {
       try {
         const thresholdsRef = doc(db, "settings", "thresholds");
         const thresholdsSnap = await getDoc(thresholdsRef);
-
         if (!thresholdsSnap.exists()) return;
 
         const tData = thresholdsSnap.data().thresholds || [];
         setThresholds(tData);
         const colorNames = {};
-        tData.forEach(th => {
-          colorNames[th.color] = th.name;
-        });
+        tData.forEach(th => colorNames[th.color] = th.name);
 
-        const playersCollection = collection(db, "stats");
-        const playersSnap = await getDocs(playersCollection);
+        const playersSnap = await getDocs(collection(db, "stats"));
 
         const newGroupedData = {};
         const newGroupedCavalryData = {};
+        const newGroupedAverageData = {};
 
-        tData.forEach((t) => {
+        tData.forEach(t => {
           newGroupedData[t.color] = [{ colorName: t.name, avgDamage: 0 }];
           newGroupedCavalryData[t.color] = [{ colorName: t.name, avgDamage: 0 }];
+          newGroupedAverageData[t.color] = [{ colorName: t.name, avgDamage: 0 }];
         });
 
-        playersSnap.forEach((playerDoc) => {
+        playersSnap.forEach(playerDoc => {
           const playerName = playerDoc.id;
-          const playerData = playerDoc.data();
+          const data = playerDoc.data();
+          const archerVal = parseFloat(data["Final Archer Damage"]) || 0;
+          const cavalryVal = parseFloat(data["Final Cavalry Damage"]) || 0;
 
-          const archerVal = parseFloat(playerData["Final Archer Damage"]) || 0;
-          const archerMatch = tData
-            .slice()
-            .sort((a, b) => b.limit - a.limit)
-            .find((t) => archerVal >= t.limit);
-
+          // Archer grouping
+          const archerMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => archerVal >= t.limit);
           const archerColor = archerMatch ? archerMatch.color : "default";
           if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [{ colorName: colorNames[archerColor] || archerColor }];
           newGroupedData[archerColor].push({ name: playerName, damage: archerVal });
 
-          const cavalryVal = parseFloat(playerData["Final Cavalry Damage"]) || 0;
-          const cavalryMatch = tData
-            .slice()
-            .sort((a, b) => b.limit - a.limit)
-            .find((t) => cavalryVal >= t.limit);
+          // Cavalry grouping
+          const cavalryMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => cavalryVal >= t.limit);
           const cavalryColor = cavalryMatch ? cavalryMatch.color : "default";
           if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [{ colorName: colorNames[cavalryColor] || cavalryColor }];
           newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
+
+          // Average grouping
+          const avgVal = (archerVal + cavalryVal) / 2;
+          const avgMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => avgVal >= t.limit);
+          const avgColor = avgMatch ? avgMatch.color : "default";
+          if (!newGroupedAverageData[avgColor]) newGroupedAverageData[avgColor] = [{ colorName: colorNames[avgColor] || avgColor }];
+          newGroupedAverageData[avgColor].push({ name: playerName, damage: avgVal });
         });
 
-        for (const color in newGroupedData) {
-          const players = newGroupedData[color].filter(p => typeof p === 'object' && 'damage' in p);
-          const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
-          const avg = total / players.length;
-          newGroupedData[color][0].avgDamage = parseFloat(avg.toFixed(2));
-        }
+        const computeAverages = (group) => {
+          for (const color in group) {
+            const players = group[color].filter(p => typeof p === "object" && "damage" in p);
+            const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
+            const avg = total / players.length;
+            group[color][0].avgDamage = parseFloat(avg.toFixed(2));
+          }
+        };
 
-        for (const color in newGroupedCavalryData) {
-          const players = newGroupedCavalryData[color].filter(p => typeof p === 'object' && 'damage' in p);
-          const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
-          const avg = total / players.length;
-          newGroupedCavalryData[color][0].avgDamage = parseFloat(avg.toFixed(2));
-        }
+        computeAverages(newGroupedData);
+        computeAverages(newGroupedCavalryData);
+        computeAverages(newGroupedAverageData);
 
         setGroupedData(() => newGroupedData);
         setGroupedCavalryData(() => newGroupedCavalryData);
+        setGroupedAverageData(() => newGroupedAverageData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -99,7 +118,7 @@ export default function App() {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Router>
         <Header />
         <HomeTabs />
@@ -112,6 +131,7 @@ export default function App() {
                 <FormationPage
                   groupedData={groupedData}
                   groupedCavalryData={groupedCavalry}
+                  groupedAverageData={groupedAverageData}
                   thresholds={thresholds}
                 />
               }
