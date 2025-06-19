@@ -66,7 +66,22 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
         const text = players.slice(2).map(p => ` ${p.name || p}`).join(", ");
         navigator.clipboard.writeText(`${groupName}- ${text}`);
     };
+const paperStyles = {
+  p: 3,
+  borderRadius: 3,
+  backgroundColor: '#ffffff',
+  border: '1px solid #e0e0e0',
+  transition: 'box-shadow 0.3s',
+  '&:hover': {
+    boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
+  },
+};
 
+const titleStyles = {
+  mb: 2,
+  fontWeight: "bold",
+  color: '#1976d2',
+};
     const renderGroupAccordion = (label, data) => {
         const groups = getSortedGroups(data);
         return (
@@ -124,104 +139,65 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
     };
 
     return (
-        <Box sx={{ mt: 4 }}>
-            {renderGroupAccordion("Final Archer Damage", groupedData)}
-            {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
-            {renderGroupAccordion("Average Damage", groupedAverageData)}
+  <Box sx={{ mt: 4 }}>
+    {renderGroupAccordion("Final Archer Damage", groupedData)}
+    {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
+    {renderGroupAccordion("Average Damage", groupedAverageData)}
 
-            <Divider sx={{ mb: 2 }} />
-         <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
-  <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>ARCHER FORMATION</Typography>
-  <Grid container spacing={3}>
-    <Grid item xs={12} md={6}>
-      <Paper
-        elevation={1}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          backgroundColor: '#ffffff',
-          border: '1px solid #e0e0e0',
-          transition: 'box-shadow 0.3s',
-          '&:hover': {
-            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
-          },
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Tower Formation</Typography>
-        <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
-        <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
-      </Paper>
-    </Grid>
+    <Divider sx={{ mb: 2 }} />
 
-    <Grid item xs={12} md={6}>
-      <Paper
-        elevation={1}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          backgroundColor: '#ffffff',
-          border: '1px solid #e0e0e0',
-          transition: 'box-shadow 0.3s',
-          '&:hover': {
-            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
-          },
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Throne Formation</Typography>
-        <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
-        <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
-      </Paper>
-    </Grid>
-  </Grid>
-</Box>
+    {/* TOWER FORMATION BLOCK */}
+    <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
+      <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>
+        TOWER FORMATION
+      </Typography>
+      <Grid container spacing={3}>
+        {/* Archer Tower */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={1} sx={paperStyles}>
+            <Typography variant="subtitle1" sx={titleStyles}>Archer Formation</Typography>
+            <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
+            <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
+          </Paper>
+        </Grid>
 
+        {/* Cavalry Tower */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={1} sx={paperStyles}>
+            <Typography variant="subtitle1" sx={titleStyles}>Cavalry Formation</Typography>
+            <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
+            <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
 
+    {/* THRONE FORMATION BLOCK */}
+    <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
+      <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>
+        THRONE FORMATION
+      </Typography>
+      <Grid container spacing={3}>
+        {/* Archer Throne */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={1} sx={paperStyles}>
+            <Typography variant="subtitle1" sx={titleStyles}>Archer Formation</Typography>
+            <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
+            <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
+          </Paper>
+        </Grid>
 
-           <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
-  <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>CAVALRY FORMATION</Typography>
-  <Grid container spacing={3}>
-    <Grid item xs={12} md={6}>
-      <Paper
-        elevation={1}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          backgroundColor: '#ffffff',
-          border: '1px solid #e0e0e0',
-          transition: 'box-shadow 0.3s',
-          '&:hover': {
-            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
-          },
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Tower Formation</Typography>
-        <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
-        <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
-      </Paper>
-    </Grid>
+        {/* Cavalry Throne */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={1} sx={paperStyles}>
+            <Typography variant="subtitle1" sx={titleStyles}>Cavalry Formation</Typography>
+            <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
+            <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  </Box>
+);
 
-    <Grid item xs={12} md={6}>
-      <Paper
-        elevation={1}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          backgroundColor: '#ffffff',
-          border: '1px solid #e0e0e0',
-          transition: 'box-shadow 0.3s',
-          '&:hover': {
-            boxShadow: '0px 4px 16px rgba(0,0,0,0.05)',
-          },
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold", color: '#1976d2' }}>Throne Formation</Typography>
-        <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
-        <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
-      </Paper>
-    </Grid>
-  </Grid>
-</Box>
-
-        </Box>
-    );
 }
