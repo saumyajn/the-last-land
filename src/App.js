@@ -18,33 +18,11 @@ import AboutPage from "./components/AboutPage";
 
 import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
-import { getAuth, onAuthStateChanged, getRedirectResult } from "firebase/auth";
-import { ADMIN_EMAILS } from './utils/config';
 
 export default function App() {
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalry, setGroupedCavalryData] = useState({});
   const [thresholds, setThresholds] = useState([]);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log("🔥 Auth state changed:", firebaseUser);
-
-      getRedirectResult(auth)
-        .then((result) => {
-          if (result?.user) {
-            console.log("✅ Logged in via redirect:", result.user);
-          } else {
-            console.log("ℹ️ No user from redirect.");
-          }
-        })
-        .catch((error) => {
-          console.error("❌ Redirect login failed:", error.message, error);
-        });
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     const fetchThresholdsAndData = async () => {

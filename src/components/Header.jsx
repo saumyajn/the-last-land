@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   Box, Avatar, AppBar, Toolbar, IconButton, Typography, Button,
   useMediaQuery, Menu, MenuItem

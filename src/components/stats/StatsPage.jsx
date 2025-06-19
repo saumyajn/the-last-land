@@ -19,8 +19,7 @@ export default function StatsPage() {
   const [dataTable, setDataTable] = useState({});
   const [name, setName] = useState("");
   const { showNoPermission } = usePermissionSnackbar();
-  // const [archerAtlantis, setArcherAtlantis] = useState("");
-  // const [cavalryAtlantis, setCavalryAtlantis] = useState("");
+
 
   const desiredKeys = [
     "Troop Attack",
@@ -152,6 +151,7 @@ export default function StatsPage() {
             onDelete={deletePlayer}
             onUpdate={updateFirestore}
             isAdmin={isAdmin}
+            user={user}
           />
         )}
 

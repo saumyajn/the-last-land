@@ -60,8 +60,9 @@ export default function AnalyticsPage() {
                 }
 
                 setCombinedData(troopTotals);
-                if (!isAdmin) return;
+                if (isAdmin) {
                 await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);
+            }
 
             } catch (error) {
                 console.error("Error fetching troop data:", error);
