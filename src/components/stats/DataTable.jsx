@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
-import { calcs, getNumber, buildCopyableTable, removePercentage  } from "../../utils/calcs";
+import { calcs, getNumber, buildCopyableTable, removePercentage } from "../../utils/calcs";
 import { usePermissionSnackbar } from "../Permissions";
 
 import { getColorByThreshold } from "../../utils/colorUtils";
@@ -42,16 +42,16 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const handleCopyTable = () => {
         const tsvContent = buildCopyableTable(names, localData, desiredKeys);
-      
+
         navigator.clipboard.writeText(tsvContent)
-          .then(() => {
-            setCopySnackbarOpen(true);
-          })
-          .catch((err) => {
-            console.error("Failed to copy:", err);
-          });
-      };
-      
+            .then(() => {
+                setCopySnackbarOpen(true);
+            })
+            .catch((err) => {
+                console.error("Failed to copy:", err);
+            });
+    };
+
     const handleEdit = (name, field, value) => {
         if (!isAdmin) {
             showNoPermission();
@@ -145,7 +145,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const names = useMemo(() => Object.keys(localData), [localData]);
     if (!names.length) return null;
 
-  
+
 
     if (isLoading) {
         return <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -183,15 +183,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 </Grid>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-                    <Button variant="outlined" size="small" onClick={handleCopyTable}>
-                        Copy Table
-                    </Button>
-                </Box>
+                <Button variant="outlined" size="small" onClick={handleCopyTable}>
+                    Copy Table
+                </Button>
+            </Box>
             <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
                 <Typography variant="h5" gutterBottom color="primary">
                     Combined Stats Table
                 </Typography>
-               
+
 
 
                 <TableContainer sx={{ minWidth: isMobile ? 700 : "100%" }}>
@@ -207,6 +207,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 <TableCell><b>Cavalry Atlantis</b></TableCell>
                                 <TableCell><b>Final Archer Damage</b></TableCell>
                                 <TableCell><b>Final Cavalry Damage</b></TableCell>
+                                <TableCell><b>Avg Damage</b></TableCell>
                                 <TableCell><b>Actions</b></TableCell>
                             </TableRow>
                         </TableHead>
@@ -218,6 +219,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 const cavalryVal = getNumber(rowData["Final Cavalry Damage"]);
                                 const archerColor = getColorByThreshold(archerVal, thresholds);
                                 const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
+                                const avgDamage = ((archerVal || 0) + (cavalryVal || 0)) / 2;
+                                const avgColor = getColorByThreshold(avgDamage,thresholds);
 
                                 return (
                                     <TableRow key={name} >
@@ -340,14 +343,18 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                         </TableCell>
 
                                         <TableCell sx={{
-                                            backgroundColor: archerColor
+                                            backgroundColor: archerColor, border: '2px solid #f0f0f0'
                                         }} >
                                             {archerVal}
                                         </TableCell>
 
-                                        <TableCell sx={{ backgroundColor: cavalryColor }}>
+                                        <TableCell sx={{ backgroundColor: cavalryColor, border: '2px solid #f0f0f0' }}>
                                             {cavalryVal}
                                         </TableCell>
+<TableCell sx={{ backgroundColor: avgColor, border: '2px solid #f0f0f0' }}>
+  {avgDamage.toFixed(2)}
+</TableCell>
+                                      
                                         <TableCell>
                                             <IconButton color="error" onClick={() => onDelete(name)}>
                                                 <DeleteIcon />
@@ -361,21 +368,21 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     </Table>
                 </TableContainer>
                 <Snackbar
-  open={copySnackbarOpen}
-  autoHideDuration={2000}
-  onClose={() => setCopySnackbarOpen(false)}
-  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
->
-  <MuiAlert
-    elevation={6}
-    variant="filled"
-    severity="success"
-    onClose={() => setCopySnackbarOpen(false)}
-    sx={{ width: "100%" }}
-  >
-    Table copied! Paste it into Excel.
-  </MuiAlert>
-</Snackbar>
+                    open={copySnackbarOpen}
+                    autoHideDuration={2000}
+                    onClose={() => setCopySnackbarOpen(false)}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                >
+                    <MuiAlert
+                        elevation={6}
+                        variant="filled"
+                        severity="success"
+                        onClose={() => setCopySnackbarOpen(false)}
+                        sx={{ width: "100%" }}
+                    >
+                        Table copied! Paste it into Excel.
+                    </MuiAlert>
+                </Snackbar>
 
             </Box>
             {renamePrompt && (
