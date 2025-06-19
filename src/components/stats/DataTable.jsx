@@ -62,6 +62,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             [field]: value,
         };
         const calculated = calculateAll(updatedPlayer);
+        const avgDamage = (
+        ((parseFloat(calculated["Final Archer Damage"]) || 0) +
+         (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2
+    ).toFixed(2);
         const updatedData = {
             ...localData,
             [name]: {
@@ -74,6 +78,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         onUpdate(name, {
             ...updatedPlayer,
             ...calculated,
+              "Average Damage": avgDamage,
         });
     };
     const handleThresholdChange = async (index, field, value) => {
