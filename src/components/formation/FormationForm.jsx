@@ -87,47 +87,76 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
         <Grid size={2}>
           <TextField
-            label="T10"
-            value={formState.t10}
-            onChange={(e) => setFormState({ ...formState, t10: e.target.value })}
+            label="T10 Archers"
+            value={formState.at10}
+            onChange={(e) => setFormState({ ...formState, at10: e.target.value })}
             fullWidth
           />
         </Grid>
         <Grid size={2}>
           <TextField
-            label="T9"
-            value={formState.t9}
-            onChange={(e) => setFormState({ ...formState, t9: e.target.value })}
+            label="T9 Archers"
+            value={formState.at9}
+            onChange={(e) => setFormState({ ...formState, at9: e.target.value })}
             fullWidth
           />
         </Grid>
         <Grid size={2}>
           <TextField
-            label="T8"
-            value={formState.t8}
-            onChange={(e) => setFormState({ ...formState, t8: e.target.value })}
+            label="T8 Archers"
+            value={formState.at8}
+            onChange={(e) => setFormState({ ...formState, at8: e.target.value })}
             fullWidth
           />
         </Grid>
         <Grid size={2}>
           <TextField
-            label="T7"
-            value={formState.t7}
-            onChange={(e) => setFormState({ ...formState, t7: e.target.value })}
+            label="T7 Archers"
+            value={formState.at7}
+            onChange={(e) => setFormState({ ...formState, at7: e.target.value })}
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
-          <TextField
-            label="T6"
-            value={formState.t6}
-            onChange={(e) => setFormState({ ...formState, t6: e.target.value })}
-            fullWidth
-          />
-        </Grid>
+      
       </Grid>
-      <Stack direction="row" justifyContent="flex-end" mt={3}>
-        <Button variant="contained" onClick={handleSave}>Save</Button>
+      <Divider sx={{ m: 2 }} />
+       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
+        <Grid size={2}>
+          <TextField
+            label="T10 Cavalry"
+            value={formState.ct10}
+            onChange={(e) => setFormState({ ...formState, ct10: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T9 Cavalry"
+            value={formState.ct9}
+            onChange={(e) => setFormState({ ...formState, ct9: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T8 Cavalry"
+            value={formState.ct8}
+            onChange={(e) => setFormState({ ...formState, ct8: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={2}>
+          <TextField
+            label="T7 Cavalry"
+            value={formState.at7}
+            onChange={(e) => setFormState({ ...formState, ct7: e.target.value })}
+            fullWidth
+          />
+        </Grid>
+      
+      </Grid>
+      <Stack direction="row" justifyContent="flex-end" mt={2}>
+        <Button variant="contained" size="small"onClick={handleSave}>Save</Button>
       </Stack>
     </Paper>
   );
