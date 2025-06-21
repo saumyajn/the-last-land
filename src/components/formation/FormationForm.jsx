@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Paper, Typography, Grid, TextField, Button, Stack, Divider } from "@mui/material";
+import { useEffect } from "react";
+import { Paper, Grid, TextField, Button, Stack, Divider } from "@mui/material";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 
@@ -148,7 +148,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
         <Grid size={2}>
           <TextField
             label="T7 Cavalry"
-            value={formState.at7}
+            value={formState.ct7}
             onChange={(e) => setFormState({ ...formState, ct7: e.target.value })}
             fullWidth
           />
