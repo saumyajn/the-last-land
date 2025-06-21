@@ -171,7 +171,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       row.ct9 = MathRound(troops * ratios.ct9 / 1000);
       row.ct8 = MathRound(troops * ratios.ct8 / 1000);
       row.ct7 = MathRound(troops * ratios.ct7 / 1000);
-      row.marchSize = row.at10 + row.at9 + row.at8 + row.at7 + row.at6 + row.colort10 + row.ct9 + row.ct8 + row.ct7 + row.ct6;
+      row.marchSize = row.at10 + row.at9 + row.at8 + row.at7  + row.colort10 + row.ct9 + row.ct8 + row.ct7;
       row.total = (row.troops * row.count).toFixed(2);
     });
 
