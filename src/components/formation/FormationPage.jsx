@@ -21,7 +21,7 @@ import { AuthContext } from "../../utils/authContext";
 export default function FormationPage({ groupedData = {}, groupedCavalryData = {}, thresholds = [] }) {
   const groupedAverageData = {};
   const sortedColors = thresholds.slice().sort((a, b) => b.limit - a.limit);
-  const colorMap = Object.fromEntries(sortedColors.map(t => [t.color, t.name]));
+  // const colorMap = Object.fromEntries(sortedColors.map(t => [t.color, t.name]));
 
   Object.entries(groupedData).forEach(([_, archerGroup]) => {
     archerGroup.slice(1).forEach((archerPlayer) => {

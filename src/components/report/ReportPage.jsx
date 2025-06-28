@@ -29,15 +29,15 @@ export default function ReportPage() {
   const { showNoPermission } = usePermissionSnackbar();
 
   const templateMap = {
-    T10_cavalry: ["T10_cavalry", "T10_cavalry1"],
-    T10_archer: ["T10_archer", "T10_archer1"],
-    T9_cavalry: ["T9_cavalry", "T9_cavalry1"],
-    T9_archer: ["T9_archer", "T9_archer1"],
-    T8_cavalry: ["T8_cavalry", "T8_cavalry1"],
-    T8_archer: ["T8_archer", "T8_archer1"],
-    T7_cavalry: ["T7_cavalry", "T7_cavalry1"],
-    T7_archer: ["T7_archer", "T7_archer1"],
-    T6_archer: ["T6_archer", "T6_archer1"]
+    T10_cavalry: ["T10_cavalry", "T10_cavalry1", "T10_cavalry2"],
+    T10_archer: ["T10_archer", "T10_archer1","T10_archer2"],
+    T9_cavalry: ["T9_cavalry", "T9_cavalry1", "T9_cavalry2"],
+    T9_archer: ["T9_archer", "T9_archer1","T9_archer3"],
+    T8_cavalry: ["T8_cavalry", "T8_cavalry1", "T8_cavalry2"],
+    T8_archer: ["T8_archer", "T8_archer1", "T8_archer2"],
+    T7_cavalry: ["T7_cavalry", "T7_cavalry1"  , "T7_cavalry2"],
+    T7_archer: ["T7_archer", "T7_archer1",  "T7_archer2"],
+    // T6_archer: ["T6_archer", "T6_archer1"]
   };
 
   const templateKeys = Object.keys(templateMap);
@@ -157,8 +157,7 @@ export default function ReportPage() {
           const result = new cv.Mat();
           cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
           const { maxVal, maxLoc } = cv.minMaxLoc(result);
-          const threshold = 0.8;
-
+          const threshold = 0.7;
           if (maxVal >= threshold) {
             const x = maxLoc.x;
             const y = maxLoc.y;
@@ -192,6 +191,7 @@ export default function ReportPage() {
             });
 
             resultData[troopType] = entry;
+            console.log(`Matched ${variant} with values:`, entry);
             matchFound = true;
           }
 
