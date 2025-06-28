@@ -32,7 +32,7 @@ export default function ReportPage() {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1", "T10_cavalry2"],
     T10_archer: ["T10_archer", "T10_archer1","T10_archer2"],
     T9_cavalry: ["T9_cavalry", "T9_cavalry1", "T9_cavalry2"],
-    T9_archer: ["T9_archer", "T9_archer1","T9_archer3"],
+    T9_archer: ["T9_archer", "T9_archer1","T9_archer2"],
     T8_cavalry: ["T8_cavalry", "T8_cavalry1", "T8_cavalry2"],
     T8_archer: ["T8_archer", "T8_archer1", "T8_archer2"],
     T7_cavalry: ["T7_cavalry", "T7_cavalry1"  , "T7_cavalry2"],
