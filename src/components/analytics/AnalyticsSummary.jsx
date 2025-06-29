@@ -3,6 +3,8 @@ import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import {
   Box,
+  Chip,
+  Grid,
   Typography,
   Accordion,
   AccordionSummary,
@@ -64,9 +66,9 @@ export default function AnalyticsSummary({ isAdmin }) {
           const cavalryTroops = troopTypes
             .filter(([key]) => key.includes("cavalry"))
             .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0) + parseInt(val.Wounded || 0) + parseInt(val.Survivors || 0), 0);
-       
-            const archerKPT = archerTroops ? (archerKills / archerTroops).toFixed(2) : "0.00";
-            const cavalryKPT = cavalryTroops ? (cavalryKills / cavalryTroops).toFixed(2) : "0.00";
+
+          const archerKPT = archerTroops ? (archerKills / archerTroops).toFixed(2) : "0.00";
+          const cavalryKPT = cavalryTroops ? (cavalryKills / cavalryTroops).toFixed(2) : "0.00";
           return {
             name,
             archerKills,
@@ -159,28 +161,40 @@ export default function AnalyticsSummary({ isAdmin }) {
   if (loading) return <Typography>Loading data...</Typography>;
 
   const renderRankedTable = (title, data, keys, prefix, kptKey) => {
+
     const averageKPT = (data, key) => (
       data.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) /
       data.filter(row => parseFloat(row[key]) > 0).length
     ).toFixed(2);
+
     const sorted = applySorting(data, prefix);
     return (
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <Accordion defaultExpanded sx={{ borderRadius: 2,  width: '100%'  }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
+          bgcolor: '#d6e8fc', // You can change to any MUI theme color or hex
+          color: 'white'
+        }}>
           <Typography variant="h6" gutterBottom color="primary">{title} </Typography>
-          {/* <Typography variant="h7">Av KPT-</Typography> */}
+
         </AccordionSummary>
+
         <AccordionDetails>
-          <Typography variant="h7">Av KPT-{averageKPT(data, kptKey)}</Typography>
-          <Divider sx={{ mb: 2 }} />
-          <TableContainer component={Paper}>
+          <Box sx={{ mb: 2 }}>
+            <Chip
+              label={`Average ${kptKey.toUpperCase()}: ${averageKPT(data, kptKey)}`}
+              color="info"
+              variant="outlined"
+              sx={{ fontWeight: "bold" }}
+            />
+          </Box>
+          <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
                   <TableCell><b>Rank</b></TableCell>
                   <TableCell><b>Player</b></TableCell>
                   {keys.map(key => (
-                    <TableCell key={key}>
+                    <TableCell key={key} >
                       <TableSortLabel
                         active={sortConfig.key === key}
                         direction={sortConfig.key === key ? sortConfig.direction : "asc"}
@@ -194,12 +208,13 @@ export default function AnalyticsSummary({ isAdmin }) {
               </TableHead>
               <TableBody>
                 {sorted.map((row, index) => (
-                  <TableRow key={row.name}>
+                  <TableRow key={row.name} hover>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.name}</TableCell>
+                  <TableCell sx={{ fontWeight: 500 }}>{row.name}</TableCell>
                     {keys.map(key => (
                       <TableCell key={key}>
-                        {row[key]} (#{row[`${key}Rank`]})
+                         {row[key]} <small style={{ color: "#313131" }}>(#{row[`${key}Rank`]})</small>
+                 
                       </TableCell>
                     ))}
                   </TableRow>
@@ -213,9 +228,13 @@ export default function AnalyticsSummary({ isAdmin }) {
   };
 
   return (
-    <Box>
-      {renderRankedTable("Cavalry Kills Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry", "cavalryKPT")}
-      {renderRankedTable("Archer Kills Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerDamage"], "archer", "archerKPT")}
-    </Box>
+    <Grid  spacing={4}>
+       <Grid item xs={12} sx={{ mb: 2 }}>
+        {renderRankedTable("Cavalry Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry", "cavalryKPT")}
+      </Grid>
+       <Grid item xs={12}>
+        {renderRankedTable("Archer Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerDamage"], "archer", "archerKPT")}
+      </Grid>
+    </Grid>
   );
 }

@@ -29,7 +29,7 @@ export default function AnalyticsPage() {
             try {
                 const troopTypes = [
                     "T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry",
-                    "T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"
+                    "T10_archer", "T9_archer", "T8_archer", "T7_archer"
                 ];
                 const reportSnapshot = await getDocs(collection(db, "reports"));
                 const troopTotals = {};
@@ -61,8 +61,8 @@ export default function AnalyticsPage() {
 
                 setCombinedData(troopTotals);
                 if (isAdmin) {
-                await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);
-            }
+                    await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);
+                }
 
             } catch (error) {
                 console.error("Error fetching troop data:", error);
@@ -72,13 +72,12 @@ export default function AnalyticsPage() {
     }, [])
     return (
         <Box>
-
-            <Accordion>
+            <Accordion sx={{ borderRadius: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h6">Troop Type KPT Summary</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <TableContainer component={Paper}>
+                    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
                         <Table size="small">
                             <TableHead>
                                 <TableRow>
@@ -107,8 +106,14 @@ export default function AnalyticsPage() {
                 </AccordionDetails>
             </Accordion>
             <Divider sx={{ m: 2 }} />
-            {isAdmin ? <> <ExportToGoogleSheet /> <AnalyticsSummary isAdmin={isAdmin} /></> : <AnalyticsSummary isAdmin={isAdmin} />}
-
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {isAdmin && (
+                    <Box sx={{ alignSelf: 'flex-end' }}>
+                        <ExportToGoogleSheet />
+                    </Box>
+                )}
+                <AnalyticsSummary isAdmin={isAdmin} />
+            </Box>
         </Box>
     )
 }
