@@ -30,13 +30,13 @@ export default function ReportPage() {
 
   const templateMap = {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1", "T10_cavalry2"],
-    T10_archer: ["T10_archer", "T10_archer1","T10_archer2"],
+    T10_archer: ["T10_archer", "T10_archer1", "T10_archer2"],
     T9_cavalry: ["T9_cavalry", "T9_cavalry1", "T9_cavalry2"],
-    T9_archer: ["T9_archer", "T9_archer1","T9_archer2"],
+    T9_archer: ["T9_archer", "T9_archer1", "T9_archer2"],
     T8_cavalry: ["T8_cavalry", "T8_cavalry1", "T8_cavalry2"],
     T8_archer: ["T8_archer", "T8_archer1", "T8_archer2"],
-    T7_cavalry: ["T7_cavalry", "T7_cavalry1"  , "T7_cavalry2"],
-    T7_archer: ["T7_archer", "T7_archer1",  "T7_archer2"],
+    T7_cavalry: ["T7_cavalry", "T7_cavalry1", "T7_cavalry2"],
+    T7_archer: ["T7_archer", "T7_archer1", "T7_archer2"],
     // T6_archer: ["T6_archer", "T6_archer1"]
   };
 
@@ -60,11 +60,14 @@ export default function ReportPage() {
         });
         allResults.push({ name, data });
       });
-      setStructuredResults(allResults);
+      setStructuredResults(prev => {
+        const updated = prev.filter(p => !allResults.some(d => d.name === p.name));
+        return [...allResults, ...updated];
+      });
       setLoading(false);
     };
     fetchAllReports();
-  }, [labels, templateKeys]);
+  }, []);
 
   useEffect(() => {
     const fetchPlayerOptions = async () => {
@@ -208,16 +211,11 @@ export default function ReportPage() {
         return;
       }
       await setDoc(doc(db, "reports", finalPlayerName), resultData);
-      setStructuredResults((prev) => {
-        const updated = [...prev];
-        const index = updated.findIndex(p => p.name === finalPlayerName);
-        if (index !== -1) {
-          updated[index].data = resultData;
-        } else {
-          updated.push({ name: finalPlayerName, data: resultData });
-        }
-        return updated;
+      setStructuredResults((prev = []) => {
+        const updated = prev.filter(p => p.name !== finalPlayerName);
+        return [{ name: finalPlayerName, data: resultData }, ...updated];
       });
+
       setStatus("✅ Match results saved.");
     } catch (err) {
       console.error("Matching failed", err);
