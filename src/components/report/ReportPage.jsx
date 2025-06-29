@@ -309,7 +309,7 @@ export default function ReportPage() {
             {playerOptions.map((name) => (
               <option key={name} value={name}>{name}</option>
             ))}
-            <option value=" ">Other...</option>
+            <option value="__custom__">Other...</option>
           </Select>
         </FormControl>
         {playerName === " " && (
