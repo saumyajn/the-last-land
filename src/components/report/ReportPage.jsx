@@ -312,7 +312,7 @@ export default function ReportPage() {
             <option value="__custom__">Other...</option>
           </Select>
         </FormControl>
-        {playerName === " " && (
+        {playerName === "__custom__" && (
           <TextField
             label="Enter Custom Name"
             value={customPlayerName}
