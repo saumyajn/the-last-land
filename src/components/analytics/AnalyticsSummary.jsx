@@ -174,18 +174,18 @@ export default function AnalyticsSummary({ isAdmin }) {
           bgcolor: '#d6e8fc', // You can change to any MUI theme color or hex
           color: 'white'
         }}>
-          <Typography variant="h6" gutterBottom color="primary">{title} </Typography>
-
+          <Typography variant="h6" gutterBottom color="primary.dark">{title} </Typography>
+  <Chip
+              label={`Average ${kptKey.toUpperCase()}: ${averageKPT(data, kptKey)}`}
+              color="secondary"
+              variant="outlined"
+              sx={{ fontWeight: "bold" , marginLeft: 2, backgroundColor: '#f0f0f0', color: 'secondary.main' }}
+            />
         </AccordionSummary>
 
         <AccordionDetails>
           <Box sx={{ mb: 2 }}>
-            <Chip
-              label={`Average ${kptKey.toUpperCase()}: ${averageKPT(data, kptKey)}`}
-              color="info"
-              variant="outlined"
-              sx={{ fontWeight: "bold" }}
-            />
+          
           </Box>
           <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
             <Table size="small">
