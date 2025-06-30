@@ -171,7 +171,7 @@ export default function AnalyticsSummary({ isAdmin }) {
     return (
       <Accordion defaultExpanded sx={{ borderRadius: 2,  width: '100%'  }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
-          bgcolor: '#d6e8fc', // You can change to any MUI theme color or hex
+             bgcolor: '#e3f2fd',// You can change to any MUI theme color or hex
           color: 'white'
         }}>
           <Typography variant="h6" gutterBottom color="primary.dark">{title} </Typography>

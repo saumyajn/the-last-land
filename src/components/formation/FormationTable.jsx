@@ -214,14 +214,13 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
   }, [rows, label, isAdmin, isEdited]);
 
   const handleCopy = (row) => {
-    const text = `${row.group} - Archers- ${row.at10}k - ${row.at9}k - ${row.at8}k - ${row.at7}k - Cavalry- ${row.ct10}k - ${row.ct9}k - ${row.ct8}k - ${row.ct7}k -`;
+    const text = `${row.group}- Archers-${row.at10}k-${row.at9}k-${row.at8}k-${row.at7}k.. Cavalry-${row.ct10}k-${row.ct9}k-${row.ct8}k-${row.ct7}k`;
     navigator.clipboard.writeText(text);
   };
-
   const totalDamage = rows.reduce((sum, row) => sum + row.damage * row.count, 0).toFixed(2);
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box sx={{ mt: 3 }}>
       <Paper
         elevation={3}
         sx={{
@@ -236,22 +235,45 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
           <Typography variant="h6" fontWeight="bold">
             Total Damage: {totalDamage}
           </Typography>
-          <Button variant="outlined" size="small" onClick={handleReload}>
+          <Button variant="outlined" color="secondary" size="small" onClick={handleReload}>
             Reload Data
           </Button>
         </Box>
 
         <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {["Group", "Avg Damage", "Count", "Troops", "A T10", "A T9", "A T8", "A T7","C T10", "C T9", "C T8", "C T7",, "March Size", "Total", ""].map((head, i) => (
-                  <TableCell key={i} sx={{ fontWeight: "bold", py: 1 }}>
-                    {head}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
+          <Table size="small"  sx={{
+      borderCollapse: "collapse",
+      '& td, & th': {
+        border: '1px solid #ddd',  // ⬅️ column + row borders
+      },
+    }}>
+          <TableHead>
+  <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
+    <TableCell rowSpan={2}><b>Group</b></TableCell>
+    <TableCell rowSpan={2}><b>Avg Damage</b></TableCell>
+    <TableCell rowSpan={2}><b>Count</b></TableCell>
+    <TableCell rowSpan={2}><b>Troops</b></TableCell>
+    
+    <TableCell colSpan={4} align="center"><b>Archers</b></TableCell>
+    <TableCell colSpan={4} align="center"><b>Cavalry</b></TableCell>
+
+    <TableCell rowSpan={2}><b>March Size</b></TableCell>
+    <TableCell rowSpan={2}><b>Total</b></TableCell>
+    <TableCell rowSpan={2}></TableCell>
+  </TableRow>
+  <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
+    <TableCell><b>T10</b></TableCell>
+    <TableCell><b>T9</b></TableCell>
+    <TableCell><b>T8</b></TableCell>
+    <TableCell><b>T7</b></TableCell>
+
+    <TableCell><b>T10</b></TableCell>
+    <TableCell><b>T9</b></TableCell>
+    <TableCell><b>T8</b></TableCell>
+    <TableCell><b>T7</b></TableCell>
+  </TableRow>
+</TableHead>
+
             <TableBody>
               {rows.map((row, idx) => (
                 <TableRow key={idx} hover>
@@ -263,7 +285,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                       value={row.count}
                       onChange={(e) => handleChange(idx, e.target.value)}
                       size="small"
-                      sx={{ width: 80, mx: 1 }}
+                      sx={{ width: 70, mx: 1 }}
                     />
                   </TableCell>
                   <TableCell>{row.troops}</TableCell>

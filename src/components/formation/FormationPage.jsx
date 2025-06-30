@@ -12,6 +12,7 @@ import {
   IconButton,
   Tooltip
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FormationForm from "./FormationForm";
@@ -80,14 +81,16 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
   const titleStyles = {
     mb: 2,
     fontWeight: "bold",
-    color: '#1976d2',
+    color: 'primary.dark',
+    textAlign: 'center',
   };
   const renderGroupAccordion = (label, data) => {
     const groups = getSortedGroups(data);
     return (
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: "bold" }}>{label}</Typography>
+      <Accordion sx={{ borderRadius: 2, mb: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
+          bgcolor: '#e3f2fd' }}>
+          <Typography variant="h6" color="primary.dark">{label}</Typography>
         </AccordionSummary>
         <AccordionDetails>
           {groups.map((color) => {
@@ -105,23 +108,27 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
               );
             }
             return (
-              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 1 }}>
+              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 2 ,  bgcolor: alpha(color, 0.1)}}>
                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
-                  {colorName} - Avg Damage: {avgDamage}
+                  {colorName.toUpperCase()} - Avg Damage: {avgDamage}
                 </Typography>
-                <Divider sx={{ mb: 0.5 }} />
+                <Divider sx={{ my: 0.5 }} />
                 <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
                   {meta.slice(1).map((player, idx) => (
                     <Box
                       key={idx}
                       sx={{
-                        backgroundColor: "#f8f8f8",
-                        px: 1,
-                        py: 1,
-                        borderRadius: 1
+                        backgroundColor: "#f0f4ff",
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: 2,
+                        fontSize: 14,
+                        color: "#1e3a8a",
+                        fontWeight: 500,
+                        border: "1px solid #bbdefb"
                       }}
                     >
-                      <Typography>{player.name}</Typography>
+                    {player.name}
                     </Box>
                   ))}
                   <Tooltip title="Copy names">
@@ -147,24 +154,25 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
       <Divider sx={{ mb: 2 }} />
 
       {/* TOWER FORMATION BLOCK */}
-      <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>
+     <Box sx={{ mb: 4, backgroundColor: '#fdf9ff', p: 3, borderRadius: 3, border: '1px solid #e0e0e0' }}>
+
+       <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: '#0d47a1' }}>
           TOWER FORMATION
         </Typography>
-        <Grid container spacing={3}>
+        <Grid spacing={3}>
           {/* Archer Tower */}
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="subtitle1" sx={titleStyles}>Archer Formation</Typography>
+              <Typography variant="h6" sx={titleStyles}>Archer Formation</Typography>
               <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
               <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
             </Paper>
           </Grid>
 
           {/* Cavalry Tower */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={{ mt: 3 }}>
             <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="subtitle1" sx={titleStyles}>Cavalry Formation</Typography>
+              <Typography variant="h6" sx={titleStyles}>Cavalry Formation</Typography>
               <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
               <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
             </Paper>
@@ -173,24 +181,25 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
       </Box>
 
       {/* THRONE FORMATION BLOCK */}
-      <Box sx={{ mb: 4, backgroundColor: '#fafdff', p: 3, borderRadius: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3, color: '#333' }}>
+       <Box sx={{ mb: 4, backgroundColor: '#fdf9ff', p: 3, borderRadius: 3, border: '1px solid #e0e0e0' }}>
+
+         <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: '#0d47a1' }}>
           THRONE FORMATION
         </Typography>
-        <Grid container spacing={3}>
+        <Grid spacing={3}>
           {/* Archer Throne */}
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="subtitle1" sx={titleStyles}>Archer Formation</Typography>
+              <Typography variant="h6" sx={titleStyles}>Archer Formation</Typography>
               <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
               <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
             </Paper>
           </Grid>
 
           {/* Cavalry Throne */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={{ mt: 3 }}>
             <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="subtitle1" sx={titleStyles}>Cavalry Formation</Typography>
+              <Typography variant="h6" sx={titleStyles}>Cavalry Formation</Typography>
               <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
               <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
             </Paper>
