@@ -8,6 +8,7 @@ import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Paper, IconButton, TextField, Stack, Input, Grid, Select, MenuItem, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress
 } from "@mui/material";
+
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@mui/material/styles";
 import { calcs, getNumber, buildCopyableTable, removePercentage } from "../../utils/calcs";
@@ -20,15 +21,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const [localData, setLocalData] = useState(tableData);
     const [thresholds, setThresholds] = useState([]);
-    const [renamePrompt, setRenamePrompt] = useState(null); // { oldName, newName }
-    const theme = useTheme();
+    const [renamePrompt, setRenamePrompt] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [archerOptions, setArcherOptions] = useState([]);
     const [cavalryOptions, setCavalryOptions] = useState([]);
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const { showNoPermission } = usePermissionSnackbar();
     const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
 
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const { showNoPermission } = usePermissionSnackbar();
 
     const calculateAll = useCallback((player) => {
         const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));
@@ -53,39 +54,33 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     };
 
     const handleEdit = (name, field, value) => {
-        if (!isAdmin) {
-            showNoPermission();
-            return;
-        }
+        if (!isAdmin) return showNoPermission();
+
         const updatedPlayer = {
             ...localData[name],
             [field]: value,
         };
         const calculated = calculateAll(updatedPlayer);
         const avgDamage = (
-        ((parseFloat(calculated["Final Archer Damage"]) || 0) +
-         (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2
-    ).toFixed(2);
+            ((parseFloat(calculated["Final Archer Damage"]) || 0) +
+                (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2
+        ).toFixed(2);
+
         const updatedData = {
             ...localData,
             [name]: {
                 ...updatedPlayer,
                 ...calculated,
+                "Average Damage": avgDamage,
             },
         };
 
         setLocalData(updatedData);
-        onUpdate(name, {
-            ...updatedPlayer,
-            ...calculated,
-              "Average Damage": avgDamage,
-        });
+        onUpdate(name, updatedData[name]);
     };
     const handleThresholdChange = async (index, field, value) => {
-        if (!isAdmin) {
-            showNoPermission();
-            return;
-        }
+        if (!isAdmin) return showNoPermission();
+
         const newThresholds = [...thresholds];
         newThresholds[index] = {
             ...newThresholds[index],
@@ -158,16 +153,17 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         </Box>
     }
     return (
-        <Suspense fallback={<div>LOADING...</div>}>
-            <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
+        <Suspense fallback={<Box p={4}>Loading...</Box>}>
+            <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
                 <Typography variant="h5" gutterBottom color="primary">
                     Threshold Settings
                 </Typography>
 
-                <Grid container spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+
+                <Grid container spacing={2}>
                     {thresholds.map((thresh, idx) => (
-                        <Grid size={{ xs: 6, sm: 4, md: 2 }} key={idx}>
-                            <Stack spacing={1} alignItems="center">
+                        <Grid size={{ xs: 12, sm: 3, md: 1.5 }} key={idx}>
+                            <Stack direction="row" spacing={1} alignItems="center">
                                 <TextField
                                     label={`Limit ${idx + 1}`}
                                     value={thresh.limit}
@@ -176,34 +172,57 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                     type="number"
                                     fullWidth
                                 />
-                                <Input
-                                    type="color"
-                                    value={thresh.color}
-                                    onChange={(e) => handleThresholdChange(idx, "color", e.target.value)}
-                                    sx={{ width: "100%", height: 40, borderRadius: 1, border: '1px solid #ccc' }}
-                                />
+
+
+                                <Box
+                                    sx={{
+                                        width: '30%',
+                                        height: 40,
+                                        overflow: 'hidden',
+                                        display: 'inline-block',
+                                    }}
+                                >
+                                    <input
+                                        type="color"
+                                        value={thresh.color}
+                                        onChange={(e) => handleThresholdChange(idx, 'color', e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            border: 'none',
+                                            padding: 0,
+                                            cursor: 'pointer',
+                                            appearance: 'none',
+                                            WebkitAppearance: 'none',
+                                            backgroundColor: 'transparent',
+                                        }}
+                                    />
+                                </Box>
+
+
                             </Stack>
                         </Grid>
                     ))}
                 </Grid>
-            </Box>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-                <Button variant="outlined" size="small" onClick={handleCopyTable}>
-                    Copy Table
-                </Button>
-            </Box>
-            <Box component={Paper} elevation={3} sx={{ p: 2, mb: 4, overflowX: "auto" }}>
+            </Paper>
+
+            <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2, boxShadow: 4 }}>
                 <Typography variant="h5" gutterBottom color="primary">
                     Combined Stats Table
                 </Typography>
 
-
+                <Button variant="outlined" color="secondary" size="small" sx={{ mb: 1 }} onClick={handleCopyTable}>
+                    Copy Table
+                </Button>
 
                 <TableContainer sx={{ minWidth: isMobile ? 700 : "100%" }}>
                     <Table size="small" sx={{ minWidth: "100%" }}>
-                        <TableHead>
+                        <TableHead sx={{ backgroundColor: theme.palette.grey[200] }}>
                             <TableRow>
-                                <TableCell><b>Name</b></TableCell>
+                                <TableCell  style={{
+                                                position: 'sticky',   left: 0,
+                                          backgroundColor: theme.palette.grey[50],
+                                                zIndex: 800,}}><b>Name</b></TableCell>
                                 {desiredKeys.map((key) => (
                                     <TableCell key={key}><b>{key}</b></TableCell>
                                 ))}
@@ -225,10 +244,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 const archerColor = getColorByThreshold(archerVal, thresholds);
                                 const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
                                 const avgDamage = ((archerVal || 0) + (cavalryVal || 0)) / 2;
-                                const avgColor = getColorByThreshold(avgDamage,thresholds);
+                                const avgColor = getColorByThreshold(avgDamage, thresholds);
 
                                 return (
-                                    <TableRow key={name} >
+                                    <TableRow key={name} hover>
                                         <TableCell
                                             align="left"
                                             style={{
@@ -236,10 +255,11 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 left: 0,
                                                 background: 'white',
                                                 zIndex: 800,
+                                               backgroundColor: theme.palette.grey[50]
                                             }}
                                         >
                                             <TextField
-                                                value={localData[name]?.tempName ?? name}
+                                                value={rowData?.tempName ?? name}
                                                 onChange={(e) => {
                                                     const newName = e.target.value;
                                                     setLocalData((prev) => ({
@@ -257,7 +277,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                     }
                                                 }}
                                                 size="small"
-                                                sx={{ width: '120px' }}
+                                                sx={{ width: '100px' }}
                                             />
                                         </TableCell>
 
@@ -356,10 +376,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                         <TableCell sx={{ backgroundColor: cavalryColor, border: '2px solid #f0f0f0' }}>
                                             {cavalryVal}
                                         </TableCell>
-<TableCell sx={{ backgroundColor: avgColor, border: '2px solid #f0f0f0' }}>
-  {avgDamage.toFixed(2)}
-</TableCell>
-                                      
+                                        <TableCell sx={{ backgroundColor: avgColor, border: '2px solid #f0f0f0' }}>
+                                            {avgDamage.toFixed(2)}
+                                        </TableCell>
+
                                         <TableCell>
                                             <IconButton color="error" onClick={() => onDelete(name)}>
                                                 <DeleteIcon />
@@ -389,7 +409,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     </MuiAlert>
                 </Snackbar>
 
-            </Box>
+            </Paper>
             {renamePrompt && (
                 <Dialog open onClose={() => setRenamePrompt(null)}>
                     <DialogTitle>Confirm Rename</DialogTitle>
