@@ -20,17 +20,28 @@ export default function StatsPage() {
   const [name, setName] = useState("");
   const { showNoPermission } = usePermissionSnackbar();
 
-
   const desiredKeys = [
     "Troop Attack",
+    "Troop Health",
+    "Troop Defense",
     "Troop Damage",
+    "Troop Damage Received",
     "Troop Attack Blessing",
+    "Troop Protection Blessing",
     "Archer Attack",
+    "Archer Health",
+    "Archer Defense",
     "Archer Damage",
+    "Archer Damage Received",
     "Archer Attack Blessing",
+    "Archer Protection Blessing",
     "Cavalry Attack",
+    "Cavalry Health",
+    "Cavalry Defense",
     "Cavalry Damage",
+    "Cavalry Damage Received",
     "Cavalry Attack Blessing",
+    "Cavalry Protection Blessing",
     "Lethal Hit Rate"
   ];
 
