@@ -31,6 +31,7 @@ export default function ReportPage() {
   const templateMap = {
     T10_cavalry: ["T10_cavalry", "T10_cavalry1", "T10_cavalry2"],
     T10_archer: ["T10_archer", "T10_archer1", "T10_archer2"],
+    T10_siege: ["T10_siege"],
     T9_cavalry: ["T9_cavalry", "T9_cavalry1", "T9_cavalry2"],
     T9_archer: ["T9_archer", "T9_archer1", "T9_archer2"],
     T8_cavalry: ["T8_cavalry", "T8_cavalry1", "T8_cavalry2"],
@@ -243,6 +244,7 @@ export default function ReportPage() {
       const wounded = parseInt(data?.Wounded || "0");
       const survivors = parseInt(data?.Survivors || "0");
       const total = losses + wounded + survivors;
+      console.log(`Calculating KPT ${kills/total} `);
       return total === 0 ? "0.00" : (kills / total).toFixed(2);
     };
 

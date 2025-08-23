@@ -58,6 +58,7 @@ export default function ReportResultTable({
     const losses = parseInt(data?.Losses || "0");
     const wounded = parseInt(data?.Wounded || "0");
     const survivors = parseInt(data?.Survivors || "0");
+    console.log(`Calculating KPT ${kills} `+ computeKPT(kills, losses, wounded, survivors) );
     return computeKPT(kills, losses, wounded, survivors);
   }
 

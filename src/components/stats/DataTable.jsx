@@ -219,10 +219,11 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     <Table size="small" sx={{ minWidth: "100%" }}>
                         <TableHead sx={{ backgroundColor: theme.palette.grey[200] }}>
                             <TableRow>
-                                <TableCell  style={{
-                                                position: 'sticky',   left: 0,
-                                          backgroundColor: theme.palette.grey[50],
-                                                zIndex: 800,}}><b>Name</b></TableCell>
+                                <TableCell style={{
+                                    position: 'sticky', left: 0,
+                                    backgroundColor: theme.palette.grey[50],
+                                    zIndex: 800,
+                                }}><b>Name</b></TableCell>
                                 {desiredKeys.map((key) => (
                                     <TableCell key={key}><b>{key}</b></TableCell>
                                 ))}
@@ -255,7 +256,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 left: 0,
                                                 background: 'white',
                                                 zIndex: 800,
-                                               backgroundColor: theme.palette.grey[50]
+                                                backgroundColor: theme.palette.grey[50]
                                             }}
                                         >
                                             <TextField

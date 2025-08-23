@@ -28,7 +28,7 @@ export default function AnalyticsPage() {
         const fetchReports = async () => {
             try {
                 const troopTypes = [
-                    "T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry",
+                    "T10_siege", "T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry",
                     "T10_archer", "T9_archer", "T8_archer", "T7_archer"
                 ];
                 const reportSnapshot = await getDocs(collection(db, "reports"));
