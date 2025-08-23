@@ -13,7 +13,7 @@ import { AuthContext } from "../../utils/authContext";
 
 export default function StatsPage() {
   const { user, isAdmin } = useContext(AuthContext);
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [dataTable, setDataTable] = useState({});
@@ -94,31 +94,31 @@ export default function StatsPage() {
     }
   }
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
+    const files = Array.from(e.target.files);
+    if (files.length) {
+      const urls = files.map(file => URL.createObjectURL(file));
+      setImages(urls);
       setText("");
-
     }
   };
 
-  const extractText = async () => {
-    // if (!isAdmin) {
-    //   showNoPermission();
-    //   return;
-    // }
-    if (!image) return;
+ const extractText = async () => {
+    if (!images.length) return;
     setLoading(true);
-    const result = await Tesseract.recognize(image, "eng");
-    const extracted = result.data.text;
-    setText(extracted);
-    setLoading(false);
-    const attributes = parseData(extracted, desiredKeys);
 
+    // Run Tesseract on all images and combine results
+    let allExtracted = "";
+    for (const img of images) {
+      const result = await Tesseract.recognize(img, "eng");
+      allExtracted += result.data.text + "\n";
+    }
+    setText(allExtracted);
+    setLoading(false);
+
+    const attributes = parseData(allExtracted, desiredKeys);
     attributes["Archer Atlantis"] = '0';
     attributes["Cavalry Atlantis"] = '0';
     attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"]));
-
     attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
     const updatedTable = { ...dataTable, [name]: attributes };
     setDataTable(updatedTable);
@@ -127,14 +127,9 @@ export default function StatsPage() {
   };
 
 
-
   return (
     <div>
-
       <Container maxWidth="xl" sx={{ py: 4 }}>
-
-
-
         <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
           <Typography variant="h5" gutterBottom color="primary">
             Image Stats Extractor
@@ -147,7 +142,7 @@ export default function StatsPage() {
             sx={{ mb: 2 }}
           />
           <ImageUpload
-            image={image}
+            image={images}
             onUpload={handleImageUpload}
             onExtract={extractText}
             loading={loading}

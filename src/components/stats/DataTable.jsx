@@ -218,7 +218,12 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 <TableContainer sx={{ minWidth: isMobile ? 700 : "100%" }}>
                     <Table size="small" sx={{ minWidth: "100%" }}>
                         <TableHead sx={{ backgroundColor: theme.palette.grey[200] }}>
-                            <TableRow>
+                            <TableRow sx={{
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 3000,
+                                backgroundColor: theme.palette.grey[200],
+                            }}>
                                 <TableCell style={{
                                     position: 'sticky', left: 0,
                                     backgroundColor: theme.palette.grey[50],

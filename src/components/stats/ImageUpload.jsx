@@ -4,6 +4,7 @@ import * as React from "react";
 export default function ImageUpload({ image, onUpload, onExtract, loading, name }) {
     const fileInputRef = React.useRef();
     const [pasteSnackbarOpen, setPasteSnackbarOpen] = React.useState(false);
+    const [images, setImages] = React.useState([]);
 
     React.useEffect(() => {
         const handlePaste = (event) => {
@@ -21,7 +22,7 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
                             fileInputRef.current.files = dataTransfer.files;
                         }
 
-                        onUpload({ target: { files: dataTransfer.files } });
+                        handleFiles(dataTransfer.files);
                         setPasteSnackbarOpen(true);
                     }
                 }
@@ -30,12 +31,26 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    }, [onUpload]);
+    }, []);
+
+    const handleFiles = (fileList) => {
+        const filesArray = Array.from(fileList);
+        const urls = filesArray.map(file => URL.createObjectURL(file));
+        setImages(prev => [...prev, ...urls]);
+        // Call the parent onUpload with all files
+        if (onUpload) {
+            onUpload({ target: { files: fileList } });
+        }
+    };
 
     const handleUploadClick = () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
+    };
+
+    const handleInputChange = (e) => {
+        handleFiles(e.target.files);
     };
 
     return (
@@ -44,7 +59,8 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
             <input
                 type="file"
                 accept="image/*"
-                onChange={onUpload}
+                multiple
+                onChange={handleInputChange}
                 ref={fileInputRef}
                 disabled={!name.trim()}
                 style={{ display: "none" }}
@@ -57,31 +73,34 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
                     onClick={handleUploadClick}
                     disabled={!name.trim()}
                 >
-                    Click or Paste Image
+                    Click or Paste Image(s)
                 </Button>
 
                 <Button
                     variant="contained"
                     onClick={onExtract}
-                    disabled={!image || loading}
+                    disabled={!images.length || loading}
                 >
                     {loading ? <CircularProgress size={24} /> : "Extract Text"}
                 </Button>
             </Box>
 
-            {/* Image Preview */}
-            {image && (
-                <Paper elevation={3} sx={{ mt: 2, p: 1, borderRadius: 2, display: "inline-block" }}>
-                    <img
-                        src={image}
-                        alt="Uploaded"
-                        style={{
-                            maxWidth: "300px",
-                            maxHeight: "300px",
-                            objectFit: "contain",
-                            borderRadius: "8px",
-                        }}
-                    />
+            {/* Image Previews */}
+            {images.length > 0 && (
+                <Paper elevation={3} sx={{ mt: 2, p: 1, borderRadius: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
+                    {images.map((img, idx) => (
+                        <img
+                            key={idx}
+                            src={img}
+                            alt={`Uploaded ${idx + 1}`}
+                            style={{
+                                maxWidth: "120px",
+                                maxHeight: "120px",
+                                objectFit: "contain",
+                                borderRadius: "8px",
+                            }}
+                        />
+                    ))}
                 </Paper>
             )}
 
@@ -91,7 +110,7 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
                 autoHideDuration={2000}
                 onClose={() => setPasteSnackbarOpen(false)}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                message="📥 Image pasted!"
+                message="📥 Image(s) pasted!"
                 slotProps={{
                     root: {
                         sx: {
