@@ -419,6 +419,14 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 )
                                         )}
                                         {/* Extra columns */}
+                                         <TableCell>
+                                            <TextField
+                                                value={rowData["Lethal Hit Rate"] || ""}
+                                                onChange={(e) => handleEdit(name, "Lethal Hit Rate", e.target.value)}
+                                                size="small"
+                                                fullWidth
+                                            />
+                                        </TableCell>
                                         <TableCell>
                                             <TextField
                                                 value={rowData["Multiplier"] || ""}
