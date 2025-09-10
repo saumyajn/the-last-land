@@ -1,15 +1,16 @@
-import React, { useContext, useEffect, useState } from "react";
-import Tesseract from "tesseract.js";
-import { Container, Typography, Box, Paper, TextField } from "@mui/material";
+import React, { useContext, useEffect, useState, lazy, Suspense } from "react";
+import { Container, Typography, Box, Paper, TextField, CircularProgress } from "@mui/material";
 import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
-import RawText from "./RawData";
-import DataTable from "./DataTable";
 import { parseData } from "../../utils/parseData";
 import { db } from "../../utils/firebase";
 import { calcs, getNumber } from '../../utils/calcs';
 import { AuthContext } from "../../utils/authContext";
+
+// Lazy load heavy components
+const RawText = lazy(() => import("./RawData"));
+const DataTable = lazy(() => import("./DataTable"));
 
 export default function StatsPage() {
   const { user, isAdmin } = useContext(AuthContext);
@@ -21,31 +22,18 @@ export default function StatsPage() {
   const { showNoPermission } = usePermissionSnackbar();
 
   const desiredKeys = [
-    "Troop Attack",
-    "Troop Health",
-    "Troop Defense",
-    "Troop Damage",
-    "Troop Damage Received",
-    "Troop Attack Blessing",
-    "Troop Protection Blessing",
-    "Archer Attack",
-    "Archer Health",
-    "Archer Defense",
-    "Archer Damage",
-    "Archer Damage Received",
-    "Archer Attack Blessing",
-    "Archer Protection Blessing",
-    "Cavalry Attack",
-    "Cavalry Health",
-    "Cavalry Defense",
-    "Cavalry Damage",
-    "Cavalry Damage Received",
-    "Cavalry Attack Blessing",
-    "Cavalry Protection Blessing",
-    "Lethal Hit Rate"
+    "Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received",
+    "Troop Attack Blessing", "Troop Protection Blessing", "Archer Attack", "Archer Health",
+    "Archer Defense", "Archer Damage", "Archer Damage Received", "Archer Attack Blessing",
+    "Archer Protection Blessing", "Cavalry Attack", "Cavalry Health", "Cavalry Defense",
+    "Cavalry Damage", "Cavalry Damage Received", "Cavalry Attack Blessing", "Cavalry Protection Blessing",
+    "Siege Attack", "Siege Health", "Siege Defense", "Siege Damage", "Siege Damage Received",
+    "Siege Attack Blessing", "Siege Protection Blessing", "Lethal Hit Rate"
   ];
 
+  // Only fetch once
   useEffect(() => {
+    let mounted = true;
     const fetchData = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "stats"));
@@ -53,46 +41,50 @@ export default function StatsPage() {
         querySnapshot.forEach((doc) => {
           data[doc.id] = doc.data();
         });
-        setDataTable(data);
-        console.log("✅ Loaded data from Firestore");
+        if (mounted) setDataTable(data);
       } catch (error) {
-        console.error("❌ Error loading data from Firestore:", error);
+      
+          console.error("❌ Error loading data from Firestore:", error);
+        
       }
     };
-
     fetchData();
+    return () => { mounted = false; };
   }, []);
 
   const updateFirestore = async (playerName, data) => {
     try {
       if (!isAdmin) {
-        console.log(isAdmin)
         showNoPermission();
         return;
       }
       await setDoc(doc(db, "stats", playerName), { ...data }, { merge: true });
-      console.log(`✅ Firestore updated for: ${playerName}`);
     } catch (error) {
-      console.error("❌ Firestore update failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Firestore update failed:", error);
+      }
     }
   };
 
   const deletePlayer = async (playerName) => {
-
     try {
       if (!isAdmin) {
         showNoPermission();
         return;
       }
       await deleteDoc(doc(db, "stats", playerName));
-      const updatedTable = { ...dataTable };
-      delete updatedTable[playerName];
-      setDataTable(updatedTable);
-      console.log("🗑️ Deleted player:", playerName);
+      setDataTable(prev => {
+        const updated = { ...prev };
+        delete updated[playerName];
+        return updated;
+      });
     } catch (error) {
-      console.error("❌ Error deleting player:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error deleting player:", error);
+      }
     }
-  }
+  };
+
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length) {
@@ -102,11 +94,11 @@ export default function StatsPage() {
     }
   };
 
- const extractText = async () => {
-    if (!images.length) return;
+  // Defer Tesseract import until needed
+  const extractText = async () => {
+    if (!images?.length) return;
     setLoading(true);
-
-    // Run Tesseract on all images and combine results
+    const { default: Tesseract } = await import("tesseract.js");
     let allExtracted = "";
     for (const img of images) {
       const result = await Tesseract.recognize(img, "eng");
@@ -120,12 +112,9 @@ export default function StatsPage() {
     attributes["Cavalry Atlantis"] = '0';
     attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"]));
     attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
-    const updatedTable = { ...dataTable, [name]: attributes };
-    setDataTable(updatedTable);
-
+    setDataTable(prev => ({ ...prev, [name]: attributes }));
     await updateFirestore(name, attributes);
   };
-
 
   return (
     <div>
@@ -150,20 +139,20 @@ export default function StatsPage() {
           />
         </Box>
 
-        {Object.entries(dataTable).length > 0 && (
-          <DataTable
-            tableData={dataTable}
-            desiredKeys={desiredKeys}
-            onDelete={deletePlayer}
-            onUpdate={updateFirestore}
-            isAdmin={isAdmin}
-            user={user}
-          />
-        )}
-
-        <RawText text={text} />
-
+        <Suspense fallback={<Box p={4} textAlign="center"><CircularProgress /></Box>}>
+          {Object.entries(dataTable).length > 0 && (
+            <DataTable
+              tableData={dataTable}
+              desiredKeys={desiredKeys}
+              onDelete={deletePlayer}
+              onUpdate={updateFirestore}
+              isAdmin={isAdmin}
+              user={user}
+            />
+          )}
+          <RawText text={text} />
+        </Suspense>
       </Container>
     </div>
   );
-};
+}

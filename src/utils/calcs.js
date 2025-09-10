@@ -13,10 +13,15 @@ export const calcs = (attributes, role, atlValue) => {
     varDmg = getNumber(attributes["Archer Damage"] ) + getNumber( attributes["Archer Damage Received"]);
     varBless = getNumber(attributes["Archer Attack Blessing"] ) + getNumber( attributes["Archer Protection Blessing"]);
   }
-  else {
+  else if (role === "cavalry") {
     varAtk = getNumber(attributes["Cavalry Attack"]) + getNumber( attributes["Cavalry Health"] ) + getNumber( attributes["Cavalry Defense"]);
     varDmg = getNumber(attributes["Cavalry Damage"] ) + getNumber( attributes["Cavalry Damage Received"]);
     varBless = getNumber(attributes["Cavalry Attack Blessing"] ) + getNumber(attributes["Cavalry Protection Blessing"]);
+  }
+  else if (role === "siege") {
+    varAtk = getNumber(attributes["Siege Attack"]) + getNumber( attributes["Siege Health"] ) + getNumber( attributes["Siege Defense"]);
+    varDmg = getNumber(attributes["Siege Damage"] ) + getNumber( attributes["Siege Damage Received"]);
+    varBless = getNumber(attributes["Siege Attack Blessing"] ) + getNumber( attributes["Siege Protection Blessing"]);
   }
 
   const AtlData = getNumber(atlValue);
