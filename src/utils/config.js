@@ -8,5 +8,4 @@ export const ADMIN_EMAILS = [
     "silenttkkiller2@gmail.com",
     "angelaquino621@gmail.com",
     "coemaincastle@gmail.com",
-    "selistongama194@gmail.com"
 ]
