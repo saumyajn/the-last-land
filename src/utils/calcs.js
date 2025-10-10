@@ -4,7 +4,6 @@ export const calcs = (attributes, role, atlValue) => {
   const atk = getNumber(attributes["Troop Attack"]) + getNumber(attributes["Troop Health"]) + getNumber(attributes["Troop Defense"]);
   const dmg = getNumber(attributes["Troop Damage"]) + getNumber(attributes["Troop Damage Received"]);
   const bless = getNumber(attributes["Troop Attack Blessing"]) + getNumber(attributes["Troop Protection Blessing"]);
-  console.log("atk", atk, "dmg", dmg, "bless", bless);
   let varAtk, varDmg, varBless;
 
   if (role === "archer") {

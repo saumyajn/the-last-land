@@ -419,7 +419,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 )
                                         )}
                                         {/* Extra columns */}
-                                         <TableCell>
+                                        <TableCell>
                                             <TextField
                                                 value={rowData["Lethal Hit Rate"] || ""}
                                                 onChange={(e) => handleEdit(name, "Lethal Hit Rate", e.target.value)}
@@ -428,12 +428,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <TextField
-                                                value={rowData["Multiplier"] || ""}
+                                            <Select
+                                                value={String(rowData["Multiplier"] || "1")}
                                                 onChange={(e) => handleEdit(name, "Multiplier", e.target.value)}
                                                 size="small"
                                                 fullWidth
-                                            />
+                                            >
+                                                <MenuItem value="1">1</MenuItem>
+                                                <MenuItem value="1.5">1.5</MenuItem>
+                                            </Select>
                                         </TableCell>
                                         <TableCell>
                                             {archerOptions.length > 0 ? (
