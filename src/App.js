@@ -81,14 +81,14 @@ export default function App() {
 
           // Cavalry grouping
           const cavalryMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => cavalryVal >= t.limit);
-          const cavalryColor = cavalryMatch ? cavalryMatch.color : "default";
+          const cavalryColor = cavalryMatch.color || "default";
           if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [{ colorName: colorNames[cavalryColor] || cavalryColor }];
           newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
 
           // Average grouping
           const avgVal = (archerVal + cavalryVal) / 2;
           const avgMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => avgVal >= t.limit);
-          const avgColor = avgMatch ? avgMatch.color : "default";
+          const avgColor = avgMatch.color || "default";
           if (!newGroupedAverageData[avgColor]) newGroupedAverageData[avgColor] = [{ colorName: colorNames[avgColor] || avgColor }];
           newGroupedAverageData[avgColor].push({ name: playerName, damage: avgVal });
         });

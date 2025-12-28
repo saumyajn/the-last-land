@@ -34,8 +34,8 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
       const avg = (archerDmg + cavalryDmg) / 2;
 
       const matchedThreshold = sortedColors.find(t => avg >= t.limit);
-      const color = matchedThreshold?.color || "default";
-      const colorName = matchedThreshold?.name || "Default";
+      const color = matchedThreshold?.color ;
+      const colorName = matchedThreshold?.name;
 
       if (!groupedAverageData[color]) {
         groupedAverageData[color] = [{ colorName, avgDamage: 0 }];
