@@ -68,11 +68,13 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
         <Grid item xs={12} sm={3}>
           <TextField
             label="Damage Troops"
-            value={formState.damage_troops}
-            onChange={(e) => setFormState({ ...formState, damage_troops: e.target.value })}
-            fullWidth
+            value={String((Number(formState.total) || 0) - (Number(formState.guards) || 0))}
+            inputProps={{ readOnly: true }}
+            onFocus={(e) => e.target.select()}
+          
           />
         </Grid>
+
        
       </Grid>
       <Divider sx={{ m: 2 }} />
