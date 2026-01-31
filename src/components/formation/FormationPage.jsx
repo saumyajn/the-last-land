@@ -63,7 +63,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
 
   const handleCopy = (players, color) => {
     const groupName = players[0]?.colorName || color;
-    const text = players.slice(2).map(p => ` ${p.name || p}`).join(", ");
+    const text = players.slice(1).map(p => ` ${p.name || p}`).join(", ");
     navigator.clipboard.writeText(`${groupName}- ${text}`);
   };
   const paperStyles = {
