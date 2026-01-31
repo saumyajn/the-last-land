@@ -40,3 +40,56 @@
     transform: rotate(360deg);
   }
 }
+
+/* ImageUpload delete button */
+.delete-button {
+  min-width: 20px;
+  height: 25px;
+  padding: 2px;
+  border-radius: 50%;
+  background: rgba(57, 46, 65, 0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.delete-button:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+/* Preview wrapper for image uploads */
+.image-preview {
+  position: relative;
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+}
+
+.image-preview .preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
+/* Overlay delete button */
+.image-preview .delete-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 4px;
+  border-radius: 12px;
+}
+.image-preview .delete-button:hover {
+  background: rgba(0,0,0,0.85);
+}
+
+/* Hidden helpers */
+.hidden-data {
+  display: none !important;
+}

@@ -131,7 +131,6 @@ export default function StatsPage() {
             sx={{ mb: 2 }}
           />
           <ImageUpload
-            image={images}
             onUpload={handleImageUpload}
             onExtract={extractText}
             loading={loading}

@@ -327,7 +327,7 @@ export default function ReportPage() {
         </Button>
       </Box>
       <Typography variant="body2" color="text.secondary">{status}</Typography>
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      <canvas ref={canvasRef} className="hidden-data" />
 
       {loading ? <CircularProgress color="secondary" /> : (
         <ReportResultTable structuredResults={structuredResults} labels={labels} templateKeys={templateKeys} onEdit={handleEdit} onDelete={handleDelete} />

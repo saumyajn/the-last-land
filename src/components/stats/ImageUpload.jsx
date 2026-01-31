@@ -1,7 +1,8 @@
-import { Button, Box, CircularProgress, Paper, Snackbar } from "@mui/material";
+import { Button, Box, CircularProgress, Paper, Snackbar, IconButton } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 import * as React from "react";
 
-export default function ImageUpload({ image, onUpload, onExtract, loading, name }) {
+export default function ImageUpload({ onUpload, onExtract, loading, name }) {
     const fileInputRef = React.useRef();
     const [pasteSnackbarOpen, setPasteSnackbarOpen] = React.useState(false);
     const [images, setImages] = React.useState([]);
@@ -52,6 +53,13 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
     const handleInputChange = (e) => {
         handleFiles(e.target.files);
     };
+    const deleteImage = (index) => {
+        setImages(prev => {
+            const url = prev[index];
+            if (url) URL.revokeObjectURL(url);
+            return prev.filter((_, i) => i !== index);
+        });
+    };
 
     return (
         <Box sx={{ mt: 2 }}>
@@ -63,7 +71,7 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
                 onChange={handleInputChange}
                 ref={fileInputRef}
                 disabled={!name.trim()}
-                style={{ display: "none" }}
+                className="hidden-data"
             />
 
             {/* Upload and Extract Buttons inline */}
@@ -89,17 +97,21 @@ export default function ImageUpload({ image, onUpload, onExtract, loading, name 
             {images.length > 0 && (
                 <Paper elevation={3} sx={{ mt: 2, p: 1, borderRadius: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
                     {images.map((img, idx) => (
-                        <img
-                            key={idx}
-                            src={img}
-                            alt={`Uploaded ${idx + 1}`}
-                            style={{
-                                maxWidth: "120px",
-                                maxHeight: "120px",
-                                objectFit: "contain",
-                                borderRadius: "8px",
-                            }}
-                        />
+                        <div className="image-preview" key={idx}>
+                            <img
+                                src={img}
+                                alt={`Uploaded ${idx + 1}`}
+                                className="preview-img"
+                            />
+                            <IconButton
+                                className="delete-button"
+                                size="small"
+                                onClick={() => deleteImage(idx)}
+                                aria-label={`Delete image ${idx + 1}`}
+                            >
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                        </div>
                     ))}
                 </Paper>
             )}
