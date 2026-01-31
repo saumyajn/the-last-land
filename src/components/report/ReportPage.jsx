@@ -17,7 +17,7 @@ import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
 
 export default function ReportPage() {
-  const { user, isAdmin } = useContext(AuthContext);
+  const {isAdmin } = useContext(AuthContext);
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImage, setMainImage] = useState(null);
@@ -68,7 +68,7 @@ export default function ReportPage() {
       setLoading(false);
     };
     fetchAllReports();
-  }, []);
+  });
 
   useEffect(() => {
     const fetchPlayerOptions = async () => {

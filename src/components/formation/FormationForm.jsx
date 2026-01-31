@@ -50,7 +50,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
     >
      
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid size={3} container spacing={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Total Troops"
             value={formState.total}
@@ -58,7 +58,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={3}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Guards"
             value={formState.guards}
@@ -66,7 +66,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={3}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Archers"
             value={formState.archers}
@@ -74,7 +74,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={3}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Cavalry"
             value={formState.cavalry}
@@ -85,7 +85,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
       </Grid>
       <Divider sx={{ m: 2 }} />
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T10 Archers"
             value={formState.at10}
@@ -93,7 +93,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T9 Archers"
             value={formState.at9}
@@ -101,7 +101,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T8 Archers"
             value={formState.at8}
@@ -109,7 +109,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T7 Archers"
             value={formState.at7}
@@ -121,7 +121,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
       </Grid>
       <Divider sx={{ m: 2 }} />
        <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T10 Cavalry"
             value={formState.ct10}
@@ -129,7 +129,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T9 Cavalry"
             value={formState.ct9}
@@ -137,7 +137,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T8 Cavalry"
             value={formState.ct8}
@@ -145,7 +145,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-        <Grid size={2}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="T7 Cavalry"
             value={formState.ct7}
@@ -153,7 +153,6 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-      
       </Grid>
       <Stack direction="row" justifyContent="flex-end" mt={2}>
         <Button variant="contained" size="small"onClick={handleSave}>Save</Button>

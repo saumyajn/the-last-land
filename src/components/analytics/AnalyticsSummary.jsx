@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import {
   Box,
@@ -16,8 +16,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TableSortLabel,
-  Divider
+  TableSortLabel
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -27,9 +26,10 @@ export default function AnalyticsSummary({ isAdmin }) {
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "desc" });
-  const auth = getAuth();
-  const currentUser = auth.currentUser;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
     const fetchAllPlayerStats = async () => {
       try {
         const [reportSnap, statSnap] = await Promise.all([
@@ -212,10 +212,10 @@ export default function AnalyticsSummary({ isAdmin }) {
                     <TableCell>{index + 1}</TableCell>
                   <TableCell sx={{ fontWeight: 500 }}>{row.name}</TableCell>
                     {keys.map(key => (
-                      <TableCell key={key}>
-                         {row[key]} <small style={{ color: "#313131" }}>(#{row[`${key}Rank`]})</small>
-                 
-                      </TableCell>
+                       <TableCell key={key}>
+                         {row[key]} <small className="small-muted">(#{row[`${key}Rank`]})</small>
+
+                       </TableCell>
                     ))}
                   </TableRow>
                 ))}
@@ -228,7 +228,7 @@ export default function AnalyticsSummary({ isAdmin }) {
   };
 
   return (
-    <Grid  spacing={4}>
+    <Grid container spacing={4}>
        <Grid item xs={12} sx={{ mb: 2 }}>
         {renderRankedTable("Cavalry Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry", "cavalryKPT")}
       </Grid>

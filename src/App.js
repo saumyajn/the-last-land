@@ -17,7 +17,6 @@ import AboutPage from "./components/AboutPage";
 import { db } from "./utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, getRedirectResult } from "firebase/auth";
-import { ADMIN_EMAILS } from './utils/config';
 
 export default function App() {
   const [groupedData, setGroupedData] = useState({});

@@ -95,8 +95,8 @@ export default function ReportResultTable({
           <Box key={player.name} sx={{ mt: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6">📊 {player.name}</Typography>
-              <Typography variant="h8">Archer: {archerKPT}</Typography>
-              <Typography variant="h8">Calavry: {cavalryKPT}</Typography>
+              <Typography variant="body2">Archer: {archerKPT}</Typography>
+              <Typography variant="body2">Calavry: {cavalryKPT}</Typography>
               <IconButton color="primary" onClick={() => handleCopy(player)}>
                 <ContentCopyIcon />
               </IconButton>

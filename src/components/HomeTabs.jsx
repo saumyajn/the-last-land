@@ -1,7 +1,6 @@
 // src/components/HomeTabs.jsx
-import React from "react";
 import { Tabs, Tab, Box } from "@mui/material";
-import { useNavigate, useLocation, Nav } from "react-router-dom";
+import { useNavigate, useLocation} from "react-router-dom";
 
 export default function HomeTabs() {
   const navigate = useNavigate();

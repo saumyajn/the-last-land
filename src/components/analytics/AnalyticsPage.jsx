@@ -21,7 +21,7 @@ import AnalyticsSummary from "./AnalyticsSummary";
 import ExportToGoogleSheet from './ExportSheets';
 import { AuthContext } from "../../utils/authContext";
 export default function AnalyticsPage() {
-    const { user, isAdmin } = useContext(AuthContext);
+    const { isAdmin } = useContext(AuthContext);
     const [combinedData, setCombinedData] = useState({});
 
     useEffect(() => {
@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
             }
         }
         fetchReports();
-    }, [])
+    })
     return (
         <Box>
             <Accordion sx={{ borderRadius: 2 }}>

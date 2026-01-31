@@ -32,7 +32,7 @@ export default function ImageUpload({ onUpload, onExtract, loading, name }) {
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    }, []);
+    });
 
     const handleFiles = (fileList) => {
         const filesArray = Array.from(fileList);

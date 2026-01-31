@@ -220,7 +220,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 </Typography>
                 <Grid container spacing={2}>
                     {thresholds.map((thresh, idx) => (
-                        <Grid size={{ xs: 12, sm: 3, md: 1.5 }}  key={idx}>
+                        <Grid item xs={12} sm={3} md={2} key={idx}>
                             <Stack direction="row" spacing={1} alignItems="center">
                                 <TextField
                                     label={`Limit ${idx + 1}`}

@@ -140,7 +140,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
   useEffect(() => {
     loadFormationData();
-  }, []);
+  });
 
   const handleReload = () => {
     loadFormationData();
@@ -211,7 +211,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       }
     };
     uploadToFirestore();
-  }, [rows, label, isAdmin, isEdited]);
+  }, [rows, label, isAdmin, isEdited,type]);
 
   const handleCopy = (row) => {
     const text = `${row.group}- Archers-${row.at10}k-${row.at9}k-${row.at8}k-${row.at7}k.. Cavalry-${row.ct10}k-${row.ct9}k-${row.ct8}k-${row.ct7}k`;

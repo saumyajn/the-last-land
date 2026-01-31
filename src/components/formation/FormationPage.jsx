@@ -52,7 +52,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
     groupedAverageData[color][0].avgDamage = parseFloat(avg.toFixed(2));
   }
 
-  const { user, isAdmin } = useContext(AuthContext);
+  const {  isAdmin } = useContext(AuthContext);
   const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
   const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
   const [form3, setForm3] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
