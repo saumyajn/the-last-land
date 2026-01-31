@@ -29,15 +29,15 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
   const MathRound = (num) => Math.round(num * 2) / 2;
 
-  const settingDocName =  (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
- 
+  const settingDocName = label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation"
+
 
   const loadFormationData = async () => {
     try {
 
       const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
         getDoc(doc(db, "settings", settingDocName)),
-        getDoc(doc(db, "formation", `${type}_${label}`)),
+        getDoc(doc(db, "formation", `${label}`)),
         getDoc(doc(db, "settings", "thresholds"))
       ]);
 
@@ -46,7 +46,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       const thresholdData = thresholdsSnap.exists() ? thresholdsSnap.data().thresholds || [] : [];
       const colorOrder = thresholdData.map(t => t.name);
 
-      const totalTroops = parseFloat(settingData.archers)+parseFloat(settingData.cavalry) || 0;
+      const totalTroops = parseFloat(settingData.archers) + parseFloat(settingData.cavalry) || 0;
 
       setTotalTroopValue(totalTroops);
       setRatios({
@@ -90,7 +90,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
           troops: isNaN(troops) ? 0 : troops,
           at10, at9, at8, at7,
           ct10, ct9, ct8, ct7,
-          marchSize: at10 + at9 + at8 + at7 +ct10 + ct9 + ct8 + ct7 ,  // ✅ Fixed march size
+          marchSize: at10 + at9 + at8 + at7 + ct10 + ct9 + ct8 + ct7,  // ✅ Fixed march size
           total: (troops * count).toFixed(2)
         };
       });
@@ -170,7 +170,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       row.ct9 = MathRound(troops * ratios.ct9 / 1000);
       row.ct8 = MathRound(troops * ratios.ct8 / 1000);
       row.ct7 = MathRound(troops * ratios.ct7 / 1000);
-      row.marchSize = row.at10 + row.at9 + row.at8 + row.at7  + row.ct10 + row.ct9 + row.ct8 + row.ct7;
+      row.marchSize = row.at10 + row.at9 + row.at8 + row.at7 + row.ct10 + row.ct9 + row.ct8 + row.ct7;
       row.total = (row.troops * row.count).toFixed(2);
     });
 
@@ -202,7 +202,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
             total: row.total
           };
         });
-        await setDoc(doc(db, "formation", `${type}_${label}`), payload);
+        await setDoc(doc(db, "formation", `${label}`), payload);
         console.log("Formation data uploaded successfully.");
         setIsEdited(false);
       } catch (error) {
@@ -210,7 +210,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       }
     };
     uploadToFirestore();
-  }, [rows, label, isAdmin, isEdited,type]);
+  }, [rows, label, isAdmin, isEdited, type]);
 
   const handleCopy = (row) => {
     const text = `${row.group}- Archers-${row.at10}k-${row.at9}k-${row.at8}k-${row.at7}k.. Cavalry-${row.ct10}k-${row.ct9}k-${row.ct8}k-${row.ct7}k`;
@@ -240,38 +240,38 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
         </Box>
 
         <TableContainer>
-          <Table size="small"  sx={{
-      borderCollapse: "collapse",
-      '& td, & th': {
-        border: '1px solid #ddd',  // ⬅️ column + row borders
-      },
-    }}>
-          <TableHead>
-  <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
-    <TableCell rowSpan={2}><b>Group</b></TableCell>
-    <TableCell rowSpan={2}><b>Avg Damage</b></TableCell>
-    <TableCell rowSpan={2}><b>Count</b></TableCell>
-    <TableCell rowSpan={2}><b>Troops</b></TableCell>
-    
-    <TableCell colSpan={4} align="center"><b>Archers</b></TableCell>
-    <TableCell colSpan={4} align="center"><b>Cavalry</b></TableCell>
+          <Table size="small" sx={{
+            borderCollapse: "collapse",
+            '& td, & th': {
+              border: '1px solid #ddd',  // ⬅️ column + row borders
+            },
+          }}>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
+                <TableCell rowSpan={2}><b>Group</b></TableCell>
+                <TableCell rowSpan={2}><b>Avg Damage</b></TableCell>
+                <TableCell rowSpan={2}><b>Count</b></TableCell>
+                <TableCell rowSpan={2}><b>Troops</b></TableCell>
 
-    <TableCell rowSpan={2}><b>March Size</b></TableCell>
-    <TableCell rowSpan={2}><b>Total</b></TableCell>
-    <TableCell rowSpan={2}></TableCell>
-  </TableRow>
-  <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
-    <TableCell><b>T10</b></TableCell>
-    <TableCell><b>T9</b></TableCell>
-    <TableCell><b>T8</b></TableCell>
-    <TableCell><b>T7</b></TableCell>
+                <TableCell colSpan={4} align="center"><b>Archers</b></TableCell>
+                <TableCell colSpan={4} align="center"><b>Cavalry</b></TableCell>
 
-    <TableCell><b>T10</b></TableCell>
-    <TableCell><b>T9</b></TableCell>
-    <TableCell><b>T8</b></TableCell>
-    <TableCell><b>T7</b></TableCell>
-  </TableRow>
-</TableHead>
+                <TableCell rowSpan={2}><b>March Size</b></TableCell>
+                <TableCell rowSpan={2}><b>Total</b></TableCell>
+                <TableCell rowSpan={2}></TableCell>
+              </TableRow>
+              <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
+                <TableCell><b>T10</b></TableCell>
+                <TableCell><b>T9</b></TableCell>
+                <TableCell><b>T8</b></TableCell>
+                <TableCell><b>T7</b></TableCell>
+
+                <TableCell><b>T10</b></TableCell>
+                <TableCell><b>T9</b></TableCell>
+                <TableCell><b>T8</b></TableCell>
+                <TableCell><b>T7</b></TableCell>
+              </TableRow>
+            </TableHead>
 
             <TableBody>
               {rows.map((row, idx) => (
@@ -293,10 +293,10 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                   <TableCell>{row.at8}</TableCell>
                   <TableCell>{row.at7}</TableCell>
                   <TableCell>{row.ct10}</TableCell>
-                  <TableCell>{row.ct9}</TableCell>    
+                  <TableCell>{row.ct9}</TableCell>
                   <TableCell>{row.ct8}</TableCell>
                   <TableCell>{row.ct7}</TableCell>
-                     
+
                   <TableCell>{row.marchSize}</TableCell>
                   <TableCell>{row.total}</TableCell>
                   <TableCell>

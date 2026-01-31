@@ -162,7 +162,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
           {/* Archer Tower */}
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="h6" sx={titleStyles}>Archer Formation</Typography>
+              <Typography variant="h6" sx={titleStyles}>Formation</Typography>
               <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} />
               <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} />
             </Paper>

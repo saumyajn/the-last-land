@@ -67,20 +67,13 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextField
-            label="Archers"
-            value={formState.archers}
-            onChange={(e) => setFormState({ ...formState, archers: e.target.value })}
+            label="Damage Troops"
+            value={formState.damage_troops}
+            onChange={(e) => setFormState({ ...formState, damage_troops: e.target.value })}
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <TextField
-            label="Cavalry"
-            value={formState.cavalry}
-            onChange={(e) => setFormState({ ...formState, cavalry: e.target.value })}
-            fullWidth
-          />
-        </Grid>
+       
       </Grid>
       <Divider sx={{ m: 2 }} />
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
