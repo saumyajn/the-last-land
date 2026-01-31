@@ -428,15 +428,12 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Select
-                                                value={String(rowData["Multiplier"] || "1")}
-                                                onChange={(e) => handleEdit(name, "Multiplier", e.target.value)}
+                                            <TextField
+                                                value="1.5"
                                                 size="small"
                                                 fullWidth
-                                            >
-                                                <MenuItem value="1">1</MenuItem>
-                                                <MenuItem value="1.5">1.5</MenuItem>
-                                            </Select>
+                                                disabled
+                                            />
                                         </TableCell>
                                         <TableCell>
                                             {archerOptions.length > 0 ? (

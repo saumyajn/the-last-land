@@ -55,8 +55,7 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
   const {  isAdmin } = useContext(AuthContext);
   const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
   const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
-  const [form3, setForm3] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
-  const [form4, setForm4] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
+
 
   const colorSortOrder = thresholds.map(t => t.color);
   const getSortedGroups = (data) =>
@@ -164,19 +163,12 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Archer Formation</Typography>
-              <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} type="archer" />
-              <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
+              <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} />
+              <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} />
             </Paper>
           </Grid>
 
-          {/* Cavalry Tower */}
-          <Grid item xs={12} md={6} sx={{ mt: 3 }}>
-            <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="h6" sx={titleStyles}>Cavalry Formation</Typography>
-              <FormationForm label="Tower Formation" formState={form3} setFormState={setForm3} isAdmin={isAdmin} type="cavalry" />
-              <FormationTable label="tower_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
-            </Paper>
-          </Grid>
+         
         </Grid>
       </Box>
 
@@ -190,20 +182,13 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
           {/* Archer Throne */}
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="h6" sx={titleStyles}>Archer Formation</Typography>
-              <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} type="archer" />
-              <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} type="archer" />
+              <Typography variant="h6" sx={titleStyles}>Formation</Typography>
+              <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} />
+              <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin}  />
             </Paper>
           </Grid>
 
-          {/* Cavalry Throne */}
-          <Grid item xs={12} md={6} sx={{ mt: 3 }}>
-            <Paper elevation={1} sx={paperStyles}>
-              <Typography variant="h6" sx={titleStyles}>Cavalry Formation</Typography>
-              <FormationForm label="Throne Formation" formState={form4} setFormState={setForm4} isAdmin={isAdmin} type="cavalry" />
-              <FormationTable label="throne_formation" groupedData={groupedCavalryData} isAdmin={isAdmin} type="cavalry" />
-            </Paper>
-          </Grid>
+         
         </Grid>
       </Box>
     </Box>

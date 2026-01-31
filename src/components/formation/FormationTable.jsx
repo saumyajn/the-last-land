@@ -29,9 +29,8 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
   const MathRound = (num) => Math.round(num * 2) / 2;
 
-  const settingDocName = type === "archer"
-    ? (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
-    : (label.toLowerCase().includes("throne") ? "cavalry_throne_formation" : "cavalry_tower_formation");
+  const settingDocName =  (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
+ 
 
   const loadFormationData = async () => {
     try {
