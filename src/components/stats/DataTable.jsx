@@ -378,7 +378,6 @@ const calculateAll = useCallback((player) => {
                                 const archerColor = getColorByThreshold(archerVal, thresholds);
                                 const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
                                 const siegeColor = getColorByThreshold(siegeVal, thresholds);
-                                console.log(archerVal)
                                 const avgDamage = ((archerVal || 0) + (cavalryVal || 0)) / 2;
                                 const avgColor = getColorByThreshold(avgDamage, thresholds);
 
