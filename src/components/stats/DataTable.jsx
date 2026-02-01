@@ -4,7 +4,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, IconButton, TextField, Stack, Grid, Select, MenuItem, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress
+    TableHead, TableRow, Paper, IconButton, TextField, Stack, Grid, Select, MenuItem, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, Skeleton
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -219,9 +219,11 @@ const calculateAll = useCallback((player) => {
     if (!names.length) return null;
     if (isLoading) {
         return (
-            <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-                <CircularProgress size={40} color="inherit" />
-            </Box>
+         <Stack spacing={1}>
+      <Skeleton variant="rectangular" height={40} />
+      <Skeleton variant="rectangular" height={40} />
+      <Skeleton variant="rectangular" height={40} />
+    </Stack>
         );
     }
 

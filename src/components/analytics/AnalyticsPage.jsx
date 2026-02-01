@@ -14,8 +14,7 @@ import {
     TableHead,
     TableRow,
     Paper,
-    Divider,
-    CircularProgress
+    Divider, Skeleton, Stack
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AnalyticsSummary from "./AnalyticsSummary";
@@ -33,10 +32,10 @@ export default function AnalyticsPage() {
                 "T10_siege", "T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry",
                 "T10_archer", "T9_archer", "T8_archer", "T7_archer"
             ];
-            
+
             // Optimization: Consider querying only recent reports if list is large
             const reportSnapshot = await getDocs(collection(db, "reports"));
-            
+
             const troopTotals = {};
             troopTypes.forEach(type => {
                 troopTotals[type] = {
@@ -85,7 +84,13 @@ export default function AnalyticsPage() {
         fetchReports();
     }, [fetchReports]);
 
-    if (loading) return <Box p={4} display="flex" justifyContent="center"><CircularProgress /></Box>;
+    if (loading) return (
+        <Stack spacing={1}>
+            <Skeleton variant="rectangular" height={60} />
+            <Skeleton variant="rectangular" height={60} />
+            <Skeleton variant="rectangular" height={60} />
+        </Stack>
+    );
 
     return (
         <Box>
@@ -114,9 +119,9 @@ export default function AnalyticsPage() {
                                         <TableCell>{stats.Losses.toLocaleString()}</TableCell>
                                         <TableCell>{stats.Wounded.toLocaleString()}</TableCell>
                                         <TableCell>{stats.Survivors.toLocaleString()}</TableCell>
-                                        <TableCell sx={{ 
-                                            fontWeight: 'bold', 
-                                          
+                                        <TableCell sx={{
+                                            fontWeight: 'bold',
+
                                         }}>
                                             {stats.KPT}
                                         </TableCell>

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, lazy, Suspense } from "react";
-import { Container, Typography, Box, Paper, TextField, CircularProgress } from "@mui/material";
+import { Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
 import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
@@ -138,7 +138,11 @@ export default function StatsPage() {
           />
         </Box>
 
-        <Suspense fallback={<Box p={4} textAlign="center"><CircularProgress /></Box>}>
+        <Suspense fallback={<Stack spacing={1}>
+      <Skeleton variant="rectangular" height={40} />
+      <Skeleton variant="rectangular" height={40} />
+      <Skeleton variant="rectangular" height={40} />
+    </Stack>}>
           {Object.entries(dataTable).length > 0 && (
             <DataTable
               tableData={dataTable}
