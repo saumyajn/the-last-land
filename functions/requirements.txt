@@ -1,0 +1,6 @@
+functions-framework>=0.1.0
+firebase-functions>=0.1.0
+firebase-admin>=6.0.0
+google-cloud-vision>=3.0.0
+flask
+flask-cors

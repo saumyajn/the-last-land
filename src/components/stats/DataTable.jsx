@@ -87,17 +87,30 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const names = useMemo(() => Object.keys(localData), [localData]);
 
     // Calculate all derived values for a player
-    const calculateAll = useCallback((player) => {
-        const archer = getNumber(calcs(player, "archer", player["Archer Atlantis"]));
-        const cavalry = getNumber(calcs(player, "cavalry", player["Cavalry Atlantis"]));
-        const siege = getNumber(calcs(player, "siege", player["Siege Atlantis"]));
-        const multiplier = getNumber(player["Multiplier"]);
-        return {
-            "Final Archer Damage": (archer * multiplier).toFixed(5),
-            "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
-            "Final Siege Damage": (siege * multiplier).toFixed(5),
-        };
-    }, []);
+// Calculate all derived values for a player
+const calculateAll = useCallback((player) => {
+    // 1. Ensure Atlantis levels default to 0 if undefined
+    const archerAtlantis = player["Archer Atlantis"] || 0;
+    const cavalryAtlantis = player["Cavalry Atlantis"] || 0;
+    const siegeAtlantis = player["Siege Atlantis"] || 0;
+
+    // 2. Calculate raw stats
+    const archer = getNumber(calcs(player, "archer", archerAtlantis));
+    const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis));
+    const siege = getNumber(calcs(player, "siege", siegeAtlantis));
+
+    // 3. Get Multiplier with a fallback to 1.5 because the UI is hardcoded
+    let multiplier = getNumber(player["Multiplier"]);
+    if (!multiplier || multiplier === 0) {
+        multiplier = 1.5;
+    }
+
+    return {
+        "Final Archer Damage": (archer * multiplier).toFixed(5),
+        "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
+        "Final Siege Damage": (siege * multiplier).toFixed(5),
+    };
+}, []);
 
     // Copy table to clipboard
     const handleCopyTable = () => {
@@ -365,6 +378,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 const archerColor = getColorByThreshold(archerVal, thresholds);
                                 const cavalryColor = getColorByThreshold(cavalryVal, thresholds);
                                 const siegeColor = getColorByThreshold(siegeVal, thresholds);
+                                console.log(archerVal)
                                 const avgDamage = ((archerVal || 0) + (cavalryVal || 0)) / 2;
                                 const avgColor = getColorByThreshold(avgDamage, thresholds);
 
