@@ -40,7 +40,7 @@ export default function ImageUpload({ onUpload, onExtract, name }) {
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    }, []); // Added dependency array to prevent double-binding
+    }); // Added dependency array to prevent double-binding
 
     const handleFiles = (fileList) => {
         const filesArray = Array.from(fileList);
@@ -78,13 +78,10 @@ export default function ImageUpload({ onUpload, onExtract, name }) {
         setFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    // --- NEW LOGIC: EXTRACT TEXT FROM IMAGES ---
     const handleExtractClick = async () => {
         if (files.length === 0) return;
 
         setLoading(true);
-        const results = [];
-
         try {
             // Process all files concurrently
             const promises = files.map(file => {
