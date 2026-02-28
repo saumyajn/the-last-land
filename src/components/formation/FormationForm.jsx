@@ -5,9 +5,9 @@ import { db } from "../../utils/firebase";
 
 import { usePermissionSnackbar } from "../Permissions";
 
-export default function FormationForm({ label, formState, setFormState , isAdmin }) {
+export default function FormationForm({ label, formState, setFormState, isAdmin }) {
   const docName = (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
-  
+
 
   const { showNoPermission } = usePermissionSnackbar();
   useEffect(() => {
@@ -31,29 +31,46 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
         showNoPermission();
         return;
       }
-      await setDoc(doc(db, "settings", docName), formState);
+       const payload = {
+        ...formState,
+        damage_troops: calcDamage(formState.total, formState.guards),
+      };
+      await setDoc(doc(db, "settings", docName), payload);
       console.log("Saved", docName);
     } catch (error) {
       console.error("Error saving formation:", error);
     }
   };
 
+  const calcDamage = (tot, gua) =>
+    String((Number(tot) || 0) - (Number(gua) || 0));
+
+  const handleChange = key => e => {
+    const val = e.target.value;
+    setFormState(prev => {
+      const next = { ...prev, [key]: val };
+      if (key === "total" || key === "guards") {
+        next.damage_troops = calcDamage(next.total, next.guards);
+      }
+      return next;
+    });
+  };
   return (
-    <Paper  elevation={2}  sx={{
-        p: 3,
-        mb: 3,
-        borderRadius: 3,
-        backgroundColor: "#fdfdfd",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-      }}
+    <Paper elevation={2} sx={{
+      p: 3,
+      mb: 3,
+      borderRadius: 3,
+      backgroundColor: "#fdfdfd",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    }}
     >
-     
+
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
         <Grid item xs={12} sm={3}>
           <TextField
             label="Total Troops"
             value={formState.total}
-            onChange={(e) => setFormState({ ...formState, total: e.target.value })}
+            onChange={handleChange("total")}
             fullWidth
           />
         </Grid>
@@ -61,21 +78,22 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
           <TextField
             label="Guards"
             value={formState.guards}
-            onChange={(e) => setFormState({ ...formState, guards: e.target.value })}
+            onChange={handleChange("guards")}
             fullWidth
           />
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextField
             label="Damage Troops"
-            value={String((Number(formState.total) || 0) - (Number(formState.guards) || 0))}
+            value={formState.damage_troops}
             inputProps={{ readOnly: true }}
-            onFocus={(e) => e.target.select()}
-          
+          onFocus={(e) => e.target.select()}
+
           />
+          {console.log(String((Number(formState.total) || 0) - (Number(formState.guards) || 0)))}
         </Grid>
 
-       
+
       </Grid>
       <Divider sx={{ m: 2 }} />
       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
@@ -111,10 +129,10 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
             fullWidth
           />
         </Grid>
-      
+
       </Grid>
       <Divider sx={{ m: 2 }} />
-       <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
+      <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
         <Grid item xs={12} sm={3}>
           <TextField
             label="T10 Cavalry"
@@ -149,7 +167,7 @@ export default function FormationForm({ label, formState, setFormState , isAdmin
         </Grid>
       </Grid>
       <Stack direction="row" justifyContent="flex-end" mt={2}>
-        <Button variant="contained" size="small"onClick={handleSave}>Save</Button>
+        <Button variant="contained" size="small" onClick={handleSave}>Save</Button>
       </Stack>
     </Paper>
   );

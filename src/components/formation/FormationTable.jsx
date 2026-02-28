@@ -46,7 +46,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       const thresholdData = thresholdsSnap.exists() ? thresholdsSnap.data().thresholds || [] : [];
       const colorOrder = thresholdData.map(t => t.name);
 
-      const totalTroops = parseFloat(settingData.archers) + parseFloat(settingData.cavalry) || 0;
+      const totalTroops = parseFloat(settingData.damage_troops || 0);
 
       setTotalTroopValue(totalTroops);
       setRatios({

@@ -25,8 +25,8 @@ export default function FormationPage({ groupedData = {}, groupedCavalryData = {
   // It is already calculated in App.js and passed as a prop.
 
   const { isAdmin } = useContext(AuthContext);
-  const [form1, setForm1] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
-  const [form2, setForm2] = useState({ total: "", guards: "", archers: "", cavalry: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
+  const [form1, setForm1] = useState({ total: "", guards: "",damage_troops:"", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
+  const [form2, setForm2] = useState({ total: "", guards: "",damage_troops:"", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
 
   // Use optional chaining in case thresholds is empty initially
   const colorSortOrder = thresholds?.map(t => t.color) || [];
