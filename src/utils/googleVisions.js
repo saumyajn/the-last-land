@@ -1,3 +1,8 @@
+import { getFunctions, httpsCallable,connectFunctionsEmulator } from 'firebase/functions';
+import { app } from './firebase'; // Import your firebase app instance
+
+const functions = getFunctions(app);
+
 export const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -6,24 +11,19 @@ export const fileToBase64 = (file) =>
     reader.readAsDataURL(file);
   });
 
+  if (window.location.hostname === "localhost") {
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+}
 export const detectText = async (base64Image) => {
-  const apiKey = process.env.REACT_APP_VISION_API_KEY;
-  const response = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        requests: [
-          {
-            image: { content: base64Image },
-            features: [{ type: "TEXT_DETECTION" }],
-          },
-        ],
-      }),
-    }
-  );
-
-  const result = await response.json();
-  return result?.responses?.[0]?.fullTextAnnotation?.text || "No text found.";
+  // This "calls" the 'process_image_ocr' function in main.py
+  const ocrFunction = httpsCallable(functions, 'process_image_ocr'); 
+  
+  try {
+    const result = await ocrFunction({ image: base64Image });
+    // result.data contains the {"text": "..."} object from Python
+    return result.data.text || "No text found.";
+  } catch (error) {
+    console.error("Cloud OCR failed:", error);
+    return "Error during OCR";
+  }
 };

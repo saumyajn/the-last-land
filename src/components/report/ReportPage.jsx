@@ -17,7 +17,7 @@ import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
 
 export default function ReportPage() {
-  const {isAdmin } = useContext(AuthContext);
+  const { isAdmin } = useContext(AuthContext);
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImage, setMainImage] = useState(null);
@@ -35,11 +35,11 @@ export default function ReportPage() {
     T9_cavalry: ["T9_cavalry"],
     T9_archer: ["T9_archer"],
     T8_cavalry: ["T8_cavalry"],
-    T8_siege: ["T8_siege"],
     T8_archer: ["T8_archer"],
+    T8_siege: ["T8_siege"],
     T7_cavalry: ["T7_cavalry"],
     T7_archer: ["T7_archer"],
-    
+
   };
 
   const templateKeys = Object.keys(templateMap);
@@ -69,7 +69,7 @@ export default function ReportPage() {
       setLoading(false);
     };
     fetchAllReports();
-  },[]);
+  }, []);
 
   useEffect(() => {
     const fetchPlayerOptions = async () => {
@@ -246,7 +246,7 @@ export default function ReportPage() {
       const wounded = parseInt(data?.Wounded || "0");
       const survivors = parseInt(data?.Survivors || "0");
       const total = losses + wounded + survivors;
-      console.log(`Calculating KPT ${kills/total} `);
+      console.log(`Calculating KPT ${kills / total} `);
       return total === 0 ? "0.00" : (kills / total).toFixed(2);
     };
 

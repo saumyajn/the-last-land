@@ -1,0 +1,528 @@
+[debug] [2026-03-02T03:06:56.434Z] ----------------------------------------------------------------------
+[debug] [2026-03-02T03:06:56.437Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\saumy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
+[debug] [2026-03-02T03:06:56.437Z] CLI Version:   15.8.0
+[debug] [2026-03-02T03:06:56.437Z] Platform:      win32
+[debug] [2026-03-02T03:06:56.437Z] Node Version:  v22.14.0
+[debug] [2026-03-02T03:06:56.438Z] Time:          Sun Mar 01 2026 22:06:56 GMT-0500 (Eastern Standard Time)
+[debug] [2026-03-02T03:06:56.438Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-02T03:06:57.769Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T03:06:57.769Z] > authorizing via signed-in user (saums06@gmail.com)
+[info] i  emulators: Starting emulators: functions, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, extensions"}}
+[debug] [2026-03-02T03:06:57.773Z] Checked if tokens are valid: true, expires at: 1772424353472
+[debug] [2026-03-02T03:06:57.773Z] Checked if tokens are valid: true, expires at: 1772424353472
+[debug] [2026-03-02T03:06:57.774Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/image-to-data-9a90b/services/cloudresourcemanager.googleapis.com [none]
+[debug] [2026-03-02T03:06:57.774Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/image-to-data-9a90b/services/cloudresourcemanager.googleapis.com  x-goog-user-project=image-to-data-9a90b
+[debug] [2026-03-02T03:06:58.205Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/image-to-data-9a90b/services/cloudresourcemanager.googleapis.com 200
+[debug] [2026-03-02T03:06:58.205Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/image-to-data-9a90b/services/cloudresourcemanager.googleapis.com [omitted]
+[debug] [2026-03-02T03:06:58.210Z] Checked if tokens are valid: true, expires at: 1772424353472
+[debug] [2026-03-02T03:06:58.210Z] Checked if tokens are valid: true, expires at: 1772424353472
+[debug] [2026-03-02T03:06:58.211Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/image-to-data-9a90b [none]
+[debug] [2026-03-02T03:06:58.378Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/image-to-data-9a90b 200
+[debug] [2026-03-02T03:06:58.378Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/image-to-data-9a90b {"projectNumber":"1008359466151","projectId":"image-to-data-9a90b","lifecycleState":"ACTIVE","name":"image-to-data","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-04-05T22:58:17.572979Z"}
+[debug] [2026-03-02T03:06:58.391Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-03-02T03:06:58.391Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-03-02T03:06:58.396Z] Write emulator hub locator at C:\Users\saumy\AppData\Local\Temp\hub-image-to-data-9a90b.json
+[debug] [2026-03-02T03:06:58.402Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2026-03-02T03:06:58.409Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-03-02T03:06:58.409Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-03-02T03:06:58.409Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-03-02T03:06:58.409Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, firestore, database, hosting, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, firestore, database, hosting, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2026-03-02T03:06:58.439Z] defaultcredentials: writing to file C:\Users\saumy\AppData\Roaming\firebase\saums06_gmail_com_application_default_credentials.json
+[debug] [2026-03-02T03:06:58.441Z] Setting GAC to C:\Users\saumy\AppData\Roaming\firebase\saums06_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\saumy\\AppData\\Roaming\\firebase\\saums06_gmail_com_application_default_credentials.json"}}
+[debug] [2026-03-02T03:06:58.441Z] Checked if tokens are valid: true, expires at: 1772424353472
+[debug] [2026-03-02T03:06:58.441Z] Checked if tokens are valid: true, expires at: 1772424353472
+[debug] [2026-03-02T03:06:58.441Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/image-to-data-9a90b/adminSdkConfig [none]
+[debug] [2026-03-02T03:06:58.650Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/image-to-data-9a90b/adminSdkConfig 200
+[debug] [2026-03-02T03:06:58.650Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/image-to-data-9a90b/adminSdkConfig {"projectId":"image-to-data-9a90b","storageBucket":"image-to-data-9a90b.firebasestorage.app"}
+[info] i  ui: downloading ui-v1.15.0.zip... {"metadata":{"emulator":{"name":"ui"},"message":"downloading ui-v1.15.0.zip..."}}
+[debug] [2026-03-02T03:06:58.675Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.15.0.zip 
+[debug] [2026-03-02T03:06:58.733Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.15.0.zip 200
+[debug] [2026-03-02T03:06:58.733Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.15.0.zip [stream]
+[debug] [2026-03-02T03:06:58.964Z] Data is 3538469
+[debug] [2026-03-02T03:06:58.964Z] [unzip] Entry: client/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-03-02T03:06:58.964Z] [unzip] Processing entry: client\
+[debug] [2026-03-02T03:06:58.964Z] [unzip] mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\
+[debug] [2026-03-02T03:06:58.966Z] [unzip] Entry: client/favicon-16x16.png (compressed_size=293 bytes, uncompressed_size=293 bytes)
+[debug] [2026-03-02T03:06:58.966Z] [unzip] Processing entry: client\favicon-16x16.png
+[debug] [2026-03-02T03:06:58.966Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.966Z] [unzip] Writing file: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\favicon-16x16.png
+[debug] [2026-03-02T03:06:58.967Z] [unzip] Entry: client/safari-pinned-tab.svg (compressed_size=1433 bytes, uncompressed_size=2611 bytes)
+[debug] [2026-03-02T03:06:58.967Z] [unzip] Processing entry: client\safari-pinned-tab.svg
+[debug] [2026-03-02T03:06:58.967Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.968Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\safari-pinned-tab.svg
+[debug] [2026-03-02T03:06:58.971Z] [unzip] Entry: client/favicon.ico (compressed_size=2933 bytes, uncompressed_size=13294 bytes)
+[debug] [2026-03-02T03:06:58.972Z] [unzip] Processing entry: client\favicon.ico
+[debug] [2026-03-02T03:06:58.972Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.972Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\favicon.ico
+[debug] [2026-03-02T03:06:58.973Z] [unzip] Entry: client/index.html (compressed_size=1364 bytes, uncompressed_size=3071 bytes)
+[debug] [2026-03-02T03:06:58.973Z] [unzip] Processing entry: client\index.html
+[debug] [2026-03-02T03:06:58.973Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.973Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\index.html
+[debug] [2026-03-02T03:06:58.974Z] [unzip] Entry: client/android-chrome-192x192.png (compressed_size=2684 bytes, uncompressed_size=2684 bytes)
+[debug] [2026-03-02T03:06:58.974Z] [unzip] Processing entry: client\android-chrome-192x192.png
+[debug] [2026-03-02T03:06:58.974Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.975Z] [unzip] Writing file: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\android-chrome-192x192.png
+[debug] [2026-03-02T03:06:58.975Z] [unzip] Entry: client/apple-touch-icon.png (compressed_size=2123 bytes, uncompressed_size=2152 bytes)
+[debug] [2026-03-02T03:06:58.975Z] [unzip] Processing entry: client\apple-touch-icon.png
+[debug] [2026-03-02T03:06:58.975Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.976Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\apple-touch-icon.png
+[debug] [2026-03-02T03:06:58.977Z] [unzip] Entry: client/android-chrome-512x512.png (compressed_size=5369 bytes, uncompressed_size=5411 bytes)
+[debug] [2026-03-02T03:06:58.977Z] [unzip] Processing entry: client\android-chrome-512x512.png
+[debug] [2026-03-02T03:06:58.977Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.977Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\android-chrome-512x512.png
+[debug] [2026-03-02T03:06:58.978Z] [unzip] Entry: client/manifest.json (compressed_size=245 bytes, uncompressed_size=551 bytes)
+[debug] [2026-03-02T03:06:58.978Z] [unzip] Processing entry: client\manifest.json
+[debug] [2026-03-02T03:06:58.978Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.979Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\manifest.json
+[debug] [2026-03-02T03:06:58.980Z] [unzip] Entry: client/robots.txt (compressed_size=26 bytes, uncompressed_size=26 bytes)
+[debug] [2026-03-02T03:06:58.980Z] [unzip] Processing entry: client\robots.txt
+[debug] [2026-03-02T03:06:58.980Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.980Z] [unzip] Writing file: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\robots.txt
+[debug] [2026-03-02T03:06:58.980Z] [unzip] Entry: client/mstile-150x150.png (compressed_size=2034 bytes, uncompressed_size=2034 bytes)
+[debug] [2026-03-02T03:06:58.981Z] [unzip] Processing entry: client\mstile-150x150.png
+[debug] [2026-03-02T03:06:58.981Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:58.981Z] [unzip] Writing file: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\mstile-150x150.png
+[debug] [2026-03-02T03:06:58.981Z] [unzip] Entry: client/assets/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-03-02T03:06:58.981Z] [unzip] Processing entry: client\assets\
+[debug] [2026-03-02T03:06:58.981Z] [unzip] mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\
+[debug] [2026-03-02T03:06:58.982Z] [unzip] Entry: client/assets/index-BX-A56oj.js (compressed_size=582089 bytes, uncompressed_size=2092775 bytes)
+[debug] [2026-03-02T03:06:58.982Z] [unzip] Processing entry: client\assets\index-BX-A56oj.js
+[debug] [2026-03-02T03:06:58.982Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets
+[debug] [2026-03-02T03:06:58.982Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\index-BX-A56oj.js
+[debug] [2026-03-02T03:06:58.994Z] [unzip] Entry: client/assets/index-CjB9C900.css (compressed_size=35979 bytes, uncompressed_size=298654 bytes)
+[debug] [2026-03-02T03:06:58.994Z] [unzip] Processing entry: client\assets\index-CjB9C900.css
+[debug] [2026-03-02T03:06:58.994Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets
+[debug] [2026-03-02T03:06:58.995Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\index-CjB9C900.css
+[debug] [2026-03-02T03:06:58.997Z] [unzip] Entry: client/assets/index-BX-A56oj.js.map (compressed_size=2362482 bytes, uncompressed_size=10036679 bytes)
+[debug] [2026-03-02T03:06:58.997Z] [unzip] Processing entry: client\assets\index-BX-A56oj.js.map
+[debug] [2026-03-02T03:06:58.997Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets
+[debug] [2026-03-02T03:06:58.997Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\index-BX-A56oj.js.map
+[debug] [2026-03-02T03:06:59.036Z] [unzip] Entry: client/assets/extensions/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-03-02T03:06:59.036Z] [unzip] Processing entry: client\assets\extensions\
+[debug] [2026-03-02T03:06:59.036Z] [unzip] mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\extensions\
+[debug] [2026-03-02T03:06:59.036Z] [unzip] Entry: client/assets/extensions/default-extension.png (compressed_size=1646 bytes, uncompressed_size=1657 bytes)
+[debug] [2026-03-02T03:06:59.036Z] [unzip] Processing entry: client\assets\extensions\default-extension.png
+[debug] [2026-03-02T03:06:59.036Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\extensions
+[debug] [2026-03-02T03:06:59.037Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\extensions\default-extension.png
+[debug] [2026-03-02T03:06:59.038Z] [unzip] Entry: client/assets/img/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-03-02T03:06:59.038Z] [unzip] Processing entry: client\assets\img\
+[debug] [2026-03-02T03:06:59.038Z] [unzip] mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\img\
+[debug] [2026-03-02T03:06:59.038Z] [unzip] Entry: client/assets/img/database.png (compressed_size=29449 bytes, uncompressed_size=29988 bytes)
+[debug] [2026-03-02T03:06:59.038Z] [unzip] Processing entry: client\assets\img\database.png
+[debug] [2026-03-02T03:06:59.038Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\img
+[debug] [2026-03-02T03:06:59.038Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\img\database.png
+[debug] [2026-03-02T03:06:59.039Z] [unzip] Entry: client/assets/provider-icons/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-03-02T03:06:59.039Z] [unzip] Processing entry: client\assets\provider-icons\
+[debug] [2026-03-02T03:06:59.039Z] [unzip] mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\
+[debug] [2026-03-02T03:06:59.040Z] [unzip] Entry: client/assets/provider-icons/auth_service_saml.svg (compressed_size=575 bytes, uncompressed_size=1226 bytes)
+[debug] [2026-03-02T03:06:59.040Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_saml.svg
+[debug] [2026-03-02T03:06:59.040Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.043Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_saml.svg
+[debug] [2026-03-02T03:06:59.044Z] [unzip] Entry: client/assets/provider-icons/auth_service_phone.svg (compressed_size=261 bytes, uncompressed_size=414 bytes)
+[debug] [2026-03-02T03:06:59.044Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_phone.svg
+[debug] [2026-03-02T03:06:59.044Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.045Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_phone.svg
+[debug] [2026-03-02T03:06:59.045Z] [unzip] Entry: client/assets/provider-icons/auth_service_facebook.svg (compressed_size=289 bytes, uncompressed_size=457 bytes)
+[debug] [2026-03-02T03:06:59.046Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_facebook.svg
+[debug] [2026-03-02T03:06:59.046Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.046Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_facebook.svg
+[debug] [2026-03-02T03:06:59.047Z] [unzip] Entry: client/assets/provider-icons/auth_service_game_center.svg (compressed_size=991 bytes, uncompressed_size=3921 bytes)
+[debug] [2026-03-02T03:06:59.047Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_game_center.svg
+[debug] [2026-03-02T03:06:59.047Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.047Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_game_center.svg
+[debug] [2026-03-02T03:06:59.047Z] [unzip] Entry: client/assets/provider-icons/auth_service_apple.svg (compressed_size=230 bytes, uncompressed_size=334 bytes)
+[debug] [2026-03-02T03:06:59.048Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_apple.svg
+[debug] [2026-03-02T03:06:59.048Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.048Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_apple.svg
+[debug] [2026-03-02T03:06:59.048Z] [unzip] Entry: client/assets/provider-icons/auth_service_github.svg (compressed_size=466 bytes, uncompressed_size=838 bytes)
+[debug] [2026-03-02T03:06:59.048Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_github.svg
+[debug] [2026-03-02T03:06:59.048Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.049Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_github.svg
+[debug] [2026-03-02T03:06:59.049Z] [unzip] Entry: client/assets/provider-icons/auth_service_mslive.svg (compressed_size=203 bytes, uncompressed_size=378 bytes)
+[debug] [2026-03-02T03:06:59.049Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_mslive.svg
+[debug] [2026-03-02T03:06:59.049Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.050Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_mslive.svg
+[debug] [2026-03-02T03:06:59.050Z] [unzip] Entry: client/assets/provider-icons/auth_service_yahoo.svg (compressed_size=577 bytes, uncompressed_size=1182 bytes)
+[debug] [2026-03-02T03:06:59.050Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_yahoo.svg
+[debug] [2026-03-02T03:06:59.050Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.050Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_yahoo.svg
+[debug] [2026-03-02T03:06:59.051Z] [unzip] Entry: client/assets/provider-icons/auth_service_twitter.svg (compressed_size=444 bytes, uncompressed_size=751 bytes)
+[debug] [2026-03-02T03:06:59.051Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_twitter.svg
+[debug] [2026-03-02T03:06:59.051Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.051Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_twitter.svg
+[debug] [2026-03-02T03:06:59.052Z] [unzip] Entry: client/assets/provider-icons/auth_service_play_games.svg (compressed_size=565 bytes, uncompressed_size=1173 bytes)
+[debug] [2026-03-02T03:06:59.052Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_play_games.svg
+[debug] [2026-03-02T03:06:59.052Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.052Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_play_games.svg
+[debug] [2026-03-02T03:06:59.053Z] [unzip] Entry: client/assets/provider-icons/auth_service_email.svg (compressed_size=228 bytes, uncompressed_size=326 bytes)
+[debug] [2026-03-02T03:06:59.053Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_email.svg
+[debug] [2026-03-02T03:06:59.053Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.053Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_email.svg
+[debug] [2026-03-02T03:06:59.054Z] [unzip] Entry: client/assets/provider-icons/auth_service_google.svg (compressed_size=409 bytes, uncompressed_size=720 bytes)
+[debug] [2026-03-02T03:06:59.054Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_google.svg
+[debug] [2026-03-02T03:06:59.054Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.055Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_google.svg
+[debug] [2026-03-02T03:06:59.055Z] [unzip] Entry: client/assets/provider-icons/auth_service_oidc.svg (compressed_size=414 bytes, uncompressed_size=858 bytes)
+[debug] [2026-03-02T03:06:59.055Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_oidc.svg
+[debug] [2026-03-02T03:06:59.055Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-03-02T03:06:59.056Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_oidc.svg
+[debug] [2026-03-02T03:06:59.056Z] [unzip] Entry: client/browserconfig.xml (compressed_size=491 bytes, uncompressed_size=822 bytes)
+[debug] [2026-03-02T03:06:59.056Z] [unzip] Processing entry: client\browserconfig.xml
+[debug] [2026-03-02T03:06:59.056Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:59.056Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\browserconfig.xml
+[debug] [2026-03-02T03:06:59.057Z] [unzip] Entry: client/favicon-32x32.png (compressed_size=475 bytes, uncompressed_size=475 bytes)
+[debug] [2026-03-02T03:06:59.057Z] [unzip] Processing entry: client\favicon-32x32.png
+[debug] [2026-03-02T03:06:59.057Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-03-02T03:06:59.057Z] [unzip] Writing file: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\client\favicon-32x32.png
+[debug] [2026-03-02T03:06:59.058Z] [unzip] Entry: server/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-03-02T03:06:59.058Z] [unzip] Processing entry: server\
+[debug] [2026-03-02T03:06:59.058Z] [unzip] mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\server\
+[debug] [2026-03-02T03:06:59.059Z] [unzip] Entry: server/server.mjs.map (compressed_size=217845 bytes, uncompressed_size=944978 bytes)
+[debug] [2026-03-02T03:06:59.059Z] [unzip] Processing entry: server\server.mjs.map
+[debug] [2026-03-02T03:06:59.059Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\server
+[debug] [2026-03-02T03:06:59.059Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\server\server.mjs.map
+[debug] [2026-03-02T03:06:59.065Z] [unzip] Entry: server/server.mjs (compressed_size=276407 bytes, uncompressed_size=933701 bytes)
+[debug] [2026-03-02T03:06:59.065Z] [unzip] Processing entry: server\server.mjs
+[debug] [2026-03-02T03:06:59.065Z] [unzip] else mkdir: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\server
+[debug] [2026-03-02T03:06:59.065Z] [unzip] deflating: C:\Users\saumy\.cache\firebase\emulators\ui-v1.15.0\server\server.mjs
+[debug] [2026-03-02T03:06:59.072Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "C:\Users\saumy\Code\react\image-to-data\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\saumy\\Code\\react\\image-to-data\\functions\" for Cloud Functions..."}}
+[debug] [2026-03-02T03:06:59.079Z] Customer code is not Node
+[debug] [2026-03-02T03:06:59.080Z] Validating python source
+[debug] [2026-03-02T03:06:59.080Z] Building python source
+[debug] [2026-03-02T03:06:59.081Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-03-02T03:06:59.085Z] Running command with virtualenv: command="C:\Users\saumy\Code\react\image-to-data\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","-c","\"import firebase_functions; import os; print(os.path.dirname(firebase_functions.__file__))\""]
+[debug] [2026-03-02T03:06:59.301Z] stdout: C:\Users\saumy\Code\react\image-to-data\functions\venv\Lib\site-packages\firebase_functions
+
+[debug] [2026-03-02T03:06:59.307Z] Running admin server with args: ["python.exe","\"C:\\Users\\saumy\\Code\\react\\image-to-data\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""] and env: {"GCLOUD_PROJECT":"image-to-data-9a90b","K_REVISION":"1","PORT":"80","GOOGLE_CLOUD_QUOTA_PROJECT":"image-to-data-9a90b","FUNCTIONS_EMULATOR":"true","TZ":"UTC","FIREBASE_DEBUG_MODE":"true","FIREBASE_DEBUG_FEATURES":"{\"skipTokenVerification\":true,\"enableCors\":true}","FIREBASE_EMULATOR_HUB":"127.0.0.1:4400","CLOUD_EVENTARC_EMULATOR_HOST":"http://127.0.0.1:9299","CLOUD_TASKS_EMULATOR_HOST":"127.0.0.1:9499","FIREBASE_CONFIG":"{\"storageBucket\":\"image-to-data-9a90b.firebasestorage.app\",\"projectId\":\"image-to-data-9a90b\"}","GOOGLE_APPLICATION_CREDENTIALS":"C:\\Users\\saumy\\AppData\\Roaming\\firebase\\saums06_gmail_com_application_default_credentials.json","ADMIN_PORT":"8081"} in C:\Users\saumy\Code\react\image-to-data\functions
+[debug] [2026-03-02T03:06:59.308Z] Running command with virtualenv: command="C:\Users\saumy\Code\react\image-to-data\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","\"C:\\Users\\saumy\\Code\\react\\image-to-data\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""]
+[info]  * Serving Flask app 'serving'
+ * Debug mode: off
+
+[error] WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:8081
+
+[error] Press CTRL+C to quit
+
+[debug] [2026-03-02T03:07:00.721Z] File C:\Users\saumy\Code\react\image-to-data\functions\__pycache__\main.cpython-313.pyc changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\saumy\\Code\\react\\image-to-data\\functions\\__pycache__\\main.cpython-313.pyc changed, reloading triggers"}}
+[debug] [2026-03-02T03:07:01.725Z] Customer code is not Node
+[debug] [2026-03-02T03:07:01.726Z] Validating python source
+[debug] [2026-03-02T03:07:01.726Z] Building python source
+[debug] [2026-03-02T03:07:01.727Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-03-02T03:07:01.736Z] Running command with virtualenv: command="C:\Users\saumy\Code\react\image-to-data\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","-c","\"import firebase_functions; import os; print(os.path.dirname(firebase_functions.__file__))\""]
+[debug] [2026-03-02T03:07:01.831Z] stdout: C:\Users\saumy\Code\react\image-to-data\functions\venv\Lib\site-packages\firebase_functions
+
+[debug] [2026-03-02T03:07:01.838Z] Running admin server with args: ["python.exe","\"C:\\Users\\saumy\\Code\\react\\image-to-data\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""] and env: {"GCLOUD_PROJECT":"image-to-data-9a90b","K_REVISION":"1","PORT":"80","GOOGLE_CLOUD_QUOTA_PROJECT":"image-to-data-9a90b","FUNCTIONS_EMULATOR":"true","TZ":"UTC","FIREBASE_DEBUG_MODE":"true","FIREBASE_DEBUG_FEATURES":"{\"skipTokenVerification\":true,\"enableCors\":true}","FIREBASE_EMULATOR_HUB":"127.0.0.1:4400","CLOUD_EVENTARC_EMULATOR_HOST":"http://127.0.0.1:9299","CLOUD_TASKS_EMULATOR_HOST":"127.0.0.1:9499","FIREBASE_CONFIG":"{\"storageBucket\":\"image-to-data-9a90b.firebasestorage.app\",\"projectId\":\"image-to-data-9a90b\"}","GOOGLE_APPLICATION_CREDENTIALS":"C:\\Users\\saumy\\AppData\\Roaming\\firebase\\saums06_gmail_com_application_default_credentials.json","ADMIN_PORT":"8082"} in C:\Users\saumy\Code\react\image-to-data\functions
+[debug] [2026-03-02T03:07:01.838Z] Running command with virtualenv: command="C:\Users\saumy\Code\react\image-to-data\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","\"C:\\Users\\saumy\\Code\\react\\image-to-data\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""]
+[error] 127.0.0.1 - - [02/Mar/2026 03:07:02] "GET /__/functions.yaml HTTP/1.1" 200 -
+
+[debug] [2026-03-02T03:07:02.394Z] Got response from /__/functions.yaml endpoints:
+  extract_text_from_image:
+    availableMemoryMb: null
+    concurrency: null
+    entryPoint: extract_text_from_image
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: null
+    minInstances: 0
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+  process_image_ocr:
+    availableMemoryMb: null
+    callableTrigger: {}
+    concurrency: null
+    entryPoint: process_image_ocr
+    ingressSettings: null
+    labels:
+      deployment-callable: 'true'
+    maxInstances: null
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+params: []
+requiredAPIs: []
+specVersion: v1alpha1
+
+[error] 127.0.0.1 - - [02/Mar/2026 03:07:02] "GET /__/quitquitquit HTTP/1.1" 200 -
+
+[info] +  functions: Loaded functions definitions from source: extract_text_from_image, process_image_ocr. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: extract_text_from_image, process_image_ocr."}}
+[info] +  functions[us-central1-extract_text_from_image]: http function initialized (http://127.0.0.1:5001/image-to-data-9a90b/us-central1/extract_text_from_image). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/image-to-data-9a90b/us-central1/extract_text_from_image)."}}
+[info] +  functions[us-central1-process_image_ocr]: http function initialized (http://127.0.0.1:5001/image-to-data-9a90b/us-central1/process_image_ocr). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/image-to-data-9a90b/us-central1/process_image_ocr)."}}
+[debug] [2026-03-02T03:07:02.436Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator   │ Host:Port      │ View in Emulator UI              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Functions  │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[info]  * Serving Flask app 'serving'
+ * Debug mode: off
+
+[error] WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:8082
+
+[error] Press CTRL+C to quit
+
+[error] 127.0.0.1 - - [02/Mar/2026 03:07:02] "GET /__/functions.yaml HTTP/1.1" 200 -
+
+[debug] [2026-03-02T03:07:02.832Z] Got response from /__/functions.yaml endpoints:
+  extract_text_from_image:
+    availableMemoryMb: null
+    concurrency: null
+    entryPoint: extract_text_from_image
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: null
+    minInstances: 0
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+  process_image_ocr:
+    availableMemoryMb: null
+    callableTrigger: {}
+    concurrency: null
+    entryPoint: process_image_ocr
+    ingressSettings: null
+    labels:
+      deployment-callable: 'true'
+    maxInstances: null
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+params: []
+requiredAPIs: []
+specVersion: v1alpha1
+
+[error] 127.0.0.1 - - [02/Mar/2026 03:07:02] "GET /__/quitquitquit HTTP/1.1" 200 -
+
+[info] +  functions: Loaded functions definitions from source: extract_text_from_image, process_image_ocr. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: extract_text_from_image, process_image_ocr."}}
+[debug] [2026-03-02T03:07:30.284Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:30.284Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:30.284Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:30.284Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:30.284Z] Accepted request OPTIONS /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:30.285Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:30.285Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:30.290Z] Running command with virtualenv: command="C:\Users\saumy\Code\react\image-to-data\functions\venv\Scripts\activate.bat", args=["","&&","functions-framework"]
+[debug] [2026-03-02T03:07:30.297Z] [worker-pool] addWorker(us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] addWorker(us-central1-process_image_ocr)"}}
+[debug] [2026-03-02T03:07:30.298Z] [worker-pool] Adding worker with key us-central1-process_image_ocr, total=1 {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] Adding worker with key us-central1-process_image_ocr, total=1"}}
+[info] >   * Serving Flask app 'process_image_ocr' {"user":" * Serving Flask app 'process_image_ocr'\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m  * Serving Flask app 'process_image_ocr'\r"}}
+[info] >   * Debug mode: off {"user":" * Debug mode: off\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m  * Debug mode: off\r"}}
+[info] >  WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead. {"user":"WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\r"}}
+[info] >   * Running on http://127.0.0.1:8605 {"user":" * Running on http://127.0.0.1:8605\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m  * Running on http://127.0.0.1:8605\r"}}
+[info] >  Press CTRL+C to quit {"user":"Press CTRL+C to quit\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m Press CTRL+C to quit\r"}}
+[info] >  WARNING:root:Request has invalid method. GET {"user":"WARNING:root:Request has invalid method. GET\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m WARNING:root:Request has invalid method. GET\r"}}
+[info] >  ERROR:root:Invalid request, unable to process. {"user":"ERROR:root:Invalid request, unable to process.\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m ERROR:root:Invalid request, unable to process.\r"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:31] "GET /__/health HTTP/1.1" 400 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:31] \"GET /__/health HTTP/1.1\" 400 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:31] \"GET /__/health HTTP/1.1\" 400 -\r"}}
+[debug] [2026-03-02T03:07:31.284Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:31.284Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:31.284Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:31] "GET /__/health HTTP/1.1" 400 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:31] \"\u001b[31m\u001b[1mGET /__/health HTTP/1.1\u001b[0m\" 400 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:31] \"\u001b[31m\u001b[1mGET /__/health HTTP/1.1\u001b[0m\" 400 -\r"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:31] "OPTIONS / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:31] \"OPTIONS / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:31] \"OPTIONS / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:31] "OPTIONS / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:31] \"OPTIONS / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:31] \"OPTIONS / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:31.289Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 4.4641ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 4.4641ms"}}
+[debug] [2026-03-02T03:07:31.289Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:31.289Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:31.289Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:31.289Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:31.291Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:31.291Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:31.291Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:31.291Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:31.291Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:31.292Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:31.292Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:31.292Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:31.292Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:32] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:32] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:32.233Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 941.4981ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 941.4981ms"}}
+[debug] [2026-03-02T03:07:32.235Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:32.235Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:32.235Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:32.235Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:32.300Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:32.300Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:32.300Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:32.300Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:32.300Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:32.301Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:32.301Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:32.301Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:32.301Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:32] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:32] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:32] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:32.865Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 563.6564ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 563.6564ms"}}
+[debug] [2026-03-02T03:07:32.866Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:32.867Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:32.867Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:32.867Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:32.900Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:32.900Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:32.900Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:32.900Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:32.901Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:32.901Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:32.901Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:32.901Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:32.901Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:33] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:33] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:33] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:33] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:33] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:33] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:33.458Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 557.4311ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 557.4311ms"}}
+[debug] [2026-03-02T03:07:33.460Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:33.460Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:33.461Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:33.461Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:33.501Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:33.501Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:33.501Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:33.501Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:33.501Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:33.502Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:33.502Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:33.502Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:33.502Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:34] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:34] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:34] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:34] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:34] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:34] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:34.099Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 596.869ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 596.869ms"}}
+[debug] [2026-03-02T03:07:34.100Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:34.100Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:34.100Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:34.100Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:34.836Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:34.836Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:34.837Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:34.836Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:34.837Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:34.837Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:34.837Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:34.837Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:34.838Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:35] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:35] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:35] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:35] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:35] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:35] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:35.447Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 610.0308ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 610.0308ms"}}
+[debug] [2026-03-02T03:07:35.448Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:35.448Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:35.448Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:35.448Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:35.511Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:35.511Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:35.512Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:35.511Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:35.512Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:35.512Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:35.512Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:35.512Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:35.513Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:36] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:36.144Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 631.7751ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 631.7751ms"}}
+[debug] [2026-03-02T03:07:36.145Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:36.145Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:36.145Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:36.145Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:36.208Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:36.208Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:36.209Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:36.208Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:36.209Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:36.209Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:36.209Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:36.209Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:36.209Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:36] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:36.759Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 549.613ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 549.613ms"}}
+[debug] [2026-03-02T03:07:36.759Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:36.759Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:36.760Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:36.760Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:36.819Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:36.819Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:36.819Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:36.819Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:36.819Z] Accepted request OPTIONS /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:36.820Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:36.820Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:36.820Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:36.820Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:36] "OPTIONS / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:36] \"OPTIONS / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:36] \"OPTIONS / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] "OPTIONS / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] \"OPTIONS / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:36] \"OPTIONS / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:36.823Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 2.7411ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 2.7411ms"}}
+[debug] [2026-03-02T03:07:36.823Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:36.823Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:36.823Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:36.823Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:36.824Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:36.824Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:36.824Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:36.824Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:36.824Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:36.825Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:36.825Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:36.825Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:36.825Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:37] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:37] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:37] \"POST / HTTP/1.1\" 200 -\r"}}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:37] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:37] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:37] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:37.413Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 587.8595ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 587.8595ms"}}
+[debug] [2026-03-02T03:07:37.413Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:37.414Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:37.414Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:37.414Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:37.478Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:37.478Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:37.479Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:37.478Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:37.479Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:37.479Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:37.479Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:37.479Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:37.479Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:38] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:38.182Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 703.0069ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 703.0069ms"}}
+[debug] [2026-03-02T03:07:38.183Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:38.183Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:38.183Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:38.183Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:38] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:38.241Z] [work-queue] {"queuedWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:38.241Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-03-02T03:07:38.241Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/image-to-data-9a90b/us-central1/process_image_ocr-2026-03-02T03:07:38.241Z"],"workRunningCount":1}
+[debug] [2026-03-02T03:07:38.241Z] Accepted request POST /image-to-data-9a90b/us-central1/process_image_ocr --> us-central1-process_image_ocr
+[debug] [2026-03-02T03:07:38.241Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-03-02T03:07:38.241Z] [functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/image-to-data-9a90b/us-central1/process_image_ocr, mapping to path=/"}}
+[debug] [2026-03-02T03:07:38.241Z] [worker-pool] submitRequest(triggerId=us-central1-process_image_ocr) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-process_image_ocr)"}}
+[info] i  functions: Beginning execution of "us-central1-process_image_ocr" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Beginning execution of \"us-central1-process_image_ocr\""}}
+[debug] [2026-03-02T03:07:38.242Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: BUSY"}}
+[info] >  127.0.0.1 - - [02/Mar/2026 03:07:38] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-03-02T03:07:38.894Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-process_image_ocr" in 653.1128ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finished \"us-central1-process_image_ocr\" in 653.1128ms"}}
+[debug] [2026-03-02T03:07:38.895Z] [worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"[worker-us-central1-process_image_ocr-9a2a4a54-2ee7-472c-abe3-90f68bed1348]: IDLE"}}
+[debug] [2026-03-02T03:07:38.895Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-03-02T03:07:38.895Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-03-02T03:07:38.895Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[info] >  INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:38] "POST / HTTP/1.1" 200 - {"user":"INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-process_image_ocr"},"extension":{},"message":"\u001b[90m> \u001b[39m INFO:werkzeug:127.0.0.1 - - [02/Mar/2026 03:07:38] \"POST / HTTP/1.1\" 200 -\r"}}

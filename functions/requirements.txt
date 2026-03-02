@@ -4,3 +4,4 @@ firebase-admin>=6.0.0
 google-cloud-vision>=3.0.0
 flask
 flask-cors
+google-cloud-vision
