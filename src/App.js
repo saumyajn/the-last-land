@@ -27,7 +27,9 @@ export default function App() {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log("🔥 Auth state changed:", firebaseUser);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Auth state:", firebaseUser);
+      }
       getRedirectResult(auth)
         .then((result) => {
           if (result?.user) {

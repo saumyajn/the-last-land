@@ -13,7 +13,7 @@ import {
   Typography,
   IconButton,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 const archerKeys = ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"];
@@ -58,7 +58,7 @@ export default function ReportResultTable({
     const losses = parseInt(data?.Losses || "0");
     const wounded = parseInt(data?.Wounded || "0");
     const survivors = parseInt(data?.Survivors || "0");
-    console.log(`Calculating KPT ${kills} `+ computeKPT(kills, losses, wounded, survivors) );
+    console.log(`Calculating KPT ${kills} ` + computeKPT(kills, losses, wounded, survivors));
     return computeKPT(kills, losses, wounded, survivors);
   }
 
@@ -85,11 +85,17 @@ export default function ReportResultTable({
 
     return computeKPT(kills, losses, wounded, survivors);
   };
+  const memoizedPlayers = useMemo(() => {
+    return structuredResults.map(player => ({
+      ...player,
+      archerKPT: calcKPT(player.data, archerKeys),
+      cavalryKPT: calcKPT(player.data, cavalryKeys)
+    }));
+  }, [structuredResults]);
   return (
     <>
-      {structuredResults.map((player, pIdx) => {
-        const archerKPT = calcKPT(player.data, archerKeys);
-        const cavalryKPT = calcKPT(player.data, cavalryKeys);
+      {memoizedPlayers.map((player, pIdx) => {
+        const { archerKPT, cavalryKPT } = player;
 
         return (
           <Box key={player.name} sx={{ mt: 4 }}>

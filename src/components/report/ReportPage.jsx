@@ -29,16 +29,17 @@ export default function ReportPage() {
   const { showNoPermission } = usePermissionSnackbar();
 
   const templateMap = {
-    T10_cavalry: ["T10_cavalry", "T10_cavalry1", "T10_cavalry2"],
-    T10_archer: ["T10_archer", "T10_archer1", "T10_archer2"],
+    T10_cavalry: ["T10_cavalry"],
+    T10_archer: ["T10_archer"],
     T10_siege: ["T10_siege"],
-    T9_cavalry: ["T9_cavalry", "T9_cavalry1", "T9_cavalry2"],
-    T9_archer: ["T9_archer", "T9_archer1", "T9_archer2"],
-    T8_cavalry: ["T8_cavalry", "T8_cavalry1", "T8_cavalry2"],
-    T8_archer: ["T8_archer", "T8_archer1", "T8_archer2"],
-    T7_cavalry: ["T7_cavalry", "T7_cavalry1", "T7_cavalry2"],
-    T7_archer: ["T7_archer", "T7_archer1", "T7_archer2"],
-    // T6_archer: ["T6_archer", "T6_archer1"]
+    T9_cavalry: ["T9_cavalry"],
+    T9_archer: ["T9_archer"],
+    T8_cavalry: ["T8_cavalry"],
+    T8_siege: ["T8_siege"],
+    T8_archer: ["T8_archer"],
+    T7_cavalry: ["T7_cavalry"],
+    T7_archer: ["T7_archer"],
+    
   };
 
   const templateKeys = Object.keys(templateMap);
@@ -68,7 +69,7 @@ export default function ReportPage() {
       setLoading(false);
     };
     fetchAllReports();
-  });
+  },[]);
 
   useEffect(() => {
     const fetchPlayerOptions = async () => {
@@ -146,7 +147,7 @@ export default function ReportPage() {
 
           const tmplImg = new Image();
           tmplImg.crossOrigin = "anonymous";
-          tmplImg.src = `/images/${variant}.jpg`;
+          tmplImg.src = `/images/${variant}.png`;
 
           await new Promise((res, rej) => {
             tmplImg.onload = res;
@@ -161,7 +162,8 @@ export default function ReportPage() {
           const result = new cv.Mat();
           cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
           const { maxVal, maxLoc } = cv.minMaxLoc(result);
-          const threshold = 0.6;
+          const threshold = 0.3;
+          console.log(`Matching ${variant}: maxVal=${maxVal.toFixed(3)} at (${maxLoc.x}, ${maxLoc.y})`);
           if (maxVal >= threshold) {
             const x = maxLoc.x;
             const y = maxLoc.y;
