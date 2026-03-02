@@ -42,8 +42,21 @@ export default function ReportPage() {
   const [customPlayerName, setCustomPlayerName] = useState("");
   const [playerOptions, setPlayerOptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isCvLoaded, setIsCvLoaded] = useState(!!(window.cv && window.cv.imread));
   const canvasRef = useRef();
   const { showNoPermission } = usePermissionSnackbar();
+
+  useEffect(() => {
+    if (isCvLoaded) return;
+
+    const handleCvLoad = () => {
+      setIsCvLoaded(true);
+      setStatus("✅ OpenCV Ready");
+    };
+
+    window.addEventListener('opencv-loaded', handleCvLoad);
+    return () => window.removeEventListener('opencv-loaded', handleCvLoad);
+  }, [isCvLoaded]);
 
   useEffect(() => {
     const fetchAllReports = async () => {
@@ -116,11 +129,6 @@ export default function ReportPage() {
     if (!mainImage || !finalPlayerName) {
       setStatus("❌ Please select an image and enter a player name.");
       return;
-    }
-
-    if (!window.cv || !cv.imread) {
-      setStatus("⏳ Initializing OpenCV...");
-      return setTimeout(processImage, 200);
     }
 
     try {
@@ -324,8 +332,12 @@ export default function ReportPage() {
           />
         )}
         <input type="file" accept="image/*" onChange={handleImageUpload} />
-        <Button variant="contained" onClick={processImage} disabled={loading}>
-          {loading ? <CircularProgress size={20} /> : "Upload & Scan"}
+        <Button
+          variant="contained"
+          onClick={processImage}
+          disabled={loading || !isCvLoaded} // Added !isCvLoaded check
+        >
+          {!isCvLoaded ? "Initializing Engine..." : (loading ? <CircularProgress size={20} /> : "Upload & Scan")}
         </Button>
       </Box>
       <Typography variant="body2" color="text.secondary">{status}</Typography>
