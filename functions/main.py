@@ -1,4 +1,4 @@
-from firebase_functions import https_fn
+from firebase_functions import https_fn, options
 from firebase_admin import initialize_app
 from google.cloud import vision
 import json
@@ -71,7 +71,13 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
         )
 
 
-@https_fn.on_call()
+@https_fn.on_call(
+    cors=options.CorsOptions(
+        # Use 'cors_origins' and 'cors_methods' (not 'origins'/'methods')
+        cors_origins=["https://the-last-land-analytics.vercel.app"],
+        cors_methods=["get", "post"],
+    )
+)
 def process_image_ocr(req: https_fn.CallableRequest):
     if req.auth is None:
         raise https_fn.HttpsError(
