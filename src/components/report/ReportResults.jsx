@@ -19,6 +19,31 @@ import MuiAlert from "@mui/material/Alert";
 const archerKeys = ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"];
 const cavalryKeys = ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"];
 
+
+const computeKPT = (kills, losses, wounded, survivors) => {
+  const total = losses + wounded + survivors;
+  if (total === 0) return "0.00";
+  return (kills / total).toFixed(2);
+};
+
+const calcKPT = (data, keys) => {
+  let kills = 0, losses = 0, wounded = 0, survivors = 0;
+
+
+  keys.forEach((key) => {
+    const entry = data[key];
+    if (entry) {
+      kills += parseInt(entry.Kills || 0);
+      losses += parseInt(entry.Losses || 0);
+      wounded += parseInt(entry.Wounded || 0);
+      survivors += parseInt(entry.Survivors || 0);
+
+    }
+  });
+
+  return computeKPT(kills, losses, wounded, survivors);
+};
+
 export default function ReportResultTable({
   structuredResults,
   labels,
@@ -62,29 +87,7 @@ export default function ReportResultTable({
     return computeKPT(kills, losses, wounded, survivors);
   }
 
-  const computeKPT = (kills, losses, wounded, survivors) => {
-    const total = losses + wounded + survivors;
-    if (total === 0) return "0.00";
-    return (kills / total).toFixed(2);
-  };
 
-  const calcKPT = (data, keys) => {
-    let kills = 0, losses = 0, wounded = 0, survivors = 0;
-
-
-    keys.forEach((key) => {
-      const entry = data[key];
-      if (entry) {
-        kills += parseInt(entry.Kills || 0);
-        losses += parseInt(entry.Losses || 0);
-        wounded += parseInt(entry.Wounded || 0);
-        survivors += parseInt(entry.Survivors || 0);
-
-      }
-    });
-
-    return computeKPT(kills, losses, wounded, survivors);
-  };
   const memoizedPlayers = useMemo(() => {
     return structuredResults.map(player => ({
       ...player,

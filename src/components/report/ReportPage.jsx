@@ -16,6 +16,23 @@ import { usePermissionSnackbar } from "../Permissions";
 import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
 
+const templateMap = {
+  T10_cavalry: ["T10_cavalry"],
+  T10_archer: ["T10_archer"],
+  T10_siege: ["T10_siege"],
+  T9_cavalry: ["T9_cavalry"],
+  T9_archer: ["T9_archer"],
+  T8_cavalry: ["T8_cavalry"],
+  T8_archer: ["T8_archer"],
+  T8_siege: ["T8_siege"],
+  T7_cavalry: ["T7_cavalry"],
+  T7_archer: ["T7_archer"],
+
+};
+
+const templateKeys = Object.keys(templateMap);
+const labels = ["Kills", "Losses", "Wounded", "Survivors"];
+
 export default function ReportPage() {
   const { isAdmin } = useContext(AuthContext);
   const [status, setStatus] = useState("⏳ Waiting for upload...");
@@ -27,23 +44,6 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const canvasRef = useRef();
   const { showNoPermission } = usePermissionSnackbar();
-
-  const templateMap = {
-    T10_cavalry: ["T10_cavalry"],
-    T10_archer: ["T10_archer"],
-    T10_siege: ["T10_siege"],
-    T9_cavalry: ["T9_cavalry"],
-    T9_archer: ["T9_archer"],
-    T8_cavalry: ["T8_cavalry"],
-    T8_archer: ["T8_archer"],
-    T8_siege: ["T8_siege"],
-    T7_cavalry: ["T7_cavalry"],
-    T7_archer: ["T7_archer"],
-
-  };
-
-  const templateKeys = Object.keys(templateMap);
-  const labels = ["Kills", "Losses", "Wounded", "Survivors"];
 
   useEffect(() => {
     const fetchAllReports = async () => {
