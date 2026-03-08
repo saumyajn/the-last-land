@@ -197,7 +197,7 @@ export default function ReportPage() {
           // const result = new cv.Mat();
           // cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
           // const { maxVal, maxLoc } = cv.minMaxLoc(result);
-          const threshold = 0.75;
+          const threshold = 0.6;
           console.log(`Matching ${variant}: Best maxVal=${bestMatch.maxVal.toFixed(3)} at scale ${bestMatch.scale.toFixed(1)}`);
           // console.log(`Matching ${variant}: maxVal=${maxVal.toFixed(3)} at (${maxLoc.x}, ${maxLoc.y})`);
 
