@@ -35,6 +35,17 @@ const extraColumns = [
     { label: "Avg Damage", key: "Average Damage" },
     { label: "Actions", key: "Actions" }
 ];
+const weightKeysOrder = [
+        "attack", 
+        "health", 
+        "defense", 
+        "damage", 
+        "damageReceived", 
+        "attackBlessing", 
+        "protectBlessing", 
+        "archerRatio", 
+        "cavalryRatio"
+    ];
 
 const CleanInput = ({ value, onChange, width = '75px' }) => (
     <TextField
@@ -55,8 +66,7 @@ const CleanInput = ({ value, onChange, width = '75px' }) => (
     />
 );
 
-export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin, statWeights, setStatWeights }) {
-
+export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin, statWeights = {}, setStatWeights }) {
 
     const [localData, setLocalData] = useState({});
     const [thresholds, setThresholds] = useState([]);
@@ -80,22 +90,34 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const names = useMemo(() => Object.keys(localData), [localData]);
 
-    // 🔥 Modified to pass statWeights to the calcs function
+    // 🔥 Centralized Calculation: Now computes Average Damage directly!
     const calculateAll = useCallback((player, currentWeights) => {
         const archerAtlantis = player["Archer Atlantis"] || 0;
         const cavalryAtlantis = player["Cavalry Atlantis"] || 0;
         const siegeAtlantis = player["Siege Atlantis"] || 0;
 
-        const archer = getNumber(calcs(player, "archer", archerAtlantis, currentWeights));
-        const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis, currentWeights));
-        const siege = getNumber(calcs(player, "siege", siegeAtlantis, currentWeights));
+        const w = currentWeights || {};
+
+        const archer = getNumber(calcs(player, "archer", archerAtlantis, w));
+        const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis, w));
+        const siege = getNumber(calcs(player, "siege", siegeAtlantis, w));
 
         let multiplier = getNumber(player["Multiplier"]) || 1.5;
 
+        const finalArcher = archer * multiplier;
+        const finalCavalry = cavalry * multiplier;
+        const finalSiege = siege * multiplier;
+
+        // Apply dynamic ratios (defaulting to 0.5 to act as an average if not set)
+        const aRatio = w.archerRatio ?? 0.5;
+        const cRatio = w.cavalryRatio ?? 0.5;
+        const avgDamage = (finalArcher * aRatio) + (finalCavalry * cRatio);
+
         return {
-            "Final Archer Damage": (archer * multiplier).toFixed(5),
-            "Final Cavalry Damage": (cavalry * multiplier).toFixed(5),
-            "Final Siege Damage": (siege * multiplier).toFixed(5),
+            "Final Archer Damage": finalArcher.toFixed(5),
+            "Final Cavalry Damage": finalCavalry.toFixed(5),
+            "Final Siege Damage": finalSiege.toFixed(5),
+            "Average Damage": avgDamage.toFixed(2),
         };
     }, []);
 
@@ -109,16 +131,16 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const handleEdit = useCallback((name, field, value) => {
         if (!isAdmin) return showNoPermission();
         const updatedPlayer = { ...localData[name], [field]: value };
+        
+        // `calculateAll` now returns the calculated Average Damage too!
         const calculated = calculateAll(updatedPlayer, statWeights);
-        const avgDamage = (((parseFloat(calculated["Final Archer Damage"]) || 0) + (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2).toFixed(2);
 
         const updatedData = {
             ...updatedPlayer,
-            ...calculated,
-            "Average Damage": avgDamage
+            ...calculated
         };
 
-      setLocalData(prev => ({
+        setLocalData(prev => ({
             ...prev,
             [name]: updatedData
         }));
@@ -135,45 +157,31 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         catch (error) { console.error("Error updating thresholds:", error); }
     }, [isAdmin, thresholds, showNoPermission]);
 
-  const handleWeightChange = async (key, value) => {
+    const handleWeightChange = async (key, value) => {
         if (!isAdmin) return showNoPermission();
         
         const numVal = parseFloat(value) || 0;
-        const newWeights = { ...statWeights, [key]: numVal };
+        const newWeights = { ...statWeights,  [key]: numVal };
         
-        // 1. Update the local weights state
         setStatWeights(newWeights);
 
         try { 
-            // 2. Save new weights to settings in Firestore
             await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); 
             
-            // 3. Recalculate all players and push updates to Firestore
             const updatedPlayers = {};
             
             Object.entries(localData).forEach(([name, playerData]) => {
-                // Recalculate this specific player using the NEW weights
                 const calculated = calculateAll(playerData, newWeights);
-                
-                // Recalculate their Average Damage
-                const avgDamage = (
-                    ((parseFloat(calculated["Final Archer Damage"]) || 0) + 
-                    (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2
-                ).toFixed(2);
                 
                 const fullUpdatedPlayer = { 
                     ...playerData, 
-                    ...calculated, 
-                    "Average Damage": avgDamage 
+                    ...calculated 
                 };
                 
                 updatedPlayers[name] = fullUpdatedPlayer;
-                
-                // 4. Push the updated player back to the database
                 onUpdate(name, fullUpdatedPlayer);
             });
             
-            // 5. Update the local table UI instantly
             setLocalData(updatedPlayers);
             
         } catch (error) { 
@@ -185,12 +193,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         const fetchSettings = async () => {
             setIsLoading(true);
             try {
-                // Fetch Thresholds
                 const thresholdRef = doc(db, "settings", "thresholds");
                 const snapshot = await getDoc(thresholdRef);
                 if (snapshot.exists() && snapshot.data().thresholds) setThresholds(snapshot.data().thresholds);
 
-                // Fetch Atlantis Config
                 const optionsRef = doc(db, "settings", "atlantis_damage");
                 const optionsSnap = await getDoc(optionsRef);
                 if (optionsSnap.exists()) {
@@ -203,9 +209,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             finally { setIsLoading(false); }
         };
         fetchSettings();
-    }, [setStatWeights]);
+    }, []); // Removed setStatWeights from dependency array
 
-    // 🔥 Recalculate everything when data OR weights change
     useEffect(() => {
         const updated = {};
         Object.entries(tableData).forEach(([name, data]) => {
@@ -224,7 +229,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     return (
         <Suspense fallback={<Box p={4}>Loading...</Box>}>
 
-            {/* 🔥 UPDATED DIALOG: Now includes Weights configuration */}
             <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>Configuration & Settings</DialogTitle>
                 <DialogContent dividers>
@@ -248,23 +252,27 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     <Divider sx={{ mb: 3 }} />
 
                     <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        Stat Math Ratios (Weights)
+                        Stat Ratios (Weights)
                     </Typography>
                     <Grid container spacing={3}>
-                        {Object.entries(statWeights).map(([key, value]) => (
-                            <Grid item xs={6} sm={4} md={3} key={key}>
-                                <TextField
-                                    // Formats keys like "damageReceived" to "Damage Received"
-                                    label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                                    value={value}
-                                    onChange={(e) => handleWeightChange(key, e.target.value)}
-                                    size="small"
-                                    type="number"
-                                    inputProps={{ step: "0.1" }}
-                                    fullWidth
-                                />
-                            </Grid>
-                        ))}
+{weightKeysOrder.map((key) => {
+                            // Safely grab the value, default to 0 if it somehow doesn't exist
+                            const value = statWeights?.[key] ?? 0; 
+                            
+                            return (
+                                <Grid item xs={6} sm={4} md={3} key={key}>
+                                    <TextField
+                                        label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                                        value={value}
+                                        onChange={(e) => handleWeightChange(key, e.target.value)}
+                                        size="small"
+                                        type="number"
+                                        inputProps={{ step: "0.1" }}
+                                        fullWidth
+                                    />
+                                </Grid>
+                            );
+                        })}
                     </Grid>
 
                 </DialogContent>
@@ -325,7 +333,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 const archerVal = getNumber(rowData["Final Archer Damage"]);
                                 const cavalryVal = getNumber(rowData["Final Cavalry Damage"]);
                                 const siegeVal = getNumber(rowData["Final Siege Damage"]);
-                                const avgDamage = ((archerVal || 0) + (cavalryVal || 0)) / 2;
+                                const avgDamage = getNumber(rowData["Average Damage"]);
 
                                 return (
                                     <TableRow key={name} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>

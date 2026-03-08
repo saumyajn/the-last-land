@@ -11,7 +11,9 @@ import { AuthContext } from "../../utils/authContext";
 // Lazy load heavy components
 const RawText = lazy(() => import("./RawData"));
 const DataTable = lazy(() => import("./DataTable"));
-  const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1 };
+
+  const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1,archerRatio: 0.5, cavalryRatio: 0.5};
+
 export default function StatsPage() {
   const { isAdmin } = useContext(AuthContext);
   const [text, setText] = useState("");
@@ -158,7 +160,7 @@ export default function StatsPage() {
               onDelete={deletePlayer}
               onUpdate={updateFirestore}
               isAdmin={isAdmin}
-              statWeights={statWeights}       /* 🔥 New Prop */
+              statWeights={statWeights}       
               setStatWeights={setStatWeights}
             />
           )}

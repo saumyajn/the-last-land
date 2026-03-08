@@ -84,6 +84,7 @@ export const buildCopyableTable = (names, localData, desiredKeys) => {
       removePercentage(rowData["Archer Atlantis"]) ?? "",
       removePercentage(rowData["Cavalry Atlantis"]) ?? "",
       removePercentage(rowData["Final Archer Damage"]) ?? "",
+      removePercentage(rowData["Final Siege Damage"]) ?? "", 
       removePercentage(rowData["Final Cavalry Damage"]) ?? ""
     ];
   });
