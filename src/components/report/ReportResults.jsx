@@ -18,6 +18,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 const archerKeys = ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"];
 const cavalryKeys = ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"];
+const siegeKeys = ["T10_siege",  "T8_siege"];
 
 
 const computeKPT = (kills, losses, wounded, survivors) => {
@@ -91,13 +92,14 @@ export default function ReportResultTable({
     return structuredResults.map(player => ({
       ...player,
       archerKPT: calcKPT(player.data, archerKeys),
-      cavalryKPT: calcKPT(player.data, cavalryKeys)
+      cavalryKPT: calcKPT(player.data, cavalryKeys),
+      siegeKPT: calcKPT(player.data, siegeKeys)
     }));
   }, [structuredResults]);
   return (
     <>
       {memoizedPlayers.map((player, pIdx) => {
-        const { archerKPT, cavalryKPT } = player;
+        const { archerKPT, cavalryKPT, siegeKPT } = player;
 
         return (
           <Box key={player.name} sx={{ mt: 4 }}>
@@ -105,6 +107,7 @@ export default function ReportResultTable({
               <Typography variant="h6">📊 {player.name}</Typography>
               <Typography variant="body2">Archer: {archerKPT}</Typography>
               <Typography variant="body2">Calavry: {cavalryKPT}</Typography>
+               <Typography variant="body2">Siege: {siegeKPT}</Typography>
               <IconButton color="primary" onClick={() => handleCopy(player)}>
                 <ContentCopyIcon />
               </IconButton>
