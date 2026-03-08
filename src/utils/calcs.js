@@ -64,8 +64,7 @@ export const calcs = (attributes, role, atlValue, weights) => {
 
   const part3 = (dmg + varDmg + AtlData) / 100;
 
-  if (role === 'archer')
-    console.log(`Debug - calcs: ${getNumber(attributes["Troop Attack"]) }`, { varAtk, atk, varBless, bless, varDmg, dmg, AtlData, part1, part2, part3 });
+ 
   const part4 = (part1 * part2 * (1 + part3));
 
   const powerScore = (part4 * (1 + (lethal / 100))) / 10000;
