@@ -66,7 +66,7 @@ export const calcs = (attributes, role, atlValue, weights) => {
 
   const part4 = (part1 * part2 * part3);
 
-  const powerScore = (part4 * (1 + (lethal / 100))) / 10000;
+  const powerScore = (part4 * (1 + (lethal / 100))) / 100000;
   return powerScore.toFixed(1);
 }
 
