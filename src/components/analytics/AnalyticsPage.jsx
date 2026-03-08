@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
-import { collection, getDocs, setDoc, doc } from "firebase/firestore";
+import { useContext, useEffect, useState, } from "react";
+import { onSnapshot, doc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import {
     Box,
@@ -21,68 +21,36 @@ import AnalyticsSummary from "./AnalyticsSummary";
 import ExportToGoogleSheet from './ExportSheets';
 import { AuthContext } from "../../utils/authContext";
 
+const TROOP_ORDER = [
+    "T10_guards", "T10_cavalry", "T10_archer", "T10_siege",
+    "T9_cavalry", "T9_archer", "T8_cavalry", "T8_archer",
+    "T8_siege", "T7_cavalry", "T7_archer"
+];
+
 export default function AnalyticsPage() {
     const { isAdmin } = useContext(AuthContext);
     const [combinedData, setCombinedData] = useState({});
     const [loading, setLoading] = useState(true);
 
-    const fetchReports = useCallback(async () => {
-        try {
-            const troopTypes = [
-                "T10_guards", "T10_cavalry", "T10_archer", "T10_siege", "T9_cavalry", "T9_archer", "T8_cavalry", "T8_archer", "T8_siege", "T7_cavalry", "T7_archer"
-            ];
-
-            // Optimization: Consider querying only recent reports if list is large
-            const reportSnapshot = await getDocs(collection(db, "reports"));
-
-            const troopTotals = {};
-            troopTypes.forEach(type => {
-                troopTotals[type] = {
-                    Kills: 0,
-                    Losses: 0,
-                    Wounded: 0,
-                    Survivors: 0,
-                    KPT: "0.00"
-                };
-            });
-
-            reportSnapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                troopTypes.forEach(type => {
-                    if (data[type]) {
-                        troopTotals[type].Kills += parseInt(data[type].Kills || 0);
-                        troopTotals[type].Losses += parseInt(data[type].Losses || 0);
-                        troopTotals[type].Wounded += parseInt(data[type].Wounded || 0);
-                        troopTotals[type].Survivors += parseInt(data[type].Survivors || 0);
-                    }
-                });
-            });
-
-            for (const type of troopTypes) {
-                const { Kills, Losses, Wounded, Survivors } = troopTotals[type];
-                const numerator = Kills;
-                const denominator = Survivors +Losses + Wounded;
-                troopTotals[type].KPT = Survivors === 0 ? "0.00" : (numerator / denominator).toFixed(2);
-            }
-
-            setCombinedData(troopTotals);
-
-            // Write summary only once after calculation
-            if (isAdmin) {
-                await setDoc(doc(db, "analytics", "troop_type_kpt"), troopTotals);
-            }
-
-        } catch (error) {
-            console.error("Error fetching troop data:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [isAdmin]);
-
-    // FIX: Added dependency array to prevent infinite loop
     useEffect(() => {
-        fetchReports();
-    }, [fetchReports]);
+        setLoading(true);
+        const summaryRef = doc(db, "analytics", "troop_type_kpt");
+
+        const unsubscribe = onSnapshot(summaryRef, (docSnap) => {
+            if (docSnap.exists()) {
+
+                setCombinedData(docSnap.data());
+            } else {
+                console.warn("No KPT summary found in DB");
+            }
+            setLoading(false);
+        }, (error) => {
+            console.error("Error listening to summary:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     if (loading) return (
         <Stack spacing={1}>
@@ -112,7 +80,12 @@ export default function AnalyticsPage() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {Object.entries(combinedData).map(([type, stats]) => (
+                                {TROOP_ORDER.map((type) => {
+                                    // Get stats from DB data, fallback to zeros if troop type isn't in DB yet
+                                    const stats = combinedData[type] || {
+                                        Kills: 0, Losses: 0, Wounded: 0, Survivors: 0, KPT: "0.00"
+                                    };
+                                    return (
                                     <TableRow key={type}>
                                         <TableCell>{type}</TableCell>
                                         <TableCell>{stats.Kills.toLocaleString()}</TableCell>
@@ -126,7 +99,7 @@ export default function AnalyticsPage() {
                                             {stats.KPT}
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                )})}
                             </TableBody>
                         </Table>
                     </TableContainer>

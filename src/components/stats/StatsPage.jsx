@@ -1,18 +1,19 @@
 import React, { useContext, useEffect, useState, lazy, Suspense } from "react";
 import { Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
-import { collection, doc, getDoc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
 import { parseData } from "../../utils/parseData";
 import { db } from "../../utils/firebase";
 import { calcs, getNumber } from '../../utils/calcs';
 import { AuthContext } from "../../utils/authContext";
+import { updateDocument, deleteDocument } from "../../utils/dbActions";
 
 // Lazy load heavy components
 const RawText = lazy(() => import("./RawData"));
 const DataTable = lazy(() => import("./DataTable"));
 
-  const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1,archerRatio: 0.5, cavalryRatio: 0.5};
+const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1, archerRatio: 0.5, cavalryRatio: 0.5 };
 
 export default function StatsPage() {
   const { isAdmin } = useContext(AuthContext);
@@ -58,38 +59,19 @@ export default function StatsPage() {
     fetchData();
     return () => { mounted = false; };
   }, []);
-
-  const updateFirestore = async (playerName, data) => {
-    try {
-      if (!isAdmin) {
-        showNoPermission();
-        return;
-      }
-      await setDoc(doc(db, "stats", playerName), { ...data }, { merge: true });
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("❌ Firestore update failed:", error);
-      }
-    }
-  };
-
-  const deletePlayer = async (playerName) => {
-    try {
-      if (!isAdmin) {
-        showNoPermission();
-        return;
-      }
-      await deleteDoc(doc(db, "stats", playerName));
+  
+  const handleDelete = async (playerName) => {
+    const success = await deleteDocument("stats", playerName, isAdmin, showNoPermission);
+    if (success) {
       setDataTable(prev => {
         const updated = { ...prev };
         delete updated[playerName];
         return updated;
       });
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error deleting player:", error);
-      }
     }
+  };
+  const handleUpdate = async (playerName, data) => {
+    await updateDocument("stats", playerName, data, isAdmin, showNoPermission);
   };
 
   const handleImageUpload = (e) => {
@@ -122,7 +104,7 @@ export default function StatsPage() {
     attributes["Average Damage"] = (((parseFloat(attributes["Final Archer Damage"]) || 0) + (parseFloat(attributes["Final Cavalry Damage"]) || 0)) / 2).toFixed(2);
 
     setDataTable(prev => ({ ...prev, [name]: attributes }));
-    await updateFirestore(name, attributes);
+    await handleUpdate(name, attributes);
     setLoading(false);
   };
 
@@ -157,10 +139,10 @@ export default function StatsPage() {
             <DataTable
               tableData={dataTable}
               desiredKeys={desiredKeys}
-              onDelete={deletePlayer}
-              onUpdate={updateFirestore}
+              onDelete={handleDelete}
+              onUpdate={handleUpdate}
               isAdmin={isAdmin}
-              statWeights={statWeights}       
+              statWeights={statWeights}
               setStatWeights={setStatWeights}
             />
           )}

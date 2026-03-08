@@ -16,7 +16,7 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function FormationPage() {
   const { isAdmin } = useContext(AuthContext);
-  
+
   // 🔥 Moved all state here from App.js
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalryData, setGroupedCavalryData] = useState({});
@@ -24,8 +24,8 @@ export default function FormationPage() {
   const [thresholds, setThresholds] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [form1, setForm1] = useState({ total: "", guards: "", damage_troops:"", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: ""});
-  const [form2, setForm2] = useState({ total: "", guards: "", damage_troops:"", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
+  const [form1, setForm1] = useState({ total: "", guards: "", damage_troops: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
+  const [form2, setForm2] = useState({ total: "", guards: "", damage_troops: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
 
   // 🔥 Moved the fetch logic here! It now runs fresh every time this page opens.
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function FormationPage() {
 
         const tData = thresholdsSnap.data().thresholds || [];
         setThresholds(tData);
-        
+
         const colorNames = {};
         tData.forEach(th => colorNames[th.color] = th.name);
 
@@ -67,14 +67,14 @@ export default function FormationPage() {
           if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [{ colorName: colorNames[archerColor] || archerColor }];
           newGroupedData[archerColor].push({ name: playerName, damage: archerVal });
 
-          // Cavalry grouping (🔥 With Safety Check added)
+          // Cavalry grouping
           const cavalryMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => cavalryVal >= t.limit);
           const cavalryColor = cavalryMatch?.color || "default";
           if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [{ colorName: colorNames[cavalryColor] || cavalryColor }];
           newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
 
           // Average grouping (🔥 With Safety Check added)
-         
+
           const avgMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => avgVal >= t.limit);
           const avgColor = avgMatch?.color || "default";
           if (!newGroupedAverageData[avgColor]) newGroupedAverageData[avgColor] = [{ colorName: colorNames[avgColor] || avgColor }];
@@ -86,9 +86,9 @@ export default function FormationPage() {
           for (const color in group) {
             const players = group[color].filter(p => typeof p === "object" && "damage" in p);
             if (players.length > 0) {
-                const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
-                const avg = total / players.length;
-                group[color][0].avgDamage = parseFloat(avg.toFixed(2));
+              const total = players.reduce((sum, p) => sum + (p.damage || 0), 0);
+              const avg = total / players.length;
+              group[color][0].avgDamage = parseFloat(avg.toFixed(2));
             }
           }
         };
@@ -140,11 +140,11 @@ export default function FormationPage() {
             const meta = data[color];
             const colorName = meta[0]?.colorName || color;
             const avgDamage = Math.round(meta[0]?.avgDamage || 0);
-            
+
             if (!meta || meta.length <= 1) return null;
 
             return (
-              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 2, bgcolor: alpha(color, 0.1)}}>
+              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 2, bgcolor: alpha(color, 0.1) }}>
                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
                   {colorName.toUpperCase()} - Avg Damage: {avgDamage}
                 </Typography>
@@ -152,7 +152,7 @@ export default function FormationPage() {
                 <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
                   {meta.slice(1).map((player, idx) => (
                     <Box key={idx} sx={{ backgroundColor: "#f0f4ff", px: 1.5, py: 0.5, borderRadius: 2, fontSize: 14, color: "#1e3a8a", fontWeight: 500, border: "1px solid #bbdefb" }}>
-                      {player.name || player} 
+                      {player.name || player}
                     </Box>
                   ))}
                   <Tooltip title="Copy names">
@@ -194,8 +194,8 @@ export default function FormationPage() {
         </Grid>
       </Box>
 
-       <Box sx={{ mb: 4, backgroundColor: '#fdf9ff', p: 3, borderRadius: 3, border: '1px solid #e0e0e0' }}>
-         <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: '#0d47a1' }}>
+      <Box sx={{ mb: 4, backgroundColor: '#fdf9ff', p: 3, borderRadius: 3, border: '1px solid #e0e0e0' }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: '#0d47a1' }}>
           THRONE FORMATION
         </Typography>
         <Grid container spacing={3}>
@@ -203,7 +203,7 @@ export default function FormationPage() {
             <Paper elevation={1} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
               <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} />
-              <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin}  />
+              <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} />
             </Paper>
           </Grid>
         </Grid>
