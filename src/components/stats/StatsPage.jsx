@@ -14,7 +14,6 @@ const DataTable = lazy(() => import("./DataTable"));
 
 export default function StatsPage() {
   const { user, isAdmin } = useContext(AuthContext);
-  const [images, setImages] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [dataTable, setDataTable] = useState({});
@@ -88,8 +87,8 @@ export default function StatsPage() {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length) {
-      const urls = files.map(file => URL.createObjectURL(file));
-      setImages(urls);
+
+
       setText("");
     }
   };
