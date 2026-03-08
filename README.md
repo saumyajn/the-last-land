@@ -1,7 +1,7 @@
-🏰 The Last Land - Alliance Stats & Match Report Tracker
+# The Last Land - Alliance Stats & Match Report Tracker
 A high-performance React application designed to manage, extract, and analyze player statistics and battle reports for alliance members. Built with React, Material-UI, and Firebase, this tool uses Google Cloud Vision OCR and OpenCV to automatically extract data from game screenshots, transforming them into actionable, color-coded data tables.
 
-✨ Key Features
+# Key Features
 📸 Automated OCR Data Extraction: * Upload or paste screenshots of player stat pages or battle reports.
 
 Uses Google Cloud Vision (Document Text Detection) via Firebase Cloud Functions for highly accurate, column-aware text extraction.
@@ -28,7 +28,7 @@ Role-based access ensures only Admins can edit data, rename players, or adjust t
 
 📋 Quick Export: Copy entire tables to the clipboard in a TSV format for instant pasting into Excel or Google Sheets.
 
-🛠️ Tech Stack
+# Tech Stack
 Frontend: React.js, Material-UI (MUI)
 
 Backend / Database: Firebase Firestore
@@ -39,7 +39,7 @@ Image Processing: Google Cloud Vision API, OpenCV.js
 
 State Management: React Context API
 
-🚀 Getting Started
+# Getting Started
 Prerequisites
 Node.js (v16 or higher recommended)
 
@@ -88,18 +88,7 @@ Bash
 npm start
 The app will be available at http://localhost:3000.
 
-🏗️ Recent Architecture Optimizations
-To handle heavy data loads and large alliances, this app was recently overhauled for maximum performance:
-
-Removed Tesseract.js: Migrated all client-side OCR processing to the Google Vision API backend, saving ~25MB of client-side language data downloads and stopping browser freezes.
-
-React.memo Integration: The massive DataTable component uses memoized rows (PlayerRow) to prevent thousands of text inputs from re-rendering when a single value is changed.
-
-Parallel Fetching: Replaced waterfall database queries with Promise.all() to load player stats, settings, and thresholds simultaneously, resulting in near-instant page loads.
-
-Memory Leak Fixes: Ensured all cv.Mat objects are properly garbage-collected after OpenCV image processing, and fixed event-listener duplication on clipboard paste events.
-
-🤝 Contributing
+# Contributing
 Fork the Project
 
 Create your Feature Branch (git checkout -b feature/AmazingFeature)
