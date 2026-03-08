@@ -118,8 +118,11 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             "Average Damage": avgDamage
         };
 
-        setLocalData(updatedData);
-        onUpdate(name, updatedData[name]);
+      setLocalData(prev => ({
+            ...prev,
+            [name]: updatedData
+        }));
+        onUpdate(name, updatedData);
     }, [isAdmin, localData, calculateAll, onUpdate, showNoPermission, statWeights]);
 
     const handleThresholdChange = useCallback(async (index, field, value) => {
@@ -151,11 +154,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 const thresholdRef = doc(db, "settings", "thresholds");
                 const snapshot = await getDoc(thresholdRef);
                 if (snapshot.exists() && snapshot.data().thresholds) setThresholds(snapshot.data().thresholds);
-
-                // 🔥 Fetch Weights
-                const weightsRef = doc(db, "settings", "statWeights");
-                const weightsSnap = await getDoc(weightsRef);
-                if (weightsSnap.exists() && weightsSnap.data().weights) setStatWeights(weightsSnap.data().weights);
 
                 // Fetch Atlantis Config
                 const optionsRef = doc(db, "settings", "atlantis_damage");
