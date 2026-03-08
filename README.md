@@ -1,70 +1,111 @@
-# Getting Started with Create React App
+🏰 The Last Land - Alliance Stats & Match Report Tracker
+A high-performance React application designed to manage, extract, and analyze player statistics and battle reports for alliance members. Built with React, Material-UI, and Firebase, this tool uses Google Cloud Vision OCR and OpenCV to automatically extract data from game screenshots, transforming them into actionable, color-coded data tables.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+✨ Key Features
+📸 Automated OCR Data Extraction: * Upload or paste screenshots of player stat pages or battle reports.
 
-## Available Scripts
+Uses Google Cloud Vision (Document Text Detection) via Firebase Cloud Functions for highly accurate, column-aware text extraction.
 
-In the project directory, you can run:
+Uses OpenCV Multi-Scale Template Matching to accurately find specific troop icons (T10 Cavalry, T9 Archer, etc.) regardless of screen size or device resolution.
 
-### `npm start`
+📊 Advanced Stats & Damage Calculator:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Automatically parses 30+ game attributes (Attack, Health, Defense, Damage, Lethal Hit Rate).
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Calculates derived stats such as Final Archer Damage based on customizable Multipliers and Atlantis levels.
 
-### `npm test`
+⚡ High-Performance Data Table:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Optimized to handle dozens of players and over 1,200 individual data points simultaneously without lag using React.memo and parallel data fetching.
 
-### `npm run build`
+Spreadsheet-like interface with invisible inputs for a clean reading experience.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+🎨 Customizable Thresholds: * Set custom color-coded limits (e.g., Green/Yellow/Red) to easily spot top performers and weak points across the alliance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+🔐 Admin Controls & Cloud Sync: * Live synchronization using Firebase Firestore.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Role-based access ensures only Admins can edit data, rename players, or adjust threshold settings.
 
-### `npm run eject`
+📋 Quick Export: Copy entire tables to the clipboard in a TSV format for instant pasting into Excel or Google Sheets.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+🛠️ Tech Stack
+Frontend: React.js, Material-UI (MUI)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Backend / Database: Firebase Firestore
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Serverless Functions: Firebase Cloud Functions (Python)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Image Processing: Google Cloud Vision API, OpenCV.js
 
-## Learn More
+State Management: React Context API
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+🚀 Getting Started
+Prerequisites
+Node.js (v16 or higher recommended)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Firebase CLI (npm install -g firebase-tools)
 
-### Code Splitting
+A Firebase Project with Firestore and Cloud Functions enabled.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Google Cloud Vision API enabled in your Google Cloud Console.
 
-### Analyzing the Bundle Size
+1. Clone the Repository
+Bash
+git clone https://github.com/your-username/the-last-land.git
+cd the-last-land
+2. Install Dependencies
+Install the frontend React dependencies:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Bash
+npm install
+Install the backend Python Cloud Function dependencies:
 
-### Making a Progressive Web App
+Bash
+cd functions
+pip install -r requirements.txt
+cd ..
+3. Environment Variables
+Create a .env file in the root of your React project and add your Firebase configuration keys:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Code snippet
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+4. Deploying Cloud Functions
+The OCR extraction relies on a Python-based Firebase Cloud Function. To deploy it to your live Firebase environment:
 
-### Advanced Configuration
+Bash
+firebase deploy --only functions
+(Ensure the FUNCTION_URL in src/components/stats/ImageUpload.jsx matches your deployed function's URL).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+5. Run the App Locally
+Start the React development server:
 
-### Deployment
+Bash
+npm start
+The app will be available at http://localhost:3000.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+🏗️ Recent Architecture Optimizations
+To handle heavy data loads and large alliances, this app was recently overhauled for maximum performance:
 
-### `npm run build` fails to minify
+Removed Tesseract.js: Migrated all client-side OCR processing to the Google Vision API backend, saving ~25MB of client-side language data downloads and stopping browser freezes.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+React.memo Integration: The massive DataTable component uses memoized rows (PlayerRow) to prevent thousands of text inputs from re-rendering when a single value is changed.
+
+Parallel Fetching: Replaced waterfall database queries with Promise.all() to load player stats, settings, and thresholds simultaneously, resulting in near-instant page loads.
+
+Memory Leak Fixes: Ensured all cv.Mat objects are properly garbage-collected after OpenCV image processing, and fixed event-listener duplication on clipboard paste events.
+
+🤝 Contributing
+Fork the Project
+
+Create your Feature Branch (git checkout -b feature/AmazingFeature)
+
+Commit your Changes (git commit -m 'Add some AmazingFeature')
+
+Push to the Branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
