@@ -45,14 +45,14 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
         image = vision.Image(content=base64_image)
 
         # Call Google Cloud to detect text
-        response = client.text_detection(image=image)
-        texts = response.text_annotations
+        response = client.document_text_detection(image=image)
+        texts = response.full_text_annotation.text
 
         if not texts:
             response_data = {"text": "No text found."}
         else:
             # The first element contains the full text
-            response_data = {"text": texts[0].description}
+            response_data = {"text": texts}
 
         return https_fn.Response(
             json.dumps(response_data),
@@ -74,7 +74,10 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
 @https_fn.on_call(
     cors=options.CorsOptions(
         # Use 'cors_origins' and 'cors_methods' (not 'origins'/'methods')
-        cors_origins=["https://the-last-land-analytics.vercel.app"],
+        cors_origins=[
+            "https://the-last-land-analytics.vercel.app",
+            "http://localhost:3000",
+        ],
         cors_methods=["get", "post"],
     )
 )
@@ -106,7 +109,7 @@ def process_image_ocr(req: https_fn.CallableRequest):
     client = vision.ImageAnnotatorClient()
     # req.data["image"] is the base64 string sent from your frontend
     image = vision.Image(content=req.data["image"])
-    response = client.text_detection(image=image)
+    response = client.document_text_detection(image=image)
 
-    texts = response.text_annotations
-    return {"text": texts[0].description if texts else "No text found."}
+    texts = response.full_text_annotation.text
+    return {"text": texts if texts else "No text found."}

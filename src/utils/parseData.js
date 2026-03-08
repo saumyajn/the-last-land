@@ -7,19 +7,33 @@ export const parseData = (rawText, desiredKeys) => {
   const attributes = {};
 
   // Sort keys by length descending to match longest phrases first
-  // This prevents "Troop Attack" matching "Troop Attack Blessing" prematurely
   const sortedKeys = [...desiredKeys].sort((a, b) => b.length - a.length);
 
+  // 🔥 FIX 2: Keep track of lines we've already parsed so we don't reuse them
+  const usedIndexes = new Set();
+
   for (const key of sortedKeys) {
-    // Find a line that starts with the key OR contains the key followed by a non-letter char
-    // This regex ensures we don't match "Troop Attack" inside "Troop Attack Blessing"
     const regex = new RegExp(`${key}(?![a-zA-Z])`, 'i');
     
-    const matchLine = lines.find((line) => regex.test(line));
+    // Find the index of the match, completely ignoring lines we've already used
+    const index = lines.findIndex((line, i) => !usedIndexes.has(i) && regex.test(line));
 
-    if (matchLine) {
-      // Improved matching for numbers: handles 1,234.56%
-      const valueMatch = matchLine.match(/[\d,.]+%?/);
+    if (index !== -1) {
+      // Mark the label line as used
+      usedIndexes.add(index);
+      
+      // Try to find the number on the EXACT SAME line first
+      let valueMatch = lines[index].match(/\d+[\d,.]*%?/);
+      
+      // 🔥 FIX 1: If no number is on the same line, check the NEXT line down
+      if (!valueMatch && index + 1 < lines.length) {
+        valueMatch = lines[index + 1].match(/\d+[\d,.]*%?/);
+        if (valueMatch) {
+          // If we used the next line for the value, mark it as used too
+          usedIndexes.add(index + 1); 
+        }
+      }
+
       attributes[key] = valueMatch ? valueMatch[0] : "NA";
     } else {
       attributes[key] = "NA";
