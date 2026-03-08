@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, } from "react";
-import { onSnapshot, doc } from "firebase/firestore";
+import { onSnapshot, doc, setDoc } from "firebase/firestore"; // Added setDoc
 import { db } from "../../utils/firebase";
 import {
     Box,
@@ -15,7 +15,6 @@ import {
     TableRow,
     Paper,
     Divider, Skeleton, Stack,
-    
     TableFooter
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -38,10 +37,56 @@ export default function AnalyticsPage() {
         setLoading(true);
         const summaryRef = doc(db, "analytics", "troop_type_kpt");
 
-        const unsubscribe = onSnapshot(summaryRef, (docSnap) => {
+        const unsubscribe = onSnapshot(summaryRef, async (docSnap) => {
             if (docSnap.exists()) {
+                const data = docSnap.data();
+                setCombinedData(data);
 
-                setCombinedData(docSnap.data());
+                // 1. Calculate Totals (excluding T10_guards)
+                const totals = Object.entries(data)
+                    .filter(([key]) => key !== 'T10_guards')
+                    .reduce((acc, [, stats]) => {
+                        acc.Kills += (stats.Kills || 0);
+                        acc.Losses += (stats.Losses || 0);
+                        acc.Wounded += (stats.Wounded || 0);
+                        acc.Survivors += (stats.Survivors || 0);
+                        return acc;
+                    }, { Kills: 0, Losses: 0, Wounded: 0, Survivors: 0 });
+
+                const totalDenominator = totals.Losses + totals.Wounded + totals.Survivors;
+                const totalKPTValue = totalDenominator > 0 ? (totals.Kills / totalDenominator) : 0;
+                
+                // 2. Prepare detailed calculated data for the DB summary document
+                const troopSummaryDetails = {};
+                Object.entries(data).forEach(([type, stats]) => {
+                    let marchSize = totalKPTValue > 0 ? (stats.Kills || 0) / totalKPTValue : 0;
+                    if (type === 'T10_guards') marchSize = 0;
+
+                    troopSummaryDetails[type] = {
+                        ...stats,
+                        calculatedMarchSize: Math.round(marchSize),
+                        marchPercentage: totalDenominator > 0 
+                            ? ((marchSize / totalDenominator) * 100).toFixed(2) + "%" 
+                            : "0.00%"
+                    };
+                });
+
+                // 3. Update the database summary document if the user is an admin
+                if (isAdmin) {
+                    try {
+                        await setDoc(doc(db, "analytics", "troop_type_summary"), {
+                            totals: {
+                                ...totals,
+                                KPT: totalKPTValue.toFixed(3),
+                                totalMarchSize: totalDenominator
+                            },
+                            troopDetails: troopSummaryDetails,
+                            updatedAt: new Date().toISOString()
+                        });
+                    } catch (err) {
+                        console.error("Error updating troop type summary in DB:", err);
+                    }
+                }
             } else {
                 console.warn("No KPT summary found in DB");
             }
@@ -52,7 +97,7 @@ export default function AnalyticsPage() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [isAdmin]); // Added isAdmin to dependencies to handle permission-based writing
 
     if (loading) return (
         <Stack spacing={1}>
@@ -100,13 +145,12 @@ export default function AnalyticsPage() {
                             </TableHead>
                             <TableBody>
                                 {TROOP_ORDER.map((type) => {
-                                    // Get stats from DB data, fallback to zeros if troop type isn't in DB yet
                                     const stats = combinedData[type] || {
                                         Kills: 0, Losses: 0, Wounded: 0, Survivors: 0, KPT: "0.00"
                                     };
 
                                     let marchSize = totalKPTValue > 0 ? (stats.Kills || 0) / totalKPTValue : 0;
-                                    let marchPercent = totalMarchSize > 0 ? `${(marchSize / totalMarchSize * 100).toFixed(2)}%` : "0.00%";
+                                    let marchPercent = totalMarchSize > 0 ? `${((marchSize / totalMarchSize) * 100).toFixed(2)}%` : "0.00%";
 
                                     if (type === 'T10_guards') {
                                         marchSize = 0;
@@ -120,10 +164,7 @@ export default function AnalyticsPage() {
                                         <TableCell>{stats.Losses.toLocaleString()}</TableCell>
                                         <TableCell>{stats.Wounded.toLocaleString()}</TableCell>
                                         <TableCell>{stats.Survivors.toLocaleString()}</TableCell>
-                                        <TableCell sx={{
-                                            fontWeight: 'bold',
-
-                                        }}>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>
                                             {stats.KPT}
                                         </TableCell>
                                         <TableCell>{Math.round(marchSize).toLocaleString()}</TableCell>
