@@ -62,10 +62,9 @@ export const calcs = (attributes, role, atlValue, weights) => {
   const part1 = Math.pow(varAtk + atk, 0.95);
   const part2 = Math.pow(bless + varBless, 0.9);
 
-  const part3 = (dmg + varDmg + AtlData) / 100;
+  const part3 = (100 + dmg + varDmg + AtlData);
 
- 
-  const part4 = (part1 * part2 * (1 + part3));
+  const part4 = (part1 * part2 * part3);
 
   const powerScore = (part4 * (1 + (lethal / 100))) / 10000;
   return powerScore.toFixed(1);
@@ -73,7 +72,7 @@ export const calcs = (attributes, role, atlValue, weights) => {
 
 // Helper to build copyable TSV content
 export const buildCopyableTable = (names, localData, desiredKeys) => {
-  const headers = ["Name", ...desiredKeys,  "Archer Atlantis", "Cavalry Atlantis", "Final Archer Damage", "Final Cavalry Damage"];
+  const headers = ["Name", ...desiredKeys, "Archer Atlantis", "Cavalry Atlantis", "Final Archer Damage", "Final Cavalry Damage"];
 
   const rows = names.map((name) => {
     const rowData = localData[name];
@@ -83,7 +82,7 @@ export const buildCopyableTable = (names, localData, desiredKeys) => {
       removePercentage(rowData["Archer Atlantis"]) ?? "",
       removePercentage(rowData["Cavalry Atlantis"]) ?? "",
       removePercentage(rowData["Final Archer Damage"]) ?? "",
-      removePercentage(rowData["Final Siege Damage"]) ?? "", 
+      removePercentage(rowData["Final Siege Damage"]) ?? "",
       removePercentage(rowData["Final Cavalry Damage"]) ?? ""
     ];
   });
