@@ -29,8 +29,7 @@ export default function AnalyticsPage() {
     const fetchReports = useCallback(async () => {
         try {
             const troopTypes = [
-                "T10_siege", "T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry",
-                "T10_archer", "T9_archer", "T8_archer", "T7_archer"
+                "T10_guards", "T10_cavalry", "T10_archer", "T10_siege", "T9_cavalry", "T9_archer", "T8_cavalry", "T8_archer", "T8_siege", "T7_cavalry", "T7_archer"
             ];
 
             // Optimization: Consider querying only recent reports if list is large

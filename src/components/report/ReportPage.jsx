@@ -17,6 +17,7 @@ import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
 
 const templateMap = {
+  T10_guards: ["T10_guards"],
   T10_cavalry: ["T10_cavalry"],
   T10_archer: ["T10_archer"],
   T10_siege: ["T10_siege"],
