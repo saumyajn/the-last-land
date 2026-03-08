@@ -14,7 +14,9 @@ import {
     TableHead,
     TableRow,
     Paper,
-    Divider, Skeleton, Stack
+    Divider, Skeleton, Stack,
+    Tab,
+    TableFooter
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AnalyticsSummary from "./AnalyticsSummary";
@@ -60,6 +62,21 @@ export default function AnalyticsPage() {
         </Stack>
     );
 
+    const totals = Object.entries(combinedData)
+        .filter(([key]) => key !== 'T10_guards')
+        .reduce((acc, [, stats]) => {
+            acc.Kills += (stats.Kills || 0);
+            acc.Losses += (stats.Losses || 0);
+            acc.Wounded += (stats.Wounded || 0);
+            acc.Survivors += (stats.Survivors || 0);
+            return acc;
+        }, { Kills: 0, Losses: 0, Wounded: 0, Survivors: 0 });
+
+    const totalDenominator = totals.Losses + totals.Wounded + totals.Survivors;
+    const totalKPTValue = totalDenominator > 0 ? (totals.Kills / totalDenominator) : 0;
+    totals.KPT = totalKPTValue.toFixed(3);
+    const totalMarchSize = totalDenominator;
+
     return (
         <Box>
             <Accordion defaultExpanded sx={{ borderRadius: 2 }}>
@@ -77,6 +94,8 @@ export default function AnalyticsPage() {
                                     <TableCell><b>Wounded</b></TableCell>
                                     <TableCell><b>Survivors</b></TableCell>
                                     <TableCell><b>KPT</b></TableCell>
+                                    <TableCell><b>March Size</b></TableCell>
+                                    <TableCell><b>% of March</b></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -85,6 +104,15 @@ export default function AnalyticsPage() {
                                     const stats = combinedData[type] || {
                                         Kills: 0, Losses: 0, Wounded: 0, Survivors: 0, KPT: "0.00"
                                     };
+
+                                    let marchSize = totalKPTValue > 0 ? (stats.Kills || 0) / totalKPTValue : 0;
+                                    let marchPercent = totalMarchSize > 0 ? `${(marchSize / totalMarchSize * 100).toFixed(2)}%` : "0.00%";
+
+                                    if (type === 'T10_guards') {
+                                        marchSize = 0;
+                                        marchPercent = "0.00%";
+                                    }
+
                                     return (
                                     <TableRow key={type}>
                                         <TableCell>{type}</TableCell>
@@ -98,9 +126,23 @@ export default function AnalyticsPage() {
                                         }}>
                                             {stats.KPT}
                                         </TableCell>
+                                        <TableCell>{Math.round(marchSize).toLocaleString()}</TableCell>
+                                        <TableCell>{marchPercent}</TableCell>
                                     </TableRow>
                                 )})}
                             </TableBody>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell><b>Total</b></TableCell>
+                                    <TableCell>{totals.Kills.toLocaleString()}</TableCell>
+                                    <TableCell>{totals.Losses.toLocaleString()}</TableCell>
+                                    <TableCell>{totals.Wounded.toLocaleString()}</TableCell>
+                                    <TableCell>{totals.Survivors.toLocaleString()}</TableCell>
+                                    <TableCell>{totals.KPT}</TableCell>
+                                    <TableCell>{totalMarchSize.toLocaleString()}</TableCell>
+                                    <TableCell>100.00%</TableCell>
+                                </TableRow>
+                            </TableFooter>
                         </Table>
                     </TableContainer>
                 </AccordionDetails>
