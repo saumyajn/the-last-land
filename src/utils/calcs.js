@@ -4,7 +4,7 @@ export const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, 
 export const calcs = (attributes, role, atlValue, weights) => {
   const w = weights || {
     attack: 1, health: 1, defense: 1,
-    damage: 2, damageReceived: 1,
+    damage: 1, damageReceived: 1,
     attackBlessing: 1, protectBlessing: 1
   };
 
@@ -63,6 +63,9 @@ export const calcs = (attributes, role, atlValue, weights) => {
   const part2 = Math.pow(bless + varBless, 0.9);
 
   const part3 = (dmg + varDmg + AtlData) / 100;
+
+  if (role === 'archer')
+    console.log(`Debug - calcs: ${getNumber(attributes["Troop Attack"]) }`, { varAtk, atk, varBless, bless, varDmg, dmg, AtlData, part1, part2, part3 });
   const part4 = (part1 * part2 * (1 + part3));
 
   const powerScore = (part4 * (1 + (lethal / 100))) / 10000;
