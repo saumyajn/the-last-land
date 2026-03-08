@@ -15,7 +15,7 @@ import {
 import { usePermissionSnackbar } from "../Permissions";
 import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
-import { updateTroopTypeKpt } from "../../utils/dbActions"; // Import the new utility
+import { updateTroopTypeKpt } from "../../utils/dbActions";
 
 const templateMap = {
   T10_guards: ["T10_guards"],
@@ -49,10 +49,12 @@ export default function ReportPage() {
 
   useEffect(() => {
     if (isCvLoaded) return;
+
     const handleCvLoad = () => {
       setIsCvLoaded(true);
       setStatus("✅ OpenCV Ready");
     };
+
     window.addEventListener('opencv-loaded', handleCvLoad);
     return () => window.removeEventListener('opencv-loaded', handleCvLoad);
   }, [isCvLoaded]);
@@ -96,6 +98,7 @@ export default function ReportPage() {
     const handlePaste = (event) => {
       const items = event.clipboardData?.items;
       if (!items) return;
+
       for (const item of items) {
         if (item.type.startsWith("image/")) {
           const file = item.getAsFile();
@@ -108,6 +111,7 @@ export default function ReportPage() {
         }
       }
     };
+
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
   }, []);
@@ -122,6 +126,7 @@ export default function ReportPage() {
 
   const processImage = async () => {
     const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
+
     if (!mainImage || !finalPlayerName) {
       setStatus("❌ Please select an image and enter a player name.");
       return;
@@ -145,8 +150,10 @@ export default function ReportPage() {
 
       for (const [troopType, variants] of Object.entries(templateMap)) {
         let matchFound = false;
+
         for (const variant of variants) {
           setStatus(`🔍 Matching ${variant}...`);
+
           const tmplImg = new Image();
           tmplImg.crossOrigin = "anonymous";
           tmplImg.src = `/images/${variant}.png`;
@@ -174,6 +181,7 @@ export default function ReportPage() {
             }
 
             cv.resize(originalTemplate, resizedTemplate, dsize, 0, 0, cv.INTER_LINEAR);
+
             const result = new cv.Mat();
             cv.matchTemplate(src, resizedTemplate, result, cv.TM_CCOEFF_NORMED);
             const { maxVal, maxLoc } = cv.minMaxLoc(result);
@@ -181,15 +189,19 @@ export default function ReportPage() {
             if (maxVal > bestMatch.maxVal) {
               bestMatch = { maxVal, maxLoc, width: newWidth, height: newHeight, scale };
             }
+
             result.delete();
             resizedTemplate.delete();
           }
 
           const threshold = 0.65;
+          console.log(`Matching ${variant}: Best maxVal=${bestMatch.maxVal.toFixed(3)} at scale ${bestMatch.scale.toFixed(1)}`);
+
           if (bestMatch.maxVal >= threshold) {
             const x = bestMatch.maxLoc.x;
-            const paddingY = 8;
+            const paddingY = 8; 
             const y = Math.max(0, bestMatch.maxLoc.y - paddingY);
+            
             const h = bestMatch.height + (paddingY * 2);
             const rightWidth = mainImage.width - (x + bestMatch.width);
 
@@ -223,9 +235,12 @@ export default function ReportPage() {
             });
 
             resultData[troopType] = entry;
+            console.log(`Matched ${variant} with values:`, entry);
             matchFound = true;
           }
+
           originalTemplate.delete();
+
           if (matchFound) break;
         }
       }
@@ -235,7 +250,7 @@ export default function ReportPage() {
         showNoPermission();
         return;
       }
-
+      
       const freshData = {};
       templateKeys.forEach(key => {
         freshData[key] = labels.reduce((acc, label) => ({ ...acc, [label]: "0" }), {});
@@ -243,10 +258,11 @@ export default function ReportPage() {
       for (const [key, value] of Object.entries(resultData)) {
         freshData[key] = { ...freshData[key], ...value };
       }
-
+      
+      // Save the individual report to Firestore
       await setDoc(doc(db, "reports", finalPlayerName), freshData);
 
-      // Aggregates and updates analytics/troop_type_kpt
+      // 🔄 TRIGGER GLOBAL ANALYTICS UPDATE (both KPT and Summary)
       await updateTroopTypeKpt(isAdmin);
 
       setStructuredResults((prev = []) => {
@@ -254,7 +270,7 @@ export default function ReportPage() {
         return [{ name: finalPlayerName, data: freshData }, ...updated];
       });
 
-      setStatus("✅ Match results saved and analytics updated.");
+      setStatus("✅ Match results saved & Global Analytics Updated.");
     } catch (err) {
       console.error("Matching failed", err);
       setStatus("❌ Error during image processing");
@@ -284,6 +300,7 @@ export default function ReportPage() {
       }
       return player;
     });
+    
     if (!updatedPlayer) return;
 
     const getKPT = (data) => {
@@ -312,14 +329,16 @@ export default function ReportPage() {
     setStructuredResults(updatedResults);
 
     try {
+      // Update individual report in Firestore
       await setDoc(doc(db, "reports", targetPlayerName), {
         ...updatedPlayer.data,
         archerKPT: updatedPlayer.archerKPT,
         cavalryKPT: updatedPlayer.cavalryKPT
       }, { merge: true });
 
-      // Trigger analytics aggregation update
+      // 🔄 TRIGGER GLOBAL ANALYTICS UPDATE (both KPT and Summary)
       await updateTroopTypeKpt(isAdmin);
+      
     } catch (err) {
       console.error("❌ Error updating Firestore:", err);
     }
@@ -330,9 +349,11 @@ export default function ReportPage() {
       showNoPermission();
       return;
     }
+    
+    // Delete the individual report
     await deleteDoc(doc(db, "reports", name));
     
-    // Trigger analytics aggregation update after deletion
+    // 🔄 TRIGGER GLOBAL ANALYTICS UPDATE (both KPT and Summary)
     await updateTroopTypeKpt(isAdmin);
     
     setStructuredResults((prev) => prev.filter((p) => p.name !== name));
