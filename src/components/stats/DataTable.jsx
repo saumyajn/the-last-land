@@ -55,15 +55,11 @@ const CleanInput = ({ value, onChange, width = '75px' }) => (
     />
 );
 
-export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin, statWeights,
-    setStatWeights }) {
+export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin, statWeights, setStatWeights }) {
 
-    // 🔥 NEW: Default Stat Weights
-  
 
     const [localData, setLocalData] = useState({});
     const [thresholds, setThresholds] = useState([]);
-   
 
     const [renamePrompt, setRenamePrompt] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -174,7 +170,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             finally { setIsLoading(false); }
         };
         fetchSettings();
-    }, []);
+    }, [setStatWeights]);
 
     // 🔥 Recalculate everything when data OR weights change
     useEffect(() => {
