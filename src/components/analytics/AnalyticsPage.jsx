@@ -60,8 +60,9 @@ export default function AnalyticsPage() {
 
             for (const type of troopTypes) {
                 const { Kills, Losses, Wounded, Survivors } = troopTotals[type];
-                const numerator = Kills - (Losses + Wounded);
-                troopTotals[type].KPT = Survivors === 0 ? "0.00" : (numerator / Survivors).toFixed(2);
+                const numerator = Kills;
+                const denominator = Survivors +Losses + Wounded;
+                troopTotals[type].KPT = Survivors === 0 ? "0.00" : (numerator / denominator).toFixed(2);
             }
 
             setCombinedData(troopTotals);
