@@ -59,6 +59,7 @@ export default function FormationPage() {
           const data = playerDoc.data();
           const archerVal = parseFloat(data["Final Archer Damage"]) || 0;
           const cavalryVal = parseFloat(data["Final Cavalry Damage"]) || 0;
+          const avgVal = parseFloat((data["Average Damage"])) || 0;
 
           // Archer grouping
           const archerMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => archerVal >= t.limit);
@@ -73,7 +74,7 @@ export default function FormationPage() {
           newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
 
           // Average grouping (🔥 With Safety Check added)
-          const avgVal = (archerVal + cavalryVal) / 2;
+         
           const avgMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => avgVal >= t.limit);
           const avgColor = avgMatch?.color || "default";
           if (!newGroupedAverageData[avgColor]) newGroupedAverageData[avgColor] = [{ colorName: colorNames[avgColor] || avgColor }];
