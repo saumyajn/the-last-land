@@ -135,15 +135,50 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         catch (error) { console.error("Error updating thresholds:", error); }
     }, [isAdmin, thresholds, showNoPermission]);
 
-    // 🔥 NEW: Handle Weight Input Changes
-    const handleWeightChange = async (key, value) => {
+  const handleWeightChange = async (key, value) => {
         if (!isAdmin) return showNoPermission();
+        
         const numVal = parseFloat(value) || 0;
         const newWeights = { ...statWeights, [key]: numVal };
+        
+        // 1. Update the local weights state
         setStatWeights(newWeights);
 
-        try { await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); }
-        catch (error) { console.error("Error saving weights:", error); }
+        try { 
+            // 2. Save new weights to settings in Firestore
+            await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); 
+            
+            // 3. Recalculate all players and push updates to Firestore
+            const updatedPlayers = {};
+            
+            Object.entries(localData).forEach(([name, playerData]) => {
+                // Recalculate this specific player using the NEW weights
+                const calculated = calculateAll(playerData, newWeights);
+                
+                // Recalculate their Average Damage
+                const avgDamage = (
+                    ((parseFloat(calculated["Final Archer Damage"]) || 0) + 
+                    (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2
+                ).toFixed(2);
+                
+                const fullUpdatedPlayer = { 
+                    ...playerData, 
+                    ...calculated, 
+                    "Average Damage": avgDamage 
+                };
+                
+                updatedPlayers[name] = fullUpdatedPlayer;
+                
+                // 4. Push the updated player back to the database
+                onUpdate(name, fullUpdatedPlayer);
+            });
+            
+            // 5. Update the local table UI instantly
+            setLocalData(updatedPlayers);
+            
+        } catch (error) { 
+            console.error("Error saving weights and updating players:", error); 
+        }
     };
 
     useEffect(() => {
