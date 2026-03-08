@@ -163,28 +163,62 @@ export default function ReportPage() {
           });
 
           const tmplColor = cv.imread(tmplImg);
-          const template = new cv.Mat();
-          cv.cvtColor(tmplColor, template, cv.COLOR_RGBA2GRAY);
+          const originalTemplate = new cv.Mat();
+          cv.cvtColor(tmplColor, originalTemplate, cv.COLOR_RGBA2GRAY);
           tmplColor.delete();
 
-          const result = new cv.Mat();
-          cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
-          const { maxVal, maxLoc } = cv.minMaxLoc(result);
-          const threshold = 0.3;
-          console.log(`Matching ${variant}: maxVal=${maxVal.toFixed(3)} at (${maxLoc.x}, ${maxLoc.y})`);
-          if (maxVal >= threshold) {
-            const x = maxLoc.x;
-            const y = maxLoc.y;
-            const h = template.rows;
-            const rightWidth = mainImage.width - (x + template.cols);
+          let bestMatch = { maxVal: 0, maxLoc: null, width: 0, height: 0, scale: 1 };
+          for (let scale = 0.7; scale <= 1.5; scale += 0.1) {
+            const resizedTemplate = new cv.Mat();
+            const newWidth = Math.round(originalTemplate.cols * scale);
+            const newHeight = Math.round(originalTemplate.rows * scale);
+            const dsize = new cv.Size(newWidth, newHeight);
+
+            if (newWidth > src.cols || newHeight > src.rows) {
+              resizedTemplate.delete();
+              continue;
+            }
+
+            cv.resize(originalTemplate, resizedTemplate, dsize, 0, 0, cv.INTER_LINEAR);
+
+            const result = new cv.Mat();
+            cv.matchTemplate(src, resizedTemplate, result, cv.TM_CCOEFF_NORMED);
+            const { maxVal, maxLoc } = cv.minMaxLoc(result);
+
+            if (maxVal > bestMatch.maxVal) {
+              bestMatch = { maxVal, maxLoc, width: newWidth, height: newHeight, scale };
+            }
+
+            result.delete();
+            resizedTemplate.delete();
+          }
+
+          // originalTemplate.delete();
+          // const result = new cv.Mat();
+          // cv.matchTemplate(src, template, result, cv.TM_CCOEFF_NORMED);
+          // const { maxVal, maxLoc } = cv.minMaxLoc(result);
+          const threshold = 0.75;
+          console.log(`Matching ${variant}: Best maxVal=${bestMatch.maxVal.toFixed(3)} at scale ${bestMatch.scale.toFixed(1)}`);
+          // console.log(`Matching ${variant}: maxVal=${maxVal.toFixed(3)} at (${maxLoc.x}, ${maxLoc.y})`);
+
+          if (bestMatch.maxVal >= threshold) {
+          const x = bestMatch.maxLoc.x;
+            const paddingY = 8; 
+            const y = Math.max(0, bestMatch.maxLoc.y - paddingY);
+            
+            // Use the dynamically found height and width for the crop
+            const h = bestMatch.height + (paddingY * 2);
+            const rightWidth = mainImage.width - (x + bestMatch.width);
 
             const cropCanvas = document.createElement("canvas");
             cropCanvas.width = rightWidth;
             cropCanvas.height = h;
             const cropCtx = cropCanvas.getContext("2d");
+
+            
             cropCtx.drawImage(
               mainImage,
-              x + template.cols, y,
+              x + bestMatch.width, y,
               rightWidth, h,
               0, 0,
               rightWidth, h
@@ -194,9 +228,11 @@ export default function ReportPage() {
             const ocrText = await detectText(base64);
 
             const cleanValues = ocrText
-              .replace(/[^0-9\s]/g, '')
-              .split(/\s+/)
-              .filter(Boolean)
+              .replace(/[Oo]/g, '0')        // Convert letter O to number 0
+              .replace(/[,.]/g, '')         // Remove commas so 1,000 becomes 1000
+              .replace(/[^0-9\s]/g, ' ')    // Replace other symbols with spaces
+              .split(/\s+/)                 // Split by whitespace
+              .filter(Boolean)              // Remove empty strings
               .slice(0, labels.length);
 
             const entry = {};
@@ -209,8 +245,9 @@ export default function ReportPage() {
             matchFound = true;
           }
 
-          template.delete();
-          result.delete();
+          originalTemplate.delete();
+          // 
+          // result.delete();
 
           if (matchFound) break;
         }
@@ -221,10 +258,18 @@ export default function ReportPage() {
         showNoPermission();
         return;
       }
-      await setDoc(doc(db, "reports", finalPlayerName), resultData);
+      const freshData = {};
+      templateKeys.forEach(key => {
+        freshData[key] = labels.reduce((acc, label) => ({ ...acc, [label]: "0" }), {});
+      });
+      for (const [key, value] of Object.entries(resultData)) {
+        freshData[key] = { ...freshData[key], ...value };
+      }
+      await setDoc(doc(db, "reports", finalPlayerName), freshData);
+
       setStructuredResults((prev = []) => {
         const updated = prev.filter(p => p.name !== finalPlayerName);
-        return [{ name: finalPlayerName, data: resultData }, ...updated];
+        return [{ name: finalPlayerName, data: freshData }, ...updated];
       });
 
       setStatus("✅ Match results saved.");
@@ -254,7 +299,6 @@ export default function ReportPage() {
       const wounded = parseInt(data?.Wounded || "0");
       const survivors = parseInt(data?.Survivors || "0");
       const total = losses + wounded + survivors;
-      console.log(`Calculating KPT ${kills / total} `);
       return total === 0 ? "0.00" : (kills / total).toFixed(2);
     };
 

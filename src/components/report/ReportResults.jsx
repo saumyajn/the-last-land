@@ -83,7 +83,6 @@ export default function ReportResultTable({
     const losses = parseInt(data?.Losses || "0");
     const wounded = parseInt(data?.Wounded || "0");
     const survivors = parseInt(data?.Survivors || "0");
-    console.log(`Calculating KPT ${kills} ` + computeKPT(kills, losses, wounded, survivors));
     return computeKPT(kills, losses, wounded, survivors);
   }
 
@@ -138,7 +137,7 @@ export default function ReportResultTable({
                             <TextField
                               size="small"
                               value={rowData[label] || "0"}
-                              onChange={(e) => onEdit(pIdx, tmplKey, label, e.target.value)}
+                              onChange={(e) => onEdit(player.name, tmplKey, label, e.target.value)}
                               style={{ width: '100px' }}
                             />
                           </TableCell>
