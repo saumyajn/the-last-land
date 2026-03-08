@@ -26,7 +26,7 @@ export default function AnalyticsSummary({ isAdmin }) {
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "desc" });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+ // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
@@ -228,11 +228,11 @@ export default function AnalyticsSummary({ isAdmin }) {
   };
 
   return (
-    <Grid container spacing={4}>
-       <Grid item xs={12} sx={{ mb: 2 }}>
+    <Grid spacing={2} container>
+       <Grid item size={{xs:12, md:6}} sx={{ mb: 2 }}>
         {renderRankedTable("Cavalry Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry", "cavalryKPT")}
       </Grid>
-       <Grid item xs={12}>
+       <Grid item size={{xs:12, md:6}} sx={{ mb: 2 }}>
         {renderRankedTable("Archer Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerDamage"], "archer", "archerKPT")}
       </Grid>
     </Grid>
