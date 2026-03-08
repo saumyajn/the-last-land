@@ -9,8 +9,8 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import SettingsIcon from '@mui/icons-material/Settings'; 
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'; 
+import SettingsIcon from '@mui/icons-material/Settings';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTheme } from "@mui/material/styles";
 import { calcs, getNumber, buildCopyableTable, removePercentage } from "../../utils/calcs";
 import { db } from '../../utils/firebase';
@@ -25,7 +25,7 @@ const columnGroups = [
 ];
 
 const extraColumns = [
-    {label:'Lethal Hit Rate', key:'Lethal Hit Rate'},
+    { label: 'Lethal Hit Rate', key: 'Lethal Hit Rate' },
     { label: "Archer Atlantis", key: "Archer Atlantis" },
     { label: "Cavalry Atlantis", key: "Cavalry Atlantis" },
     { label: "Siege Atlantis", key: "Siege Atlantis" },
@@ -42,35 +42,36 @@ const CleanInput = ({ value, onChange, width = '75px' }) => (
         onChange={onChange}
         variant="standard"
         size="small"
-        InputProps={{ 
-            disableUnderline: true, 
-            sx: { 
-                fontSize: '0.875rem', 
+        InputProps={{
+            disableUnderline: true,
+            sx: {
+                fontSize: '0.875rem',
                 textAlign: 'center',
                 '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 1 },
                 '&.Mui-focused': { backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 1 }
-            } 
+            }
         }}
         sx={{ width, input: { textAlign: 'center', padding: '4px' } }}
     />
 );
 
-export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin }) {
-    
+export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin, statWeights,
+    setStatWeights }) {
+
     // 🔥 NEW: Default Stat Weights
-    const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 2, damageReceived: 1, attackBlessing: 1, protectBlessing: 1 };
-    
+  
+
     const [localData, setLocalData] = useState({});
     const [thresholds, setThresholds] = useState([]);
-    const [statWeights, setStatWeights] = useState(defaultWeights);
-    
+   
+
     const [renamePrompt, setRenamePrompt] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [archerOptions, setArcherOptions] = useState([]);
     const [cavalryOptions, setCavalryOptions] = useState([]);
     const [siegeOptions, setSiegeOptions] = useState([]);
     const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
-    
+
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     const [expandedGroups, setExpandedGroups] = useState(() =>
@@ -116,8 +117,9 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         const avgDamage = (((parseFloat(calculated["Final Archer Damage"]) || 0) + (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2).toFixed(2);
 
         const updatedData = {
-            ...localData,
-            [name]: { ...updatedPlayer, ...calculated, "Average Damage": avgDamage },
+            ...updatedPlayer,
+            ...calculated,
+            "Average Damage": avgDamage
         };
 
         setLocalData(updatedData);
@@ -130,7 +132,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         newThresholds[index] = { ...newThresholds[index], [field]: field === "limit" ? parseFloat(value) || 0 : value };
         setThresholds(newThresholds);
 
-        try { await setDoc(doc(db, "settings", "thresholds"), { thresholds: newThresholds }); } 
+        try { await setDoc(doc(db, "settings", "thresholds"), { thresholds: newThresholds }); }
         catch (error) { console.error("Error updating thresholds:", error); }
     }, [isAdmin, thresholds, showNoPermission]);
 
@@ -141,7 +143,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         const newWeights = { ...statWeights, [key]: numVal };
         setStatWeights(newWeights);
 
-        try { await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); } 
+        try { await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); }
         catch (error) { console.error("Error saving weights:", error); }
     };
 
@@ -153,7 +155,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 const thresholdRef = doc(db, "settings", "thresholds");
                 const snapshot = await getDoc(thresholdRef);
                 if (snapshot.exists() && snapshot.data().thresholds) setThresholds(snapshot.data().thresholds);
-                
+
                 // 🔥 Fetch Weights
                 const weightsRef = doc(db, "settings", "statWeights");
                 const weightsSnap = await getDoc(weightsRef);
@@ -168,7 +170,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     setCavalryOptions(optionsArr);
                     setSiegeOptions(optionsArr);
                 }
-            } catch (error) { console.error("Failed to load settings:", error); } 
+            } catch (error) { console.error("Failed to load settings:", error); }
             finally { setIsLoading(false); }
         };
         fetchSettings();
@@ -192,12 +194,12 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     return (
         <Suspense fallback={<Box p={4}>Loading...</Box>}>
-            
+
             {/* 🔥 UPDATED DIALOG: Now includes Weights configuration */}
             <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>Configuration & Settings</DialogTitle>
                 <DialogContent dividers>
-                    
+
                     <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
                         Threshold Colors
                     </Typography>
@@ -222,15 +224,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     <Grid container spacing={3}>
                         {Object.entries(statWeights).map(([key, value]) => (
                             <Grid item xs={6} sm={4} md={3} key={key}>
-                                <TextField 
+                                <TextField
                                     // Formats keys like "damageReceived" to "Damage Received"
-                                    label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                    value={value} 
-                                    onChange={(e) => handleWeightChange(key, e.target.value)} 
-                                    size="small" 
-                                    type="number" 
+                                    label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                                    value={value}
+                                    onChange={(e) => handleWeightChange(key, e.target.value)}
+                                    size="small"
+                                    type="number"
                                     inputProps={{ step: "0.1" }}
-                                    fullWidth 
+                                    fullWidth
                                 />
                             </Grid>
                         ))}
@@ -260,7 +262,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                         </Tooltip>
                     </Box>
                 </Box>
-                
+
                 <TableContainer sx={{ minWidth: isMobile ? 700 : "100%", maxHeight: '75vh', borderRadius: 1, border: '1px solid #f0f0f0' }}>
                     <Table size="small" stickyHeader>
                         <TableHead>
@@ -309,7 +311,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 width="110px"
                                             />
                                         </TableCell>
-                                        
+
                                         {columnGroups.map(group =>
                                             expandedGroups[group.label]
                                                 ? group.keys.map(key => (
@@ -321,7 +323,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                         )}
 
                                         <TableCell align="center"><CleanInput value={rowData["Lethal Hit Rate"] || ""} onChange={(e) => handleEdit(name, "Lethal Hit Rate", e.target.value)} /></TableCell>
-                                        
+
                                         <TableCell align="center">
                                             <Select native variant="standard" disableUnderline value={String(rowData["Archer Atlantis"] || "0")} onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)} sx={{ fontSize: '0.875rem', width: '60px' }}>
                                                 {archerOptions.map(([label, value]) => <option key={label} value={String(value)}>{label}</option>)}
@@ -337,12 +339,12 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                                 {siegeOptions.map(([label, value]) => <option key={label} value={String(value)}>{label}</option>)}
                                             </Select>
                                         </TableCell>
-                                        
+
                                         <TableCell align="center" sx={{ backgroundColor: getColorByThreshold(archerVal, thresholds), fontWeight: 'bold' }}>{archerVal}</TableCell>
                                         <TableCell align="center" sx={{ backgroundColor: getColorByThreshold(cavalryVal, thresholds), fontWeight: 'bold' }}>{cavalryVal}</TableCell>
                                         <TableCell align="center" sx={{ backgroundColor: getColorByThreshold(siegeVal, thresholds), fontWeight: 'bold' }}>{siegeVal}</TableCell>
                                         <TableCell align="center" sx={{ backgroundColor: getColorByThreshold(avgDamage, thresholds), fontWeight: 'bold' }}>{avgDamage.toFixed(2)}</TableCell>
-                                        
+
                                         <TableCell align="center">
                                             <IconButton color="error" size="small" onClick={() => onDelete(name)}><DeleteIcon fontSize="small" /></IconButton>
                                         </TableCell>

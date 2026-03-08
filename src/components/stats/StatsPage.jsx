@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, lazy, Suspense } from "react";
 import { Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
-import { collection, doc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
 import { parseData } from "../../utils/parseData";
@@ -11,15 +11,15 @@ import { AuthContext } from "../../utils/authContext";
 // Lazy load heavy components
 const RawText = lazy(() => import("./RawData"));
 const DataTable = lazy(() => import("./DataTable"));
-
+  const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1 };
 export default function StatsPage() {
-  const { user, isAdmin } = useContext(AuthContext);
+  const { isAdmin } = useContext(AuthContext);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [dataTable, setDataTable] = useState({});
   const [name, setName] = useState("");
   const { showNoPermission } = usePermissionSnackbar();
-
+  const [statWeights, setStatWeights] = useState(defaultWeights);
   const desiredKeys = [
     "Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received",
     "Troop Attack Blessing", "Troop Protection Blessing", "Archer Attack", "Archer Health",
@@ -40,6 +40,12 @@ export default function StatsPage() {
         querySnapshot.forEach((doc) => {
           data[doc.id] = doc.data();
         });
+
+        const weightsSnap = await getDoc(doc(db, "settings", "statWeights"));
+        if (mounted && weightsSnap.exists() && weightsSnap.data().weights) {
+          setStatWeights(weightsSnap.data().weights);
+        }
+
         if (mounted) setDataTable(data);
       } catch (error) {
 
@@ -105,8 +111,14 @@ export default function StatsPage() {
     const attributes = parseData(allExtracted, desiredKeys);
     attributes["Archer Atlantis"] = '0';
     attributes["Cavalry Atlantis"] = '0';
-    attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"]));
-    attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
+    attributes["Siege Atlantis"] = '0';
+
+    attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"], statWeights));
+    attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"], statWeights));
+    attributes["Final Siege Damage"] = getNumber(calcs(attributes, "siege", attributes["Siege Atlantis"], statWeights));
+
+    attributes["Average Damage"] = (((parseFloat(attributes["Final Archer Damage"]) || 0) + (parseFloat(attributes["Final Cavalry Damage"]) || 0)) / 2).toFixed(2);
+
     setDataTable(prev => ({ ...prev, [name]: attributes }));
     await updateFirestore(name, attributes);
     setLoading(false);
@@ -146,7 +158,8 @@ export default function StatsPage() {
               onDelete={deletePlayer}
               onUpdate={updateFirestore}
               isAdmin={isAdmin}
-              user={user}
+              statWeights={statWeights}       /* 🔥 New Prop */
+              setStatWeights={setStatWeights}
             />
           )}
           <RawText text={text} />
