@@ -281,17 +281,30 @@ export default function ReportPage() {
     }
   };
 
-  const handleEdit = async (playerIdx, tmplKey, key, value) => {
+  const handleEdit = async (targetPlayerName, tmplKey, key, value) => {
     if (!isAdmin) {
       showNoPermission();
       return;
     }
-    const updated = [...structuredResults];
-    const player = updated[playerIdx];
+  let updatedPlayer = null;
 
-    if (!player || !player.data?.[tmplKey]) return;
+    // 🔥 FIX: Deep clone the state. If you don't do this, React freezes the text field.
+    const updatedResults = structuredResults.map((player) => {
+      if (player.name === targetPlayerName) {
+        const newData = {
+          ...player.data,
+          [tmplKey]: {
+            ...player.data[tmplKey],
+            [key]: value
+          }
+        };
+        updatedPlayer = { ...player, data: newData };
+        return updatedPlayer;
+      }
+      return player;
+    });
+    if (!updatedPlayer) return;
 
-    player.data[tmplKey][key] = value;
     // 🔁 Recalculate KPT per row
     const getKPT = (data) => {
       const kills = parseInt(data?.Kills || "0");
@@ -306,34 +319,30 @@ export default function ReportPage() {
     const calcGroupKPT = (keys) => {
       let kills = 0, troops = 0;
       keys.forEach(k => {
-        const d = player.data[k] || {};
+        const d = updatedPlayer.data[k] || {};
         kills += parseInt(d.Kills || 0);
         troops += parseInt(d.Losses || 0) + parseInt(d.Wounded || 0) + parseInt(d.Survivors || 0);
       });
       return troops === 0 ? "0.00" : (kills / troops).toFixed(2);
     };
 
-    const rowKPT = getKPT(player.data[tmplKey]);
-    const archerKPT = calcGroupKPT(["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
-    const cavalryKPT = calcGroupKPT(["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
+  updatedPlayer.data[tmplKey].KPT = getKPT(updatedPlayer.data[tmplKey]);
+    updatedPlayer.archerKPT = calcGroupKPT(["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
+    updatedPlayer.cavalryKPT = calcGroupKPT(["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
 
-    player.data[tmplKey].KPT = rowKPT;
-    player.archerKPT = archerKPT;
-    player.cavalryKPT = cavalryKPT;
+    setStructuredResults(updatedResults);
 
-    setStructuredResults(updated);
     if (!isAdmin) {
       showNoPermission();
       return;
     }
     // 🔥 Update to Firebase
-    try {
-      await setDoc(doc(db, "reports", player.name), {
-        ...player.data,
-        archerKPT,
-        cavalryKPT
-      });
-      console.log("✅ Updated Firestore with KPTs");
+   try {
+      await setDoc(doc(db, "reports", targetPlayerName), {
+        ...updatedPlayer.data,
+        archerKPT: updatedPlayer.archerKPT,
+        cavalryKPT: updatedPlayer.cavalryKPT
+      }, { merge: true });
     } catch (err) {
       console.error("❌ Error updating Firestore:", err);
     }
