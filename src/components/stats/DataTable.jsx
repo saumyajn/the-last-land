@@ -44,7 +44,8 @@ const weightKeysOrder = [
     "attackBlessing",
     "protectBlessing",
     "archerRatio",
-    "cavalryRatio"
+    "cavalryRatio",
+    "multiplier"
 ];
 
 const CleanInput = ({ value, onChange, width = '75px' }) => (
@@ -102,7 +103,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis, w));
         const siege = getNumber(calcs(player, "siege", siegeAtlantis, w));
 
-        let multiplier = getNumber(player["Multiplier"]) || 1.5;
+        let multiplier = w.multiplier ;
 
         const finalArcher = archer * multiplier;
         const finalCavalry = cavalry * multiplier;

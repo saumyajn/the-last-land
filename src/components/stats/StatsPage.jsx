@@ -13,7 +13,7 @@ import { updateDocument, deleteDocument } from "../../utils/dbActions";
 const RawText = lazy(() => import("./RawData"));
 const DataTable = lazy(() => import("./DataTable"));
 
-const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1, archerRatio: 0.5, cavalryRatio: 0.5 };
+const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1, archerRatio: 0.5, cavalryRatio: 0.5, multiplier: 1.5 };
 
 export default function StatsPage() {
   const { isAdmin } = useContext(AuthContext);
@@ -59,7 +59,7 @@ export default function StatsPage() {
     fetchData();
     return () => { mounted = false; };
   }, []);
-  
+
   const handleDelete = async (playerName) => {
     const success = await deleteDocument("stats", playerName, isAdmin, showNoPermission);
     if (success) {

@@ -1,9 +1,10 @@
-from firebase_functions import https_fn, options, db_fn
+from firebase_functions import https_fn, options, firestore_fn
+import google.cloud.firestore
 from firebase_admin import initialize_app, firestore
 from google.cloud import vision
 import json
 
-initialize_app()
+app = initialize_app()
 
 
 @https_fn.on_request(min_instances=0)
@@ -115,33 +116,38 @@ def process_image_ocr(req: https_fn.CallableRequest):
     return {"text": texts if texts else "No text found."}
 
 
-@db_fn.on_document_created(document="reports/{reportId}")
-def update_kpt_on_new_report(event: db_fn.Event[db_fn.DocumentSnapshot]):
+@firestore_fn.on_document_created(document="reports/{reportId}")
+def update_kpt_on_new_report(
+    event: firestore_fn.Event[firestore_fn.DocumentSnapshot],
+) -> None:
+    """Automatically updates troop KPT summary when a new report is added."""
     db = firestore.client()
     new_report = event.data.to_dict()
+    if not new_report:
+        return
 
-    # Reference to the summary document
     summary_ref = db.collection("analytics").document("troop_type_kpt")
 
-    # Use a transaction to ensure data consistency
-    @firestore.transactional
+    # Define the troop types you track
+    troop_types = [
+        "T10_guards",
+        "T10_cavalry",
+        "T10_archer",
+        "T10_siege",
+        "T9_cavalry",
+        "T9_archer",
+        "T8_cavalry",
+        "T8_archer",
+        "T8_siege",
+        "T7_cavalry",
+        "T7_archer",
+    ]
+
+    # Use a transaction for data integrity
+    @google.cloud.firestore.transactional
     def update_in_transaction(transaction, summary_ref, new_report):
         snapshot = summary_ref.get(transaction=transaction)
         current_totals = snapshot.to_dict() if snapshot.exists else {}
-
-        troop_types = [
-            "T10_guards",
-            "T10_cavalry",
-            "T10_archer",
-            "T10_siege",
-            "T9_cavalry",
-            "T9_archer",
-            "T8_cavalry",
-            "T8_archer",
-            "T8_siege",
-            "T7_cavalry",
-            "T7_archer",
-        ]
 
         for t_type in troop_types:
             if t_type in new_report:
@@ -150,20 +156,16 @@ def update_kpt_on_new_report(event: db_fn.Event[db_fn.DocumentSnapshot]):
                     t_type, {"Kills": 0, "Losses": 0, "Wounded": 0, "Survivors": 0}
                 )
 
-                # Increment totals
+                # Sum the values
                 existing["Kills"] += int(report_stats.get("Kills", 0))
                 existing["Losses"] += int(report_stats.get("Losses", 0))
                 existing["Wounded"] += int(report_stats.get("Wounded", 0))
                 existing["Survivors"] += int(report_stats.get("Survivors", 0))
 
-                # Recalculate KPT
-                total_troops = (
-                    existing["Survivors"] + existing["Losses"] + existing["Wounded"]
-                )
+                # Calculate KPT (Kills / Total Troops)
+                total = existing["Survivors"] + existing["Losses"] + existing["Wounded"]
                 existing["KPT"] = (
-                    f"{(existing['Kills'] / total_troops):.2f}"
-                    if total_troops > 0
-                    else "0.00"
+                    f"{(existing['Kills'] / total):.2f}" if total > 0 else "0.00"
                 )
 
                 current_totals[t_type] = existing

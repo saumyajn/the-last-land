@@ -73,14 +73,13 @@ export const calcs = (attributes, role, atlValue, weights) => {
 
 // Helper to build copyable TSV content
 export const buildCopyableTable = (names, localData, desiredKeys) => {
-  const headers = ["Name", ...desiredKeys, "Multiplier", "Archer Atlantis", "Cavalry Atlantis", "Final Archer Damage", "Final Cavalry Damage"];
+  const headers = ["Name", ...desiredKeys,  "Archer Atlantis", "Cavalry Atlantis", "Final Archer Damage", "Final Cavalry Damage"];
 
   const rows = names.map((name) => {
     const rowData = localData[name];
     return [
       name,
       ...desiredKeys.map((key) => removePercentage(rowData[key]) ?? ""),
-      removePercentage(rowData["Multiplier"]) ?? "",
       removePercentage(rowData["Archer Atlantis"]) ?? "",
       removePercentage(rowData["Cavalry Atlantis"]) ?? "",
       removePercentage(rowData["Final Archer Damage"]) ?? "",
