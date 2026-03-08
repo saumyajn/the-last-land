@@ -1,41 +1,74 @@
 export const getNumber = (val) => parseFloat(val?.toString().replace(/[^\d.]/g, "")) || 0;
-export const calcs = (attributes, role, atlValue) => {
 
-  const atk = getNumber(attributes["Troop Attack"]) + getNumber(attributes["Troop Health"]) + getNumber(attributes["Troop Defense"]);
-  const dmg = getNumber(attributes["Troop Damage"]) + getNumber(attributes["Troop Damage Received"]);
-  const bless = getNumber(attributes["Troop Attack Blessing"]) + getNumber(attributes["Troop Protection Blessing"]);
-  let varAtk, varDmg, varBless;
+
+export const calcs = (attributes, role, atlValue, weights) => {
+  const w = weights || {
+    attack: 1, health: 1, defense: 1,
+    damage: 2, damageReceived: 1,
+    attackBlessing: 1, protectBlessing: 1
+  };
+
+  // Apply weights to Troop Base Stats
+  const atk = (getNumber(attributes["Troop Attack"]) * w.attack) +
+    (getNumber(attributes["Troop Health"]) * w.health) +
+    (getNumber(attributes["Troop Defense"]) * w.defense);
+
+  const dmg = (getNumber(attributes["Troop Damage"]) * w.damage) +
+    (getNumber(attributes["Troop Damage Received"]) * w.damageReceived);
+
+  const bless = (getNumber(attributes["Troop Attack Blessing"]) * w.attackBlessing) +
+    (getNumber(attributes["Troop Protection Blessing"]) * w.protectBlessing);
+
+  let varAtk = 0, varDmg = 0, varBless = 0;
 
   if (role === "archer") {
+    varAtk = (getNumber(attributes["Archer Attack"]) * w.attack) +
+      (getNumber(attributes["Archer Health"]) * w.health) +
+      (getNumber(attributes["Archer Defense"]) * w.defense);
 
-    varAtk = getNumber(attributes["Archer Attack"]) + getNumber(attributes["Archer Health"] ) + getNumber( attributes["Archer Defense"]);
-    varDmg = getNumber(attributes["Archer Damage"] ) + getNumber( attributes["Archer Damage Received"]);
-    varBless = getNumber(attributes["Archer Attack Blessing"] ) + getNumber( attributes["Archer Protection Blessing"]);
+    varDmg = (getNumber(attributes["Archer Damage"]) * w.damage) +
+      (getNumber(attributes["Archer Damage Received"]) * w.damageReceived);
+
+    varBless = (getNumber(attributes["Archer Attack Blessing"]) * w.attackBlessing) +
+      (getNumber(attributes["Archer Protection Blessing"]) * w.protectBlessing);
   }
   else if (role === "cavalry") {
-    varAtk = getNumber(attributes["Cavalry Attack"]) + getNumber( attributes["Cavalry Health"] ) + getNumber( attributes["Cavalry Defense"]);
-    varDmg = getNumber(attributes["Cavalry Damage"] ) + getNumber( attributes["Cavalry Damage Received"]);
-    varBless = getNumber(attributes["Cavalry Attack Blessing"] ) + getNumber(attributes["Cavalry Protection Blessing"]);
+    varAtk = (getNumber(attributes["Cavalry Attack"]) * w.attack) +
+      (getNumber(attributes["Cavalry Health"]) * w.health) +
+      (getNumber(attributes["Cavalry Defense"]) * w.defense);
+
+    varDmg = (getNumber(attributes["Cavalry Damage"]) * w.damage) +
+      (getNumber(attributes["Cavalry Damage Received"]) * w.damageReceived);
+
+    varBless = (getNumber(attributes["Cavalry Attack Blessing"]) * w.attackBlessing) +
+      (getNumber(attributes["Cavalry Protection Blessing"]) * w.protectBlessing);
   }
   else if (role === "siege") {
-    varAtk = getNumber(attributes["Siege Attack"]) + getNumber( attributes["Siege Health"] ) + getNumber( attributes["Siege Defense"]);
-    varDmg = getNumber(attributes["Siege Damage"] ) + getNumber( attributes["Siege Damage Received"]);
-    varBless = getNumber(attributes["Siege Attack Blessing"] ) + getNumber( attributes["Siege Protection Blessing"]);
+    varAtk = (getNumber(attributes["Siege Attack"]) * w.attack) +
+      (getNumber(attributes["Siege Health"]) * w.health) +
+      (getNumber(attributes["Siege Defense"]) * w.defense);
+
+    varDmg = (getNumber(attributes["Siege Damage"]) * w.damage) +
+      (getNumber(attributes["Siege Damage Received"]) * w.damageReceived);
+
+    varBless = (getNumber(attributes["Siege Attack Blessing"]) * w.attackBlessing) +
+      (getNumber(attributes["Siege Protection Blessing"]) * w.protectBlessing);
   }
 
   const AtlData = getNumber(atlValue);
   const lethal = getNumber(attributes["Lethal Hit Rate"]);
 
+  // Calculate Power Score
   const part1 = Math.pow(varAtk + atk, 0.95);
   const part2 = Math.pow(bless + varBless, 0.9);
 
-  const part3 = (dmg + varDmg + AtlData) / 100
+  const part3 = (dmg + varDmg + AtlData) / 100;
   const part4 = (part1 * part2 * (1 + part3));
 
   const powerScore = (part4 * (1 + (lethal / 100))) / 10000;
   return powerScore.toFixed(1);
-
 }
+
 // Helper to build copyable TSV content
 export const buildCopyableTable = (names, localData, desiredKeys) => {
   const headers = ["Name", ...desiredKeys, "Multiplier", "Archer Atlantis", "Cavalry Atlantis", "Final Archer Damage", "Final Cavalry Damage"];
@@ -59,7 +92,6 @@ export const buildCopyableTable = (names, localData, desiredKeys) => {
 
   return tsvContent;
 };
-
 
 // Utility to remove percentage symbol from string value
 export const removePercentage = (value) => {

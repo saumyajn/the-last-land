@@ -4,7 +4,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, IconButton, TextField, Stack, Grid, Select, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, Skeleton, Tooltip
+    TableHead, TableRow, Paper, IconButton, TextField, Stack, Grid, Select, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, Skeleton, Tooltip, Divider
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -17,7 +17,6 @@ import { db } from '../../utils/firebase';
 import { usePermissionSnackbar } from "../Permissions";
 import { getColorByThreshold } from "../../utils/colorUtils";
 
-// --- COLUMN GROUPS DEFINITION ---
 const columnGroups = [
     { label: "Troop", keys: ["Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received", "Troop Attack Blessing", "Troop Protection Blessing"] },
     { label: "Archer", keys: ["Archer Attack", "Archer Health", "Archer Defense", "Archer Damage", "Archer Damage Received", "Archer Attack Blessing", "Archer Protection Blessing"] },
@@ -25,7 +24,6 @@ const columnGroups = [
     { label: "Siege", keys: ["Siege Attack", "Siege Health", "Siege Defense", "Siege Damage", "Siege Damage Received", "Siege Attack Blessing", "Siege Protection Blessing"] }
 ];
 
-// 🔥 Removed the useless "Multiplier" column to save space
 const extraColumns = [
     {label:'Lethal Hit Rate', key:'Lethal Hit Rate'},
     { label: "Archer Atlantis", key: "Archer Atlantis" },
@@ -38,8 +36,6 @@ const extraColumns = [
     { label: "Actions", key: "Actions" }
 ];
 
-// --- HELPER COMPONENT: Invisible Inputs ---
-// This makes the table look like read-only text until you click on a cell
 const CleanInput = ({ value, onChange, width = '75px' }) => (
     <TextField
         value={value}
@@ -60,8 +56,14 @@ const CleanInput = ({ value, onChange, width = '75px' }) => (
 );
 
 export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, onUpdate, isAdmin }) {
-    const [localData, setLocalData] = useState(tableData);
+    
+    // 🔥 NEW: Default Stat Weights
+    const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 2, damageReceived: 1, attackBlessing: 1, protectBlessing: 1 };
+    
+    const [localData, setLocalData] = useState({});
     const [thresholds, setThresholds] = useState([]);
+    const [statWeights, setStatWeights] = useState(defaultWeights);
+    
     const [renamePrompt, setRenamePrompt] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [archerOptions, setArcherOptions] = useState([]);
@@ -69,7 +71,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const [siegeOptions, setSiegeOptions] = useState([]);
     const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
     
-    // 🔥 New State for the Settings Modal
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     const [expandedGroups, setExpandedGroups] = useState(() =>
@@ -82,14 +83,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const names = useMemo(() => Object.keys(localData), [localData]);
 
-    const calculateAll = useCallback((player) => {
+    // 🔥 Modified to pass statWeights to the calcs function
+    const calculateAll = useCallback((player, currentWeights) => {
         const archerAtlantis = player["Archer Atlantis"] || 0;
         const cavalryAtlantis = player["Cavalry Atlantis"] || 0;
         const siegeAtlantis = player["Siege Atlantis"] || 0;
 
-        const archer = getNumber(calcs(player, "archer", archerAtlantis));
-        const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis));
-        const siege = getNumber(calcs(player, "siege", siegeAtlantis));
+        const archer = getNumber(calcs(player, "archer", archerAtlantis, currentWeights));
+        const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis, currentWeights));
+        const siege = getNumber(calcs(player, "siege", siegeAtlantis, currentWeights));
 
         let multiplier = getNumber(player["Multiplier"]) || 1.5;
 
@@ -110,7 +112,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const handleEdit = useCallback((name, field, value) => {
         if (!isAdmin) return showNoPermission();
         const updatedPlayer = { ...localData[name], [field]: value };
-        const calculated = calculateAll(updatedPlayer);
+        const calculated = calculateAll(updatedPlayer, statWeights);
         const avgDamage = (((parseFloat(calculated["Final Archer Damage"]) || 0) + (parseFloat(calculated["Final Cavalry Damage"]) || 0)) / 2).toFixed(2);
 
         const updatedData = {
@@ -120,7 +122,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
         setLocalData(updatedData);
         onUpdate(name, updatedData[name]);
-    }, [isAdmin, localData, calculateAll, onUpdate, showNoPermission]);
+    }, [isAdmin, localData, calculateAll, onUpdate, showNoPermission, statWeights]);
 
     const handleThresholdChange = useCallback(async (index, field, value) => {
         if (!isAdmin) return showNoPermission();
@@ -132,14 +134,32 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         catch (error) { console.error("Error updating thresholds:", error); }
     }, [isAdmin, thresholds, showNoPermission]);
 
+    // 🔥 NEW: Handle Weight Input Changes
+    const handleWeightChange = async (key, value) => {
+        if (!isAdmin) return showNoPermission();
+        const numVal = parseFloat(value) || 0;
+        const newWeights = { ...statWeights, [key]: numVal };
+        setStatWeights(newWeights);
+
+        try { await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); } 
+        catch (error) { console.error("Error saving weights:", error); }
+    };
+
     useEffect(() => {
-        const fetchThresholds = async () => {
+        const fetchSettings = async () => {
             setIsLoading(true);
             try {
+                // Fetch Thresholds
                 const thresholdRef = doc(db, "settings", "thresholds");
                 const snapshot = await getDoc(thresholdRef);
                 if (snapshot.exists() && snapshot.data().thresholds) setThresholds(snapshot.data().thresholds);
                 
+                // 🔥 Fetch Weights
+                const weightsRef = doc(db, "settings", "statWeights");
+                const weightsSnap = await getDoc(weightsRef);
+                if (weightsSnap.exists() && weightsSnap.data().weights) setStatWeights(weightsSnap.data().weights);
+
+                // Fetch Atlantis Config
                 const optionsRef = doc(db, "settings", "atlantis_damage");
                 const optionsSnap = await getDoc(optionsRef);
                 if (optionsSnap.exists()) {
@@ -148,19 +168,20 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     setCavalryOptions(optionsArr);
                     setSiegeOptions(optionsArr);
                 }
-            } catch (error) { console.error("Failed to load thresholds:", error); } 
+            } catch (error) { console.error("Failed to load settings:", error); } 
             finally { setIsLoading(false); }
         };
-        fetchThresholds();
+        fetchSettings();
     }, []);
 
+    // 🔥 Recalculate everything when data OR weights change
     useEffect(() => {
         const updated = {};
         Object.entries(tableData).forEach(([name, data]) => {
-            updated[name] = { ...data, ...calculateAll(data) };
+            updated[name] = { ...data, ...calculateAll(data, statWeights) };
         });
         setLocalData(updated);
-    }, [tableData, calculateAll]);
+    }, [tableData, calculateAll, statWeights]);
 
     const handleGroupToggle = (label) => {
         setExpandedGroups(prev => ({ ...prev, [label]: !prev[label] }));
@@ -172,11 +193,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     return (
         <Suspense fallback={<Box p={4}>Loading...</Box>}>
             
-            {/* 🔥 Moved Thresholds to a popup Dialog to save screen space */}
+            {/* 🔥 UPDATED DIALOG: Now includes Weights configuration */}
             <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle>Threshold Color Settings</DialogTitle>
+                <DialogTitle>Configuration & Settings</DialogTitle>
                 <DialogContent dividers>
-                    <Grid container spacing={2}>
+                    
+                    <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        Threshold Colors
+                    </Typography>
+                    <Grid container spacing={2} sx={{ mb: 4 }}>
                         {thresholds.map((thresh, idx) => (
                             <Grid item xs={12} sm={4} md={3} key={idx}>
                                 <Stack direction="row" spacing={1} alignItems="center">
@@ -188,6 +213,29 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                             </Grid>
                         ))}
                     </Grid>
+
+                    <Divider sx={{ mb: 3 }} />
+
+                    <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        Stat Math Ratios (Weights)
+                    </Typography>
+                    <Grid container spacing={3}>
+                        {Object.entries(statWeights).map(([key, value]) => (
+                            <Grid item xs={6} sm={4} md={3} key={key}>
+                                <TextField 
+                                    // Formats keys like "damageReceived" to "Damage Received"
+                                    label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
+                                    value={value} 
+                                    onChange={(e) => handleWeightChange(key, e.target.value)} 
+                                    size="small" 
+                                    type="number" 
+                                    inputProps={{ step: "0.1" }}
+                                    fullWidth 
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setSettingsOpen(false)} variant="contained">Done</Button>
@@ -205,7 +253,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 <ContentCopyIcon />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Threshold Settings">
+                        <Tooltip title="Configuration Settings">
                             <IconButton color="primary" onClick={() => setSettingsOpen(true)}>
                                 <SettingsIcon />
                             </IconButton>
@@ -274,7 +322,6 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
                                         <TableCell align="center"><CleanInput value={rowData["Lethal Hit Rate"] || ""} onChange={(e) => handleEdit(name, "Lethal Hit Rate", e.target.value)} /></TableCell>
                                         
-                                        {/* 🔥 FIX: Changed all Dropdowns to NATIVE to perfectly fix visibility/clipping bugs */}
                                         <TableCell align="center">
                                             <Select native variant="standard" disableUnderline value={String(rowData["Archer Atlantis"] || "0")} onChange={(e) => handleEdit(name, "Archer Atlantis", e.target.value)} sx={{ fontSize: '0.875rem', width: '60px' }}>
                                                 {archerOptions.map(([label, value]) => <option key={label} value={String(value)}>{label}</option>)}
