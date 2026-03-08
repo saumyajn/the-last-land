@@ -43,9 +43,9 @@ export default function StatsPage() {
         });
         if (mounted) setDataTable(data);
       } catch (error) {
-      
-          console.error("❌ Error loading data from Firestore:", error);
-        
+
+        console.error("❌ Error loading data from Firestore:", error);
+
       }
     };
     fetchData();
@@ -95,17 +95,13 @@ export default function StatsPage() {
   };
 
   // Defer Tesseract import until needed
-  const extractText = async () => {
-    if (!images?.length) return;
+  const extractText = async (extractedTexts) => {
+    if (!extractedTexts || !extractedTexts.length) return;
     setLoading(true);
-    const { default: Tesseract } = await import("tesseract.js");
-    let allExtracted = "";
-    for (const img of images) {
-      const result = await Tesseract.recognize(img, "eng");
-      allExtracted += result.data.text + "\n";
-    }
+
+    // Combine all the text returned from your Cloud Function
+    const allExtracted = extractedTexts.join("\n");
     setText(allExtracted);
-    setLoading(false);
 
     const attributes = parseData(allExtracted, desiredKeys);
     attributes["Archer Atlantis"] = '0';
@@ -114,6 +110,7 @@ export default function StatsPage() {
     attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"]));
     setDataTable(prev => ({ ...prev, [name]: attributes }));
     await updateFirestore(name, attributes);
+    setLoading(false);
   };
 
   return (
@@ -139,10 +136,10 @@ export default function StatsPage() {
         </Box>
 
         <Suspense fallback={<Stack spacing={1}>
-      <Skeleton variant="rectangular" height={40} />
-      <Skeleton variant="rectangular" height={40} />
-      <Skeleton variant="rectangular" height={40} />
-    </Stack>}>
+          <Skeleton variant="rectangular" height={40} />
+          <Skeleton variant="rectangular" height={40} />
+          <Skeleton variant="rectangular" height={40} />
+        </Stack>}>
           {Object.entries(dataTable).length > 0 && (
             <DataTable
               tableData={dataTable}

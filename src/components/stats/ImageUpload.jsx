@@ -5,14 +5,14 @@ import * as React from "react";
 // REPLACE THIS with your actual Cloud Function URL from the terminal
 const FUNCTION_URL = "https://extract-text-from-image-4cyoytiwnq-uc.a.run.app";
 
-export default function ImageUpload({ onUpload, onExtract, name }) {
+export default function ImageUpload({ onUpload, onExtract, name, loading: parentLoading  }) {
     const fileInputRef = React.useRef();
     const [pasteSnackbarOpen, setPasteSnackbarOpen] = React.useState(false);
-    
+
     // We need two states: one for preview URLs (images) and one for actual File objects (files)
-    const [images, setImages] = React.useState([]); 
-    const [files, setFiles] = React.useState([]); 
-    
+    const [images, setImages] = React.useState([]);
+    const [files, setFiles] = React.useState([]);
+
     const [loading, setLoading] = React.useState(false);
 
     React.useEffect(() => {
@@ -44,7 +44,7 @@ export default function ImageUpload({ onUpload, onExtract, name }) {
 
     const handleFiles = (fileList) => {
         const filesArray = Array.from(fileList);
-        
+
         // 1. Create Preview URLs for UI
         const urls = filesArray.map(file => URL.createObjectURL(file));
         setImages(prev => [...prev, ...urls]);
@@ -88,12 +88,12 @@ export default function ImageUpload({ onUpload, onExtract, name }) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.readAsDataURL(file);
-                    
+
                     reader.onload = async () => {
                         try {
                             // Strip "data:image/png;base64," prefix
                             const base64String = reader.result.split(",")[1];
-                            
+
                             const response = await fetch(FUNCTION_URL, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
@@ -116,7 +116,7 @@ export default function ImageUpload({ onUpload, onExtract, name }) {
             });
 
             const extractedTexts = await Promise.all(promises);
-            
+
             // Pass the extracted text back to the parent component
             if (onExtract) {
                 onExtract(extractedTexts);
@@ -159,7 +159,7 @@ export default function ImageUpload({ onUpload, onExtract, name }) {
                     onClick={handleExtractClick} // Changed from onExtract to local handler
                     disabled={!files.length || loading}
                 >
-                    {loading ? <CircularProgress size={24} color="inherit" /> : "Extract Text"}
+                    {loading || parentLoading? <CircularProgress size={24} color="inherit" /> : "Extract Text"}
                 </Button>
             </Box>
 
