@@ -36,16 +36,16 @@ const extraColumns = [
     { label: "Actions", key: "Actions" }
 ];
 const weightKeysOrder = [
-        "attack", 
-        "health", 
-        "defense", 
-        "damage", 
-        "damageReceived", 
-        "attackBlessing", 
-        "protectBlessing", 
-        "archerRatio", 
-        "cavalryRatio"
-    ];
+    "attack",
+    "health",
+    "defense",
+    "damage",
+    "damageReceived",
+    "attackBlessing",
+    "protectBlessing",
+    "archerRatio",
+    "cavalryRatio"
+];
 
 const CleanInput = ({ value, onChange, width = '75px' }) => (
     <TextField
@@ -131,7 +131,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const handleEdit = useCallback((name, field, value) => {
         if (!isAdmin) return showNoPermission();
         const updatedPlayer = { ...localData[name], [field]: value };
-        
+
         // `calculateAll` now returns the calculated Average Damage too!
         const calculated = calculateAll(updatedPlayer, statWeights);
 
@@ -147,46 +147,54 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
         onUpdate(name, updatedData);
     }, [isAdmin, localData, calculateAll, onUpdate, showNoPermission, statWeights]);
 
-    const handleThresholdChange = useCallback(async (index, field, value) => {
+    const handleThresholdChange = (index, field, value) => {
         if (!isAdmin) return showNoPermission();
+
         const newThresholds = [...thresholds];
-        newThresholds[index] = { ...newThresholds[index], [field]: field === "limit" ? parseFloat(value) || 0 : value };
-        setThresholds(newThresholds);
+        newThresholds[index] = {
+            ...newThresholds[index],
+            [field]: field === "limit" ? parseFloat(value) || 0 : value
+        };
 
-        try { await setDoc(doc(db, "settings", "thresholds"), { thresholds: newThresholds }); }
-        catch (error) { console.error("Error updating thresholds:", error); }
-    }, [isAdmin, thresholds, showNoPermission]);
+        setThresholds(newThresholds); // Only updates the UI!
+    };
 
-    const handleWeightChange = async (key, value) => {
-        if (!isAdmin) return showNoPermission();
-        
-        const numVal = parseFloat(value) || 0;
-        const newWeights = { ...statWeights,  [key]: numVal };
-        
-        setStatWeights(newWeights);
+    const handleCloseSettings = async () => {
+        setSettingsOpen(false); // Close the modal
+        if (!isAdmin) return;
 
-        try { 
-            await setDoc(doc(db, "settings", "statWeights"), { weights: newWeights }); 
-            
-            const updatedPlayers = {};
-            
-            Object.entries(localData).forEach(([name, playerData]) => {
-                const calculated = calculateAll(playerData, newWeights);
-                
-                const fullUpdatedPlayer = { 
-                    ...playerData, 
-                    ...calculated 
+        try {
+            // A. Save the new weights to Firestore
+            await setDoc(doc(db, "settings", "statWeights"), { weights: statWeights });
+
+            // B. Save the thresholds just in case they were changed
+            await setDoc(doc(db, "settings", "thresholds"), { thresholds });
+
+            // C. Recalculate all players with the final math and batch update the database
+            const promises = Object.entries(localData).map(([name, playerData]) => {
+                const calculated = calculateAll(playerData, statWeights);
+                const fullUpdatedPlayer = {
+                    ...playerData,
+                    ...calculated
                 };
-                
-                updatedPlayers[name] = fullUpdatedPlayer;
-                onUpdate(name, fullUpdatedPlayer);
+
+                // Uses the onUpdate prop to push to Firebase
+                return onUpdate(name, fullUpdatedPlayer);
             });
-            
-            setLocalData(updatedPlayers);
-            
-        } catch (error) { 
-            console.error("Error saving weights and updating players:", error); 
+
+            // Wait for all 30 players to finish saving
+            await Promise.all(promises);
+            console.log("✅ All settings and player stats updated perfectly!");
+
+        } catch (error) {
+            console.error("❌ Error saving settings:", error);
         }
+    };
+
+    const handleWeightChange = (key, value) => {
+        if (!isAdmin) return showNoPermission();
+        const numVal = parseFloat(value) || 0;
+        setStatWeights(prev => ({ ...prev, [key]: numVal }));
     };
 
     useEffect(() => {
@@ -255,10 +263,10 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                         Stat Ratios (Weights)
                     </Typography>
                     <Grid container spacing={3}>
-{weightKeysOrder.map((key) => {
+                        {weightKeysOrder.map((key) => {
                             // Safely grab the value, default to 0 if it somehow doesn't exist
-                            const value = statWeights?.[key] ?? 0; 
-                            
+                            const value = statWeights?.[key] ?? 0;
+
                             return (
                                 <Grid item xs={6} sm={4} md={3} key={key}>
                                     <TextField
@@ -277,7 +285,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setSettingsOpen(false)} variant="contained">Done</Button>
+                    <Button onClick={handleCloseSettings} variant="contained">Done</Button>
                 </DialogActions>
             </Dialog>
 
