@@ -24,7 +24,7 @@ const siegeKeys = ["T10_siege",  "T8_siege"];
 const computeKPT = (kills, losses, wounded, survivors) => {
   const total = losses + wounded + survivors;
   if (total === 0) return "0.00";
-  return (kills / total).toFixed(2);
+  return ((kills - losses - wounded) / total).toFixed(2);
 };
 
 const calcKPT = (data, keys) => {

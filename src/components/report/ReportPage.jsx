@@ -309,17 +309,19 @@ export default function ReportPage() {
       const wounded = parseInt(data?.Wounded || "0");
       const survivors = parseInt(data?.Survivors || "0");
       const total = losses + wounded + survivors;
-      return total === 0 ? "0.00" : (kills / total).toFixed(2);
+      return total === 0 ? "0.00" : ((kills - losses - wounded) / total).toFixed(2);
     };
 
     const calcGroupKPT = (keys) => {
-      let kills = 0, troops = 0;
+      let kills = 0, losses = 0, wounded = 0, troops = 0;
       keys.forEach(k => {
         const d = updatedPlayer.data[k] || {};
         kills += parseInt(d.Kills || 0);
+        losses += parseInt(d.Losses || 0);
+        wounded += parseInt(d.Wounded || 0);
         troops += parseInt(d.Losses || 0) + parseInt(d.Wounded || 0) + parseInt(d.Survivors || 0);
       });
-      return troops === 0 ? "0.00" : (kills / troops).toFixed(2);
+      return troops === 0 ? "0.00" : ((kills - losses - wounded) / troops).toFixed(2);
     };
 
     updatedPlayer.data[tmplKey].KPT = getKPT(updatedPlayer.data[tmplKey]);

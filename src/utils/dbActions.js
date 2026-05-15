@@ -70,7 +70,7 @@ export const updateTroopTypeKpt = async (isAdmin) => {
             const denominator = totals.Losses + totals.Wounded + totals.Survivors;
             kptData[type] = {
                 ...totals,
-                KPT: denominator > 0 ? (totals.Kills / denominator).toFixed(2) : "0.00"
+                KPT: denominator > 0 ? ((totals.Kills - totals.Losses - totals.Wounded) / denominator).toFixed(2) : "0.00"
             };
 
             if (type !== 'T10_guards') {
@@ -86,7 +86,7 @@ export const updateTroopTypeKpt = async (isAdmin) => {
 
         // 3. Calculate advanced metrics for the Summary Document
         const totalDenominator = totalLosses + totalWounded + totalSurvivors;
-        const globalKPT = totalDenominator > 0 ? (totalKills / totalDenominator) : 0;
+        const globalKPT = totalDenominator > 0 ? ((totalKills - totalLosses - totalWounded) / totalDenominator) : 0;
 
         const troopSummaryDetails = {};
         Object.entries(kptData).forEach(([type, stats]) => {

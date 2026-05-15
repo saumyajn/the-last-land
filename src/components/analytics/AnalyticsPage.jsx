@@ -54,8 +54,8 @@ export default function AnalyticsPage() {
                     }, { Kills: 0, Losses: 0, Wounded: 0, Survivors: 0 });
 
                 const totalDenominator = totals.Losses + totals.Wounded + totals.Survivors;
-                const totalKPTValue = totalDenominator > 0 ? (totals.Kills / totalDenominator) : 0;
-                
+                const totalKPTValue = totalDenominator > 0 ? (totals.Kills - totals.Losses - totals.Wounded) / totalDenominator : 0;
+                totals.KPT = totalKPTValue.toFixed(3);
                 // 2. Prepare detailed calculated data for the DB summary document
                 const troopSummaryDetails = {};
                 Object.entries(data).forEach(([type, stats]) => {
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
         }, { Kills: 0, Losses: 0, Wounded: 0, Survivors: 0 });
 
     const totalDenominator = totals.Losses + totals.Wounded + totals.Survivors;
-    const totalKPTValue = totalDenominator > 0 ? (totals.Kills / totalDenominator) : 0;
+    const totalKPTValue = totalDenominator > 0 ? (totals.Kills - totals.Losses - totals.Wounded) / totalDenominator : 0;
     totals.KPT = totalKPTValue.toFixed(3);
     const totalMarchSize = totalDenominator;
 

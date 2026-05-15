@@ -162,10 +162,13 @@ def update_kpt_on_new_report(
                 existing["Wounded"] += int(report_stats.get("Wounded", 0))
                 existing["Survivors"] += int(report_stats.get("Survivors", 0))
 
-                # Calculate KPT (Kills / Total Troops)
+                # Calculate KPT ( (Kills - Losses - Wounded) / Total Troops)
                 total = existing["Survivors"] + existing["Losses"] + existing["Wounded"]
+                kills = existing["Kills"]
+                losses = existing["Losses"]
+                wounded = existing["Wounded"]
                 existing["KPT"] = (
-                    f"{(existing['Kills'] / total):.2f}" if total > 0 else "0.00"
+                    f"{((kills - losses - wounded) / total):.2f}" if total > 0 else "0.00"
                 )
 
                 current_totals[t_type] = existing
