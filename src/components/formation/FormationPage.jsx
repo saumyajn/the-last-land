@@ -188,7 +188,7 @@ export default function FormationPage() {
             <Paper elevation={1} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
               <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} />
-              <FormationTable label="tower_formation" groupedData={groupedData} isAdmin={isAdmin} />
+              <FormationTable label="tower_formation" groupedData={groupedAverageData} isAdmin={isAdmin} />
             </Paper>
           </Grid>
         </Grid>
@@ -203,7 +203,7 @@ export default function FormationPage() {
             <Paper elevation={1} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
               <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} />
-              <FormationTable label="throne_formation" groupedData={groupedData} isAdmin={isAdmin} />
+              <FormationTable label="throne_formation" groupedData={groupedAverageData} isAdmin={isAdmin} />
             </Paper>
           </Grid>
         </Grid>
