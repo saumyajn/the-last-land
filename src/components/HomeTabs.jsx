@@ -1,45 +1,26 @@
-// src/components/HomeTabs.jsx
-import { Tabs, Tab, Box } from "@mui/material";
-import { useNavigate, useLocation} from "react-router-dom";
+import React from 'react';
+import { Tabs, Tab, Box } from '@mui/material';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function HomeTabs() {
-  const navigate = useNavigate();
   const location = useLocation();
-
-  const tabIndex = ["/stats", "/formation", "/report", "/analytics", "/about"].indexOf(location.pathname);
-
-  const handleChange = (event, newValue) => {
-    const routes = ["/stats", "/formation", "/report", "/analytics", "/about"];
-    navigate(routes[newValue]);
-  };
+  
+  // Ensure the active tab exactly matches the current route
+  const currentPath = location.pathname;
 
   return (
-    <Box>
-      <Tabs
-        value={tabIndex === -1 ? false : tabIndex}
-        onChange={handleChange}
-        variant="scrollable"
+    <Box sx={{ width: '100%', borderBottom: 1, borderColor: 'divider' }}>
+      <Tabs 
+        value={currentPath} 
+        variant="scrollable" 
         scrollButtons="auto"
-        textColor="secondary"
-        indicatorColor="secondary"
-        sx={{
-          "& .MuiTab-root": {
-            fontWeight: "bold",
-            fontSize: "1rem",
-            textTransform: "none",
-            px: 4,
-            py: 2
-          },
-          "& .Mui-selected": {
-            color: "#1976d2"
-          }
-        }}
       >
-        <Tab label="Stats" />
-        <Tab label="Formation" />
-        <Tab label="Report" />
-        <Tab label="Analytics" />
-        <Tab label="About" />
+        {/* About is now the first tab and maps to the root path */}
+        <Tab label="Overview" value="/" component={Link} to="/" />
+        <Tab label="Data Upload" value="/stats" component={Link} to="/stats" />
+        <Tab label="Analytics" value="/analytics" component={Link} to="/analytics" />
+        <Tab label="Formations" value="/formation" component={Link} to="/formation" />
+        <Tab label="Reports" value="/report" component={Link} to="/report" />
       </Tabs>
     </Box>
   );

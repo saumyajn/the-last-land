@@ -8,17 +8,15 @@ import Header from "./components/Header";
 import HomeTabs from "./components/HomeTabs";
 import Footer from "./components/Footer";
 
+import AboutPage from "./components/AboutPage"; // <-- Now the landing page
 import StatsPage from "./components/stats/StatsPage";
 import FormationPage from "./components/formation/FormationPage";
 import ReportPage from "./components/report/ReportPage";
 import AnalyticsPage from "./components/analytics/AnalyticsPage";
-import AboutPage from "./components/AboutPage";
 
 import { getAuth, onAuthStateChanged, getRedirectResult } from "firebase/auth";
 
 export default function App() {
-
-  // Auth logic stays here at the top level
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -39,16 +37,19 @@ export default function App() {
       <Router>
         <Header />
         <HomeTabs />
-        <Container maxWidth="xl" sx={{ flex: 1 }}>
+        
+        <Container maxWidth="xl" sx={{ flex: 1, pt: 3, pb: 4 }}>
           <Routes>
-            <Route path="/stats" element={<StatsPage />} />
-          
-            <Route path="/formation" element={<FormationPage />} />
+            {/* The AboutPage is now the default landing route */}
+            <Route path="/" element={<AboutPage />} /> 
             
+            <Route path="/stats" element={<StatsPage />} />
+            <Route path="/formation" element={<FormationPage />} />
             <Route path="/report" element={<ReportPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="*" element={<Navigate to="/analytics" replace />} />
+            
+            {/* Redirect any unknown paths back to the landing page */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Container>
       </Router>
