@@ -1,4 +1,6 @@
 export const ADMIN_EMAILS = [
+    // Keep this list synchronized with functions/main.py until admin roles are moved
+    // to Firebase custom claims or a Firestore-backed role document.
     "saums06@gmail.com",
     "sanketvazesvsv@gmail.com",
     "sanketvazesvsvsv@gmail.com",

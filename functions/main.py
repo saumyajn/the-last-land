@@ -88,6 +88,8 @@ def process_image_ocr(req: https_fn.CallableRequest):
             code=https_fn.FunctionsErrorCode.UNAUTHENTICATED, message="Log in first!"
         )
 
+    # Keep this list synchronized with src/utils/config.js until admin roles are moved
+    # to Firebase custom claims or a Firestore-backed role document.
     allowed_admins = [
         "saums06@gmail.com",
         "sanketvazesvsv@gmail.com",

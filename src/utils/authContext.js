@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 import { ADMIN_EMAILS } from "../utils/config"; // Put your admin emails here
 
 // Create the context
@@ -11,7 +12,6 @@ export const AuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setIsAdmin(firebaseUser && ADMIN_EMAILS.includes(firebaseUser.email));

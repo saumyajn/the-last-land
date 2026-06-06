@@ -13,6 +13,7 @@ import { AuthContext } from "../../utils/authContext";
 // 🔥 Added Firebase imports
 import { db } from "../../utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { getRenderableThresholdColor, normalizeThresholds } from "../../utils/colorUtils";
 
 export default function FormationPage() {
   const { isAdmin } = useContext(AuthContext);
@@ -36,7 +37,7 @@ export default function FormationPage() {
         const thresholdsSnap = await getDoc(thresholdsRef);
         if (!thresholdsSnap.exists()) return;
 
-        const tData = thresholdsSnap.data().thresholds || [];
+        const tData = normalizeThresholds(thresholdsSnap.data().thresholds);
         setThresholds(tData);
 
         const colorNames = {};
@@ -140,11 +141,12 @@ export default function FormationPage() {
             const meta = data[color];
             const colorName = meta[0]?.colorName || color;
             const avgDamage = Math.round(meta[0]?.avgDamage || 0);
+            const displayColor = getRenderableThresholdColor(color);
 
             if (!meta || meta.length <= 1) return null;
 
             return (
-              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${color}`, p: 2, bgcolor: alpha(color, 0.1) }}>
+              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${displayColor}`, p: 2, bgcolor: alpha(displayColor, 0.1) }}>
                 <Typography variant="subtitle2" sx={{ ml: 1 }}>
                   {colorName.toUpperCase()} - Avg Damage: {avgDamage}
                 </Typography>

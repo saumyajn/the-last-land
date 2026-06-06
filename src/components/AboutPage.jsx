@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, Paper, Fade, Grow } from '@mui/material';
+import { Box, Typography, Button, Paper, Fade, Grow, Chip } from '@mui/material';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import SecurityIcon from '@mui/icons-material/Security';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -59,6 +59,42 @@ export default function AboutPage() {
     </Grow>
   );
 
+  const ProofCard = ({ title, detail, tags }) => (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 3,
+        textAlign: 'left',
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 3,
+        minHeight: '100%',
+      }}
+    >
+      <Typography variant="h6" sx={{ color: '#fff', fontWeight: 800, mb: 1 }}>
+        {title}
+      </Typography>
+      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, mb: 2 }}>
+        {detail}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        {tags.map((tag) => (
+          <Chip
+            key={tag}
+            label={tag}
+            size="small"
+            sx={{
+              color: '#bfdbfe',
+              backgroundColor: 'rgba(59,130,246,0.12)',
+              border: '1px solid rgba(59,130,246,0.24)',
+              fontWeight: 700,
+            }}
+          />
+        ))}
+      </Box>
+    </Paper>
+  );
+
   return (
     <Box
       sx={{
@@ -97,6 +133,35 @@ export default function AboutPage() {
           <FeatureCard icon={<BarChartIcon />} title="Visual Analytics" subtitle="Track power progression, resource metrics, and alliance growth over time." delay={200} color="#a855f7" />
           <FeatureCard icon={<SecurityIcon />} title="Formations" subtitle="Build, evaluate, and save optimal troop setups for maximum combat efficiency." delay={400} color="#10b981" />
           <FeatureCard icon={<AssessmentIcon />} title="Export Reports" subtitle="Generate beautiful, structured reports to share with your alliance leaders." delay={600} color="#f59e0b" />
+        </Box>
+
+        <Box sx={{ mb: 8, textAlign: 'left' }}>
+          <Typography variant="overline" sx={{ color: '#93c5fd', letterSpacing: 2, fontWeight: 800 }}>
+            Engineering proof
+          </Typography>
+          <Typography variant="h4" sx={{ color: '#fff', fontWeight: 900, mt: 1, mb: 2 }}>
+            Built for messy screenshots, real users, and protected data workflows.
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.62)', maxWidth: 850, lineHeight: 1.7, mb: 3 }}>
+            The app combines OCR, OpenCV template matching, deterministic parsing, Firebase-backed analytics, admin controls, and spreadsheet exports. Local emulator mode and fixture tests let development continue without touching production Firebase data.
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <ProofCard
+              title="Extraction pipeline"
+              detail="Google Vision OCR and OpenCV.js convert screenshot evidence into structured stats and battle report rows."
+              tags={['OCR', 'OpenCV', 'Parsing']}
+            />
+            <ProofCard
+              title="Data contract"
+              detail="Stats, reports, settings, formations, and analytics are documented so refactors do not change live Firebase shapes by accident."
+              tags={['Firestore', 'Analytics', 'Exports']}
+            />
+            <ProofCard
+              title="Safe development"
+              detail="Emulator scripts and synthetic fixtures support local testing while real users continue using the production dataset."
+              tags={['Emulators', 'Fixtures', 'Regression tests']}
+            />
+          </Box>
         </Box>
 
         <Fade in={mounted} timeout={2000}>

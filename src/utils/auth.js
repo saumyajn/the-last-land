@@ -1,7 +1,6 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { app } from "./firebase";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { auth } from "./firebase";
 
-const auth = getAuth(app);
 auth.useDeviceLanguage();
 
 // Google Sign-in

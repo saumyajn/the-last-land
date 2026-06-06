@@ -1,6 +1,12 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import {
+    firebaseEmulatorHost,
+    firebaseEmulatorPorts,
+    shouldUseFirebaseEmulators
+} from "./firebaseEnv";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBbgIniFQ7WEySILgrl1tBb9EIBIrtp8Ho",
@@ -14,4 +20,18 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app);
 
+if (shouldUseFirebaseEmulators) {
+    connectFirestoreEmulator(
+        db,
+        firebaseEmulatorHost,
+        firebaseEmulatorPorts.firestore
+    );
+
+    connectAuthEmulator(
+        auth,
+        `http://${firebaseEmulatorHost}:${firebaseEmulatorPorts.auth}`,
+        { disableWarnings: true }
+    );
+}

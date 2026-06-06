@@ -18,6 +18,7 @@ import { db } from "../../utils/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { usePermissionSnackbar } from "../Permissions";
+import { normalizeThresholds } from "../../utils/colorUtils";
 
 export default function FormationTable({ label, groupedData = null, isAdmin, type }) {
   const [totalTroopValue, setTotalTroopValue] = useState(0);
@@ -43,7 +44,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
       const settingData = settingSnap.exists() ? settingSnap.data() : {};
       const formationData = formationSnap.exists() ? formationSnap.data() : {};
-      const thresholdData = thresholdsSnap.exists() ? thresholdsSnap.data().thresholds || [] : [];
+      const thresholdData = thresholdsSnap.exists() ? normalizeThresholds(thresholdsSnap.data().thresholds) : [];
       const colorOrder = thresholdData.map(t => t.name);
 
       const totalTroops = parseFloat(settingData.damage_troops || 0);

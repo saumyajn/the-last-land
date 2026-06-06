@@ -20,8 +20,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:emulators": "node scripts/start-emulators.cjs",
+    "emulators": "firebase emulators:start --only auth,firestore,functions",
+    "seed:emulators": "node scripts/seed-firestore-emulator.cjs",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:ci": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject"
   },
   "proxy": "https://script.google.com",

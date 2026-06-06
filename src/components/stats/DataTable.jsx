@@ -15,7 +15,7 @@ import { useTheme } from "@mui/material/styles";
 import { calcs, getNumber, buildCopyableTable, removePercentage } from "../../utils/calcs";
 import { db } from '../../utils/firebase';
 import { usePermissionSnackbar } from "../Permissions";
-import { getColorByThreshold } from "../../utils/colorUtils";
+import { getColorByThreshold, normalizeThresholds } from "../../utils/colorUtils";
 
 const columnGroups = [
     { label: "Troop", keys: ["Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received", "Troop Attack Blessing", "Troop Protection Blessing"] },
@@ -204,7 +204,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
             try {
                 const thresholdRef = doc(db, "settings", "thresholds");
                 const snapshot = await getDoc(thresholdRef);
-                if (snapshot.exists() && snapshot.data().thresholds) setThresholds(snapshot.data().thresholds);
+                if (snapshot.exists() && snapshot.data().thresholds) setThresholds(normalizeThresholds(snapshot.data().thresholds));
 
                 const optionsRef = doc(db, "settings", "atlantis_damage");
                 const optionsSnap = await getDoc(optionsRef);

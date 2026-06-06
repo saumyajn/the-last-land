@@ -1,5 +1,10 @@
-import { getFunctions, httpsCallable,connectFunctionsEmulator } from 'firebase/functions';
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { app } from './firebase'; // Import your firebase app instance
+import {
+  firebaseEmulatorHost,
+  firebaseEmulatorPorts,
+  shouldUseFirebaseEmulators
+} from './firebaseEnv';
 
 const functions = getFunctions(app);
 
@@ -11,8 +16,12 @@ export const fileToBase64 = (file) =>
     reader.readAsDataURL(file);
   });
 
-  if (window.location.hostname === "localhost") {
-  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+if (shouldUseFirebaseEmulators) {
+  connectFunctionsEmulator(
+    functions,
+    firebaseEmulatorHost,
+    firebaseEmulatorPorts.functions
+  );
 }
 export const detectText = async (base64Image) => {
   // This "calls" the 'process_image_ocr' function in main.py
