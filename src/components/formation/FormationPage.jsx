@@ -167,7 +167,7 @@ export default function FormationPage() {
             if (!meta || meta.length <= 1) return null;
 
             return (
-              <Paper key={color} elevation={0} sx={{ mb: 1.5, borderLeft: `6px solid ${displayColor}`, p: 1.5, bgcolor: alpha(displayColor, 0.08), borderRadius: 2, border: "1px solid rgba(15,23,42,0.06)" }}>
+              <Paper key={color} elevation={0} sx={{ mb: 1.5, borderLeft: `6px solid ${displayColor}`, p: 1.5, bgcolor: alpha(displayColor, 0.50), borderRadius: 2, border: "1px solid rgba(15,23,42,0.06)" }}>
                 <Typography variant="subtitle2" sx={{ ml: 0.5, fontWeight: 800 }}>
                   {colorName.toUpperCase()} - Avg Damage: {avgDamage}
                 </Typography>
