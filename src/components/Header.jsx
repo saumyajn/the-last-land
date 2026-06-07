@@ -41,7 +41,7 @@ export default function Header() {
           top: 0,
           zIndex: 30,
           color: 'text.primary',
-          background: 'rgba(255,255,255,0.92)',
+          background: 'rgba(230, 202, 235, 0.92)',
           backdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(15,23,42,0.08)',
         }}
