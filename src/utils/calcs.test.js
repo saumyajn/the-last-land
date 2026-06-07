@@ -1,4 +1,5 @@
 import { buildCopyableTable, calcs, getNumber, removePercentage } from "./calcs";
+import { calculateStatOutputs } from "./statCalculations";
 
 describe("calcs", () => {
   const baseAttributes = {
@@ -42,6 +43,31 @@ describe("calcs", () => {
     expect(getNumber("NA")).toBe(0);
     expect(getNumber(undefined)).toBe(0);
   });
+
+  it("calculates final damage and average damage from one shared helper", () => {
+    expect(
+      calculateStatOutputs({
+        ...baseAttributes,
+        "Archer Atlantis": "10%",
+      }, {
+        attack: 1,
+        health: 1,
+        defense: 1,
+        damage: 1,
+        damageReceived: 1,
+        attackBlessing: 1,
+        protectBlessing: 1,
+        archerRatio: 0.25,
+        cavalryRatio: 0.75,
+        multiplier: 2,
+      }),
+    ).toEqual({
+      "Final Archer Damage": "4.40000",
+      "Final Cavalry Damage": "4.20000",
+      "Final Siege Damage": "3.40000",
+      "Average Damage": "4.25",
+    });
+  });
 });
 
 describe("export table helpers", () => {
@@ -67,7 +93,7 @@ describe("export table helpers", () => {
     );
 
     expect(tsv).toBe([
-      "Name\tTroop Attack\tArcher Atlantis\tCavalry Atlantis\tFinal Archer Damage\tFinal Cavalry Damage",
+      "Name\tTroop Attack\tArcher Atlantis\tCavalry Atlantis\tFinal Archer Damage\tFinal Siege Damage\tFinal Cavalry Damage",
       "Player One\t100\t1\t2\t3\t4\t5",
     ].join("\n"));
   });

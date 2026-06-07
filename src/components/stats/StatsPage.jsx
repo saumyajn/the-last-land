@@ -1,124 +1,141 @@
-import React, { useContext, useEffect, useState, lazy, Suspense } from "react";
-import { Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import React, { useCallback, useContext, useEffect, useState, lazy, Suspense } from "react";
+import { Alert, Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
 import { parseData } from "../../utils/parseData";
-import { db } from "../../utils/firebase";
-import { calcs, getNumber } from '../../utils/calcs';
 import { AuthContext } from "../../utils/authContext";
 import { updateDocument, deleteDocument } from "../../utils/dbActions";
+import { DEFAULT_STAT_WEIGHTS, DESIRED_STAT_KEYS } from "../../utils/appConstants";
+import { loadStatsAndWeights } from "../../utils/firestoreReads";
+import { calculateStatOutputs } from "../../utils/statCalculations";
 
-// Lazy load heavy components
 const RawText = lazy(() => import("./RawData"));
 const DataTable = lazy(() => import("./DataTable"));
 
-const defaultWeights = { attack: 1, health: 1, defense: 1, damage: 1, damageReceived: 1, attackBlessing: 1, protectBlessing: 1, archerRatio: 0.5, cavalryRatio: 0.5, multiplier: 1.5 };
+let statsBootstrapPromise = null;
+
+const loadStatsBootstrap = () => {
+  if (!statsBootstrapPromise) {
+    statsBootstrapPromise = loadStatsAndWeights().finally(() => {
+      statsBootstrapPromise = null;
+    });
+  }
+
+  return statsBootstrapPromise;
+};
 
 export default function StatsPage() {
   const { isAdmin } = useContext(AuthContext);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
   const [dataTable, setDataTable] = useState({});
   const [name, setName] = useState("");
   const { showNoPermission } = usePermissionSnackbar();
-  const [statWeights, setStatWeights] = useState(defaultWeights);
-  const desiredKeys = [
-    "Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received",
-    "Troop Attack Blessing", "Troop Protection Blessing", "Archer Attack", "Archer Health",
-    "Archer Defense", "Archer Damage", "Archer Damage Received", "Archer Attack Blessing",
-    "Archer Protection Blessing", "Cavalry Attack", "Cavalry Health", "Cavalry Defense",
-    "Cavalry Damage", "Cavalry Damage Received", "Cavalry Attack Blessing", "Cavalry Protection Blessing",
-    "Siege Attack", "Siege Health", "Siege Defense", "Siege Damage", "Siege Damage Received",
-    "Siege Attack Blessing", "Siege Protection Blessing", "Lethal Hit Rate"
-  ];
+  const [statWeights, setStatWeights] = useState(DEFAULT_STAT_WEIGHTS);
 
-  // Only fetch once
   useEffect(() => {
     let mounted = true;
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "stats"));
-        const data = {};
-        querySnapshot.forEach((doc) => {
-          data[doc.id] = doc.data();
-        });
+    const runWhenIdle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 0));
+    const cancelIdle = window.cancelIdleCallback || window.clearTimeout;
 
-        const weightsSnap = await getDoc(doc(db, "settings", "statWeights"));
-        if (mounted && weightsSnap.exists() && weightsSnap.data().weights) {
-          setStatWeights(weightsSnap.data().weights);
+    const fetchData = async () => {
+      setStatsLoading(true);
+      setStatsError("");
+
+      try {
+        const { stats, weights } = await loadStatsBootstrap();
+        if (mounted && weights) {
+          setStatWeights(weights);
         }
 
-        if (mounted) setDataTable(data);
+        if (mounted) setDataTable(stats);
       } catch (error) {
-
-        console.error("❌ Error loading data from Firestore:", error);
-
+        console.error("Error loading stats from Firestore:", error);
+        if (mounted) {
+          setStatsError("Saved player stats could not be loaded. You can still upload and extract a new image.");
+        }
+      } finally {
+        if (mounted) setStatsLoading(false);
       }
     };
-    fetchData();
-    return () => { mounted = false; };
+
+    const idleId = runWhenIdle(fetchData);
+    return () => {
+      mounted = false;
+      cancelIdle(idleId);
+    };
   }, []);
 
   const handleDelete = async (playerName) => {
     const success = await deleteDocument("stats", playerName, isAdmin, showNoPermission);
     if (success) {
-      setDataTable(prev => {
+      setDataTable((prev) => {
         const updated = { ...prev };
         delete updated[playerName];
         return updated;
       });
     }
   };
+
   const handleUpdate = async (playerName, data) => {
     await updateDocument("stats", playerName, data, isAdmin, showNoPermission);
   };
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
+  const handleImageUpload = useCallback((event) => {
+    const files = Array.from(event.target.files);
     if (files.length) {
-
-
       setText("");
     }
-  };
+  }, []);
 
-  // Defer Tesseract import until needed
   const extractText = async (extractedTexts) => {
     if (!extractedTexts || !extractedTexts.length) return;
     setLoading(true);
 
-    // Combine all the text returned from your Cloud Function
     const allExtracted = extractedTexts.join("\n");
     setText(allExtracted);
 
-    const attributes = parseData(allExtracted, desiredKeys);
-    attributes["Archer Atlantis"] = '0';
-    attributes["Cavalry Atlantis"] = '0';
-    attributes["Siege Atlantis"] = '0';
+    const attributes = parseData(allExtracted, DESIRED_STAT_KEYS);
+    attributes["Archer Atlantis"] = "0";
+    attributes["Cavalry Atlantis"] = "0";
+    attributes["Siege Atlantis"] = "0";
 
-    attributes["Final Archer Damage"] = getNumber(calcs(attributes, "archer", attributes["Archer Atlantis"], statWeights));
-    attributes["Final Cavalry Damage"] = getNumber(calcs(attributes, "cavalry", attributes["Cavalry Atlantis"], statWeights));
-    attributes["Final Siege Damage"] = getNumber(calcs(attributes, "siege", attributes["Siege Atlantis"], statWeights));
+    const calculatedStats = calculateStatOutputs(attributes, statWeights);
+    Object.assign(attributes, calculatedStats);
 
-    attributes["Average Damage"] = (((parseFloat(attributes["Final Archer Damage"]) || 0) + (parseFloat(attributes["Final Cavalry Damage"]) || 0)) / 2).toFixed(2);
-
-    setDataTable(prev => ({ ...prev, [name]: attributes }));
+    setDataTable((prev) => ({ ...prev, [name]: attributes }));
     await handleUpdate(name, attributes);
     setLoading(false);
   };
 
   return (
-    <div>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box component={Paper} elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h5" gutterBottom color="primary">
-            Image Stats Extractor
-          </Typography>
+    <Box>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 }, px: { xs: 0, sm: 2 } }}>
+        <Box
+          component={Paper}
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 3 },
+            mb: 3,
+            borderRadius: 2,
+            border: "1px solid rgba(15,23,42,0.08)",
+            boxShadow: "0 18px 45px rgba(15,23,42,0.06)",
+          }}
+        >
+          <Stack spacing={0.5} sx={{ mb: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: "text.primary" }}>
+              Data Upload
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Extract Last Land stat screenshots, review calculated fields, and update saved player records.
+            </Typography>
+          </Stack>
           <TextField
             label="Enter Name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(event) => setName(event.target.value)}
             fullWidth
             sx={{ mb: 2 }}
           />
@@ -130,15 +147,28 @@ export default function StatsPage() {
           />
         </Box>
 
+        {statsError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {statsError}
+          </Alert>
+        )}
+
         <Suspense fallback={<Stack spacing={1}>
           <Skeleton variant="rectangular" height={40} />
           <Skeleton variant="rectangular" height={40} />
           <Skeleton variant="rectangular" height={40} />
         </Stack>}>
+          {statsLoading && (
+            <Stack spacing={1} sx={{ mb: 3 }}>
+              <Skeleton variant="rectangular" height={36} />
+              <Skeleton variant="rectangular" height={36} />
+              <Skeleton variant="rectangular" height={36} />
+            </Stack>
+          )}
           {Object.entries(dataTable).length > 0 && (
             <DataTable
               tableData={dataTable}
-              desiredKeys={desiredKeys}
+              desiredKeys={DESIRED_STAT_KEYS}
               onDelete={handleDelete}
               onUpdate={handleUpdate}
               isAdmin={isAdmin}
@@ -149,6 +179,6 @@ export default function StatsPage() {
           <RawText text={text} />
         </Suspense>
       </Container>
-    </div>
+    </Box>
   );
 }

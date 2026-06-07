@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
   Box,
   TextField,
@@ -20,6 +20,19 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { usePermissionSnackbar } from "../Permissions";
 import { normalizeThresholds } from "../../utils/colorUtils";
 
+const troopValueFields = ["at10", "at9", "at8", "at7", "ct10", "ct9", "ct8", "ct7"];
+const MathRound = (num) => Math.round(num * 2) / 2;
+
+const getSavedOrCalculatedValue = (data, key, calculatedValue) => {
+  if (data[key] === undefined || data[key] === null || data[key] === "") {
+    return calculatedValue;
+  }
+  const value = parseFloat(data[key]);
+  return Number.isNaN(value) ? calculatedValue : value;
+};
+
+const getMarchSize = (row) => troopValueFields.reduce((sum, field) => sum + (parseFloat(row[field]) || 0), 0);
+
 export default function FormationTable({ label, groupedData = null, isAdmin, type }) {
   const [totalTroopValue, setTotalTroopValue] = useState(0);
   const [ratios, setRatios] = useState({ at10: 0, at9: 0, at8: 0, at7: 0, ct10: 0, ct9: 0, ct8: 0, ct7: 0 });
@@ -28,12 +41,13 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
   const previousGroupedData = useRef(null);
   const { showNoPermission } = usePermissionSnackbar();
 
-  const MathRound = (num) => Math.round(num * 2) / 2;
+  const settingDocName = useMemo(
+    () => label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation",
+    [label]
+  );
 
-  const settingDocName = label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation"
 
-
-  const loadFormationData = async () => {
+  const loadFormationData = useCallback(async () => {
     try {
 
       const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
@@ -73,15 +87,24 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
         const share = totalDamage > 0 && damage > 0 ? (damage) / totalDamage : 0;
         const troops = parseFloat((totalTroops * share).toFixed(2));
 
-        const at10 = MathRound((troops * (settingData.at10 || 0) / 100) / 1000);
-        const at9 = MathRound((troops * (settingData.at9 || 0) / 100) / 1000);
-        const at8 = MathRound((troops * (settingData.at8 || 0) / 100) / 1000);
-        const at7 = MathRound((troops * (settingData.at7 || 0) / 100) / 1000);
+        const calculatedAt10 = MathRound((troops * (settingData.at10 || 0) / 100) / 1000);
+        const calculatedAt9 = MathRound((troops * (settingData.at9 || 0) / 100) / 1000);
+        const calculatedAt8 = MathRound((troops * (settingData.at8 || 0) / 100) / 1000);
+        const calculatedAt7 = MathRound((troops * (settingData.at7 || 0) / 100) / 1000);
 
-        const ct10 = MathRound((troops * (settingData.ct10 || 0) / 100) / 1000);
-        const ct9 = MathRound((troops * (settingData.ct9 || 0) / 100) / 1000);
-        const ct8 = MathRound((troops * (settingData.ct8 || 0) / 100) / 1000);
-        const ct7 = MathRound((troops * (settingData.ct7 || 0) / 100) / 1000);
+        const calculatedCt10 = MathRound((troops * (settingData.ct10 || 0) / 100) / 1000);
+        const calculatedCt9 = MathRound((troops * (settingData.ct9 || 0) / 100) / 1000);
+        const calculatedCt8 = MathRound((troops * (settingData.ct8 || 0) / 100) / 1000);
+        const calculatedCt7 = MathRound((troops * (settingData.ct7 || 0) / 100) / 1000);
+
+        const at10 = getSavedOrCalculatedValue(data, "at10", calculatedAt10);
+        const at9 = getSavedOrCalculatedValue(data, "at9", calculatedAt9);
+        const at8 = getSavedOrCalculatedValue(data, "at8", calculatedAt8);
+        const at7 = getSavedOrCalculatedValue(data, "at7", calculatedAt7);
+        const ct10 = getSavedOrCalculatedValue(data, "ct10", calculatedCt10);
+        const ct9 = getSavedOrCalculatedValue(data, "ct9", calculatedCt9);
+        const ct8 = getSavedOrCalculatedValue(data, "ct8", calculatedCt8);
+        const ct7 = getSavedOrCalculatedValue(data, "ct7", calculatedCt7);
 
 
         return {
@@ -91,7 +114,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
           troops: isNaN(troops) ? 0 : troops,
           at10, at9, at8, at7,
           ct10, ct9, ct8, ct7,
-          marchSize: at10 + at9 + at8 + at7 + ct10 + ct9 + ct8 + ct7,  // ✅ Fixed march size
+          marchSize: getMarchSize({ at10, at9, at8, at7, ct10, ct9, ct8, ct7 }),
           total: (troops * count).toFixed(2)
         };
       });
@@ -136,11 +159,11 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
     } catch (err) {
       console.error("Error fetching formation:", err);
     }
-  };
+  }, [groupedData, label, settingDocName]);
 
   useEffect(() => {
     loadFormationData();
-  });
+  }, [loadFormationData]);
 
   const handleReload = () => {
     loadFormationData();
@@ -171,8 +194,32 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       row.ct9 = MathRound(troops * ratios.ct9 / 1000);
       row.ct8 = MathRound(troops * ratios.ct8 / 1000);
       row.ct7 = MathRound(troops * ratios.ct7 / 1000);
-      row.marchSize = row.at10 + row.at9 + row.at8 + row.at7 + row.ct10 + row.ct9 + row.ct8 + row.ct7;
+      row.marchSize = getMarchSize(row);
       row.total = (row.troops * row.count).toFixed(2);
+    });
+
+    setRows(updated);
+    setIsEdited(true);
+  };
+
+  const handleTroopValueChange = (idx, field, value) => {
+    if (!isAdmin) {
+      showNoPermission();
+      return;
+    }
+
+    const numericValue = parseFloat(value);
+    if (value !== "" && (Number.isNaN(numericValue) || numericValue < 0)) return;
+
+    const updated = rows.map((row, rowIndex) => {
+      if (rowIndex !== idx) return row;
+
+      const next = {
+        ...row,
+        [field]: value === "" ? "" : numericValue
+      };
+      next.marchSize = getMarchSize(next);
+      return next;
     });
 
     setRows(updated);
@@ -204,7 +251,9 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
           };
         });
         await setDoc(doc(db, "formation", `${label}`), payload);
-        console.log("Formation data uploaded successfully.");
+        if (process.env.NODE_ENV === "development") {
+          console.log("Formation data uploaded successfully.");
+        }
         setIsEdited(false);
       } catch (error) {
         console.error("Error uploading formation data:", error);
@@ -218,21 +267,40 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
     navigator.clipboard.writeText(text);
   };
   const totalDamage = rows.reduce((sum, row) => sum + row.damage * row.count, 0).toFixed(2);
+  const renderTroopInput = (row, idx, field) => (
+    <TextField
+      type="number"
+      value={row[field]}
+      onChange={(e) => handleTroopValueChange(idx, field, e.target.value)}
+      size="small"
+      inputProps={{ min: 0, step: 0.5 }}
+      sx={{
+        width: { xs: 54, sm: 58 },
+        '& .MuiInputBase-input': {
+          px: 0.5,
+          py: 0.75,
+          textAlign: 'center',
+          fontSize: '0.78rem',
+          fontVariantNumeric: 'tabular-nums',
+        },
+      }}
+    />
+  );
 
   return (
-    <Box sx={{ mt: 3 }}>
+    <Box sx={{ mt: 2 }}>
       <Paper
-        elevation={3}
+        elevation={0}
         sx={{
-          p: 2,
+          p: { xs: 1.25, md: 2 },
           mb: 2,
           borderRadius: 3,
-          backgroundColor: "#fdfdfd",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          backgroundColor: "#ffffff",
+          border: "1px solid rgba(15,23,42,0.08)",
         }}
       >
-        <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography variant="h6" fontWeight="bold">
+        <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 1.5, flexDirection: { xs: "column", sm: "row" } }}>
+          <Typography variant="h6">
             Total Damage: {totalDamage}
           </Typography>
           <Button variant="outlined" color="secondary" size="small" onClick={handleReload}>
@@ -240,15 +308,17 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
           </Button>
         </Box>
 
-        <TableContainer>
+        <TableContainer sx={{ maxHeight: { xs: "70dvh", md: "72dvh" }, borderRadius: 2, border: "1px solid rgba(15,23,42,0.08)" }}>
           <Table size="small" sx={{
-            borderCollapse: "collapse",
+            minWidth: 980,
+            borderCollapse: "separate",
+            borderSpacing: 0,
             '& td, & th': {
               border: '1px solid #ddd',  // ⬅️ column + row borders
             },
           }}>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
+              <TableRow>
                 <TableCell rowSpan={2}><b>Group</b></TableCell>
                 <TableCell rowSpan={2}><b>Avg Damage</b></TableCell>
                 <TableCell rowSpan={2}><b>Count</b></TableCell>
@@ -261,7 +331,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                 <TableCell rowSpan={2}><b>Total</b></TableCell>
                 <TableCell rowSpan={2}></TableCell>
               </TableRow>
-              <TableRow sx={{ backgroundColor: "#e3f2fd" }}>
+              <TableRow>
                 <TableCell><b>T10</b></TableCell>
                 <TableCell><b>T9</b></TableCell>
                 <TableCell><b>T8</b></TableCell>
@@ -285,18 +355,26 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                       value={row.count}
                       onChange={(e) => handleChange(idx, e.target.value)}
                       size="small"
-                      sx={{ width: 70, mx: 1 }}
+                      sx={{
+                        width: 60,
+                        '& .MuiInputBase-input': {
+                          px: 0.5,
+                          py: 0.75,
+                          textAlign: 'center',
+                          fontVariantNumeric: 'tabular-nums',
+                        },
+                      }}
                     />
                   </TableCell>
                   <TableCell>{row.troops}</TableCell>
-                  <TableCell>{row.at10}</TableCell>
-                  <TableCell>{row.at9}</TableCell>
-                  <TableCell>{row.at8}</TableCell>
-                  <TableCell>{row.at7}</TableCell>
-                  <TableCell>{row.ct10}</TableCell>
-                  <TableCell>{row.ct9}</TableCell>
-                  <TableCell>{row.ct8}</TableCell>
-                  <TableCell>{row.ct7}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "at10")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "at9")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "at8")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "at7")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "ct10")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "ct9")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "ct8")}</TableCell>
+                  <TableCell>{renderTroopInput(row, idx, "ct7")}</TableCell>
 
                   <TableCell>{row.marchSize}</TableCell>
                   <TableCell>{row.total}</TableCell>

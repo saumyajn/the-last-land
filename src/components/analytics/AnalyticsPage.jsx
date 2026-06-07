@@ -21,12 +21,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AnalyticsSummary from "./AnalyticsSummary";
 import ExportToGoogleSheet from './ExportSheets';
 import { AuthContext } from "../../utils/authContext";
-
-const TROOP_ORDER = [
-    "T10_guards", "T10_cavalry", "T10_archer", "T10_siege",
-    "T9_cavalry", "T9_archer", "T8_cavalry", "T8_archer",
-    "T8_siege", "T7_cavalry", "T7_archer"
-];
+import { TROOP_ORDER } from "../../utils/appConstants";
+import { calculateTroopTypeSummary } from "../../utils/troopSummaryCalculations";
 
 export default function AnalyticsPage() {
     const { isAdmin } = useContext(AuthContext);
@@ -41,46 +37,13 @@ export default function AnalyticsPage() {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 setCombinedData(data);
-
-                // 1. Calculate Totals (excluding T10_guards)
-                const totals = Object.entries(data)
-                    .filter(([key]) => key !== 'T10_guards')
-                    .reduce((acc, [, stats]) => {
-                        acc.Kills += (stats.Kills || 0);
-                        acc.Losses += (stats.Losses || 0);
-                        acc.Wounded += (stats.Wounded || 0);
-                        acc.Survivors += (stats.Survivors || 0);
-                        return acc;
-                    }, { Kills: 0, Losses: 0, Wounded: 0, Survivors: 0 });
-
-                const totalDenominator = totals.Losses + totals.Wounded + totals.Survivors;
-                const totalKPTValue = totalDenominator > 0 ? (totals.Kills - totals.Losses - totals.Wounded) / totalDenominator : 0;
-                totals.KPT = totalKPTValue.toFixed(3);
-                // 2. Prepare detailed calculated data for the DB summary document
-                const troopSummaryDetails = {};
-                Object.entries(data).forEach(([type, stats]) => {
-                    let marchSize = totalKPTValue > 0 ? (stats.Kills || 0) / totalKPTValue : 0;
-                    if (type === 'T10_guards') marchSize = 0;
-
-                    troopSummaryDetails[type] = {
-                        ...stats,
-                        calculatedMarchSize: Math.round(marchSize),
-                        marchPercentage: totalDenominator > 0 
-                            ? ((marchSize / totalDenominator) * 100).toFixed(2) + "%" 
-                            : "0.00%"
-                    };
-                });
+                const summary = calculateTroopTypeSummary(data);
 
                 // 3. Update the database summary document if the user is an admin
                 if (isAdmin) {
                     try {
                         await setDoc(doc(db, "analytics", "troop_type_summary"), {
-                            totals: {
-                                ...totals,
-                                KPT: totalKPTValue.toFixed(3),
-                                totalMarchSize: totalDenominator
-                            },
-                            troopDetails: troopSummaryDetails,
+                            ...summary,
                             updatedAt: new Date().toISOString()
                         });
                     } catch (err) {
@@ -107,29 +70,33 @@ export default function AnalyticsPage() {
         </Stack>
     );
 
-    const totals = Object.entries(combinedData)
-        .filter(([key]) => key !== 'T10_guards')
-        .reduce((acc, [, stats]) => {
-            acc.Kills += (stats.Kills || 0);
-            acc.Losses += (stats.Losses || 0);
-            acc.Wounded += (stats.Wounded || 0);
-            acc.Survivors += (stats.Survivors || 0);
-            return acc;
-        }, { Kills: 0, Losses: 0, Wounded: 0, Survivors: 0 });
-
-    const totalDenominator = totals.Losses + totals.Wounded + totals.Survivors;
-    const totalKPTValue = totalDenominator > 0 ? (totals.Kills - totals.Losses - totals.Wounded) / totalDenominator : 0;
-    totals.KPT = totalKPTValue.toFixed(3);
-    const totalMarchSize = totalDenominator;
+    const summary = calculateTroopTypeSummary(combinedData);
+    const { totals, troopDetails } = summary;
+    const totalMarchSize = totals.totalMarchSize;
 
     return (
-        <Box>
-            <Accordion defaultExpanded sx={{ borderRadius: 2 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="h6">Troop Type KPT Summary</Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Accordion
+                defaultExpanded
+                disableGutters
+                sx={{
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    border: "1px solid rgba(15,23,42,0.08)",
+                    boxShadow: "0 18px 45px rgba(15,23,42,0.06)",
+                    "&:before": { display: "none" },
+                }}
+            >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: "background.paper" }}>
+                    <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: "text.primary" }}>Troop Type KPT Summary</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Aggregated report outcomes and calculated march share by troop type.
+                        </Typography>
+                    </Box>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                    <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 1, border: "1px solid rgba(15,23,42,0.08)" }}>
                         <Table size="small">
                             <TableHead>
                                 <TableRow>
@@ -149,13 +116,9 @@ export default function AnalyticsPage() {
                                         Kills: 0, Losses: 0, Wounded: 0, Survivors: 0, KPT: "0.00"
                                     };
 
-                                    let marchSize = totalKPTValue > 0 ? (stats.Kills || 0) / totalKPTValue : 0;
-                                    let marchPercent = totalMarchSize > 0 ? `${((marchSize / totalMarchSize) * 100).toFixed(2)}%` : "0.00%";
-
-                                    if (type === 'T10_guards') {
-                                        marchSize = 0;
-                                        marchPercent = "0.00%";
-                                    }
+                                    const summaryStats = troopDetails[type] || {};
+                                    const marchSize = summaryStats.calculatedMarchSize || 0;
+                                    const marchPercent = summaryStats.marchPercentage || "0.00%";
 
                                     return (
                                     <TableRow key={type}>
@@ -167,7 +130,7 @@ export default function AnalyticsPage() {
                                         <TableCell sx={{ fontWeight: 'bold' }}>
                                             {stats.KPT}
                                         </TableCell>
-                                        <TableCell>{Math.round(marchSize).toLocaleString()}</TableCell>
+                                        <TableCell>{marchSize.toLocaleString()}</TableCell>
                                         <TableCell>{marchPercent}</TableCell>
                                     </TableRow>
                                 )})}
@@ -188,7 +151,7 @@ export default function AnalyticsPage() {
                     </TableContainer>
                 </AccordionDetails>
             </Accordion>
-            <Divider sx={{ m: 2 }} />
+            <Divider sx={{ my: 1 }} />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {isAdmin && (
                     <Box sx={{ alignSelf: 'flex-end' }}>

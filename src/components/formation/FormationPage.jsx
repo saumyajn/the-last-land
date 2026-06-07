@@ -120,21 +120,42 @@ export default function FormationPage() {
     navigator.clipboard.writeText(`${groupName}- ${text}`);
   };
 
-  const paperStyles = {
-    p: 3, borderRadius: 3, backgroundColor: '#ffffff', border: '1px solid #e0e0e0',
-    transition: 'box-shadow 0.3s', '&:hover': { boxShadow: '0px 4px 16px rgba(0,0,0,0.05)' }
+  const sectionStyles = {
+    mb: 3,
+    p: { xs: 1.5, md: 2.5 },
+    borderRadius: 2,
+    backgroundColor: "background.paper",
+    border: "1px solid rgba(15,23,42,0.08)",
+    boxShadow: "0 18px 45px rgba(15,23,42,0.06)",
   };
 
-  const titleStyles = { mb: 2, fontWeight: "bold", color: 'primary.dark', textAlign: 'center' };
+  const paperStyles = {
+    p: { xs: 1.5, md: 2 },
+    borderRadius: 2,
+    backgroundColor: "background.paper",
+    border: "1px solid rgba(15,23,42,0.08)",
+  };
+
+  const titleStyles = { mb: 2, fontWeight: 800, color: "text.primary" };
 
   const renderGroupAccordion = (label, data) => {
     if (!data || Object.keys(data).length === 0) return null;
 
     const groups = getSortedGroups(data);
     return (
-      <Accordion sx={{ borderRadius: 2, mb: 2 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ bgcolor: '#e3f2fd' }}>
-          <Typography variant="h6" color="primary.dark">{label}</Typography>
+      <Accordion
+        disableGutters
+        sx={{
+          mb: 2,
+          borderRadius: 2,
+          overflow: "hidden",
+          border: "1px solid rgba(15,23,42,0.08)",
+          boxShadow: "0 12px 30px rgba(15,23,42,0.05)",
+          "&:before": { display: "none" },
+        }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ bgcolor: "background.paper" }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "text.primary" }}>{label}</Typography>
         </AccordionSummary>
         <AccordionDetails>
           {groups.map((color) => {
@@ -146,14 +167,14 @@ export default function FormationPage() {
             if (!meta || meta.length <= 1) return null;
 
             return (
-              <Paper key={color} sx={{ mb: 2, borderLeft: `10px solid ${displayColor}`, p: 2, bgcolor: alpha(displayColor, 0.1) }}>
-                <Typography variant="subtitle2" sx={{ ml: 1 }}>
+              <Paper key={color} elevation={0} sx={{ mb: 1.5, borderLeft: `6px solid ${displayColor}`, p: 1.5, bgcolor: alpha(displayColor, 0.08), borderRadius: 2, border: "1px solid rgba(15,23,42,0.06)" }}>
+                <Typography variant="subtitle2" sx={{ ml: 0.5, fontWeight: 800 }}>
                   {colorName.toUpperCase()} - Avg Damage: {avgDamage}
                 </Typography>
                 <Divider sx={{ my: 0.5 }} />
                 <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
                   {meta.slice(1).map((player, idx) => (
-                    <Box key={idx} sx={{ backgroundColor: "#f0f4ff", px: 1.5, py: 0.5, borderRadius: 2, fontSize: 14, color: "#1e3a8a", fontWeight: 500, border: "1px solid #bbdefb" }}>
+                    <Box key={idx} sx={{ backgroundColor: "rgba(255,255,255,0.78)", px: 1.25, py: 0.5, borderRadius: 1, fontSize: 14, color: "text.primary", fontWeight: 700, border: "1px solid rgba(15,23,42,0.08)" }}>
                       {player.name || player}
                     </Box>
                   ))}
@@ -174,20 +195,23 @@ export default function FormationPage() {
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box sx={{ mt: 3 }}>
       {renderGroupAccordion("Final Archer Damage", groupedData)}
       {renderGroupAccordion("Final Cavalry Damage", groupedCavalryData)}
       {renderGroupAccordion("Average Damage", groupedAverageData)}
 
-      <Divider sx={{ mb: 2 }} />
+      <Divider sx={{ mb: 3 }} />
 
-      <Box sx={{ mb: 4, backgroundColor: '#fdf9ff', p: 3, borderRadius: 3, border: '1px solid #e0e0e0' }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: '#0d47a1' }}>
+      <Box sx={sectionStyles}>
+        <Typography variant="h5" sx={{ fontWeight: 900, mb: 0.5, color: "text.primary" }}>
           TOWER FORMATION
         </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={paperStyles}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Editable tower troop distribution with saved Last Land formation values.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Paper elevation={0} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
               <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} />
               <FormationTable label="tower_formation" groupedData={groupedAverageData} isAdmin={isAdmin} />
@@ -196,13 +220,16 @@ export default function FormationPage() {
         </Grid>
       </Box>
 
-      <Box sx={{ mb: 4, backgroundColor: '#fdf9ff', p: 3, borderRadius: 3, border: '1px solid #e0e0e0' }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: '#0d47a1' }}>
+      <Box sx={sectionStyles}>
+        <Typography variant="h5" sx={{ fontWeight: 900, mb: 0.5, color: "text.primary" }}>
           THRONE FORMATION
         </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={paperStyles}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Editable throne troop distribution with the same saved calculation workflow.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Paper elevation={0} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
               <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} />
               <FormationTable label="throne_formation" groupedData={groupedAverageData} isAdmin={isAdmin} />

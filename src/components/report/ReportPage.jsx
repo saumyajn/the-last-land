@@ -16,23 +16,12 @@ import { usePermissionSnackbar } from "../Permissions";
 import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
 import { updateTroopTypeKpt } from "../../utils/dbActions";
+import { REPORT_LABELS, TROOP_ORDER } from "../../utils/appConstants";
+import { calculateEntryKPT, calculateGroupKPT } from "../../utils/kptCalculations";
 
-const templateMap = {
-  T10_guards: ["T10_guards"],
-  T10_cavalry: ["T10_cavalry"],
-  T10_archer: ["T10_archer"],
-  T10_siege: ["T10_siege"],
-  T9_cavalry: ["T9_cavalry"],
-  T9_archer: ["T9_archer"],
-  T8_cavalry: ["T8_cavalry"],
-  T8_archer: ["T8_archer"],
-  T8_siege: ["T8_siege"],
-  T7_cavalry: ["T7_cavalry"],
-  T7_archer: ["T7_archer"],
-};
-
+const templateMap = Object.fromEntries(TROOP_ORDER.map((troopType) => [troopType, [troopType]]));
 const templateKeys = Object.keys(templateMap);
-const labels = ["Kills", "Losses", "Wounded", "Survivors"];
+const labels = REPORT_LABELS;
 
 export default function ReportPage() {
   const { isAdmin } = useContext(AuthContext);
@@ -45,7 +34,32 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [isCvLoaded, setIsCvLoaded] = useState(!!(window.cv && window.cv.imread));
   const canvasRef = useRef();
+  const mainImageUrlRef = useRef(null);
   const { showNoPermission } = usePermissionSnackbar();
+
+  const setMainImageFromFile = (file, nextStatus) => {
+    if (mainImageUrlRef.current) {
+      URL.revokeObjectURL(mainImageUrlRef.current);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    mainImageUrlRef.current = objectUrl;
+
+    const img = new Image();
+    img.src = objectUrl;
+    img.onload = () => setMainImage(img);
+    if (nextStatus) {
+      setStatus(nextStatus);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (mainImageUrlRef.current) {
+        URL.revokeObjectURL(mainImageUrlRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isCvLoaded) return;
@@ -103,9 +117,7 @@ export default function ReportPage() {
         if (item.type.startsWith("image/")) {
           const file = item.getAsFile();
           if (file) {
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            img.onload = () => setMainImage(img);
+            setMainImageFromFile(file);
             setStatus("📥 Image pasted from clipboard");
           }
         }
@@ -119,9 +131,7 @@ export default function ReportPage() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => setMainImage(img);
+    setMainImageFromFile(file, "Image selected");
   };
 
   const processImage = async () => {
@@ -195,7 +205,9 @@ export default function ReportPage() {
           }
 
           const threshold = 0.65;
-          console.log(`Matching ${variant}: Best maxVal=${bestMatch.maxVal.toFixed(3)} at scale ${bestMatch.scale.toFixed(1)}`);
+          if (process.env.NODE_ENV === "development") {
+            console.log(`Matching ${variant}: Best maxVal=${bestMatch.maxVal.toFixed(3)} at scale ${bestMatch.scale.toFixed(1)}`);
+          }
 
           if (bestMatch.maxVal >= threshold) {
             const x = bestMatch.maxLoc.x;
@@ -235,7 +247,9 @@ export default function ReportPage() {
             });
 
             resultData[troopType] = entry;
-            console.log(`Matched ${variant} with values:`, entry);
+            if (process.env.NODE_ENV === "development") {
+              console.log(`Matched ${variant} with values:`, entry);
+            }
             matchFound = true;
           }
 
@@ -303,30 +317,9 @@ export default function ReportPage() {
     
     if (!updatedPlayer) return;
 
-    const getKPT = (data) => {
-      const kills = parseInt(data?.Kills || "0");
-      const losses = parseInt(data?.Losses || "0");
-      const wounded = parseInt(data?.Wounded || "0");
-      const survivors = parseInt(data?.Survivors || "0");
-      const total = losses + wounded + survivors;
-      return total === 0 ? "0.00" : ((kills - losses - wounded) / total).toFixed(2);
-    };
-
-    const calcGroupKPT = (keys) => {
-      let kills = 0, losses = 0, wounded = 0, troops = 0;
-      keys.forEach(k => {
-        const d = updatedPlayer.data[k] || {};
-        kills += parseInt(d.Kills || 0);
-        losses += parseInt(d.Losses || 0);
-        wounded += parseInt(d.Wounded || 0);
-        troops += parseInt(d.Losses || 0) + parseInt(d.Wounded || 0) + parseInt(d.Survivors || 0);
-      });
-      return troops === 0 ? "0.00" : ((kills - losses - wounded) / troops).toFixed(2);
-    };
-
-    updatedPlayer.data[tmplKey].KPT = getKPT(updatedPlayer.data[tmplKey]);
-    updatedPlayer.archerKPT = calcGroupKPT(["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
-    updatedPlayer.cavalryKPT = calcGroupKPT(["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
+    updatedPlayer.data[tmplKey].KPT = calculateEntryKPT(updatedPlayer.data[tmplKey]);
+    updatedPlayer.archerKPT = calculateGroupKPT(updatedPlayer.data, ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
+    updatedPlayer.cavalryKPT = calculateGroupKPT(updatedPlayer.data, ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
 
     setStructuredResults(updatedResults);
 

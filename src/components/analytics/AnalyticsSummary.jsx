@@ -21,12 +21,13 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { getAuth } from "firebase/auth";
+import { computeKPT, sumReportEntries } from "../../utils/kptCalculations";
 
 export default function AnalyticsSummary({ isAdmin }) {
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "desc" });
- // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
@@ -51,45 +52,25 @@ export default function AnalyticsSummary({ isAdmin }) {
           const data = docSnap.data();
 
           const troopTypes = Object.entries(data);
-          const archerKills = troopTypes
+          const archerKeys = troopTypes
             .filter(([key]) => key.includes("archer"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Kills || "0"), 0);
+            .map(([key]) => key);
 
-          const cavalryKills = troopTypes
+          const cavalryKeys = troopTypes
             .filter(([key]) => key.includes("cavalry"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Kills || "0"), 0);
-          //(kills-(losses+wounded))/survivors
-          const archerTroops = troopTypes
-            .filter(([key]) => key.includes("archer"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0) + parseInt(val.Wounded || 0) + parseInt(val.Survivors || 0), 0);
+            .map(([key]) => key);
 
-          const cavalryTroops = troopTypes
-            .filter(([key]) => key.includes("cavalry"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0) + parseInt(val.Wounded || 0) + parseInt(val.Survivors || 0), 0);
-
-          const archerLosses = troopTypes
-            .filter(([key]) => key.includes("archer"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0), 0);
-
-          const archerWounded = troopTypes
-            .filter(([key]) => key.includes("archer"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Wounded || 0), 0);
-
-          const cavalryLosses = troopTypes
-            .filter(([key]) => key.includes("cavalry"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Losses || 0), 0);
-
-          const cavalryWounded = troopTypes
-            .filter(([key]) => key.includes("cavalry"))
-            .reduce((sum, [_, val]) => sum + parseInt(val.Wounded || 0), 0);
-
-          const archerKPT = archerTroops ? ((archerKills - archerLosses - archerWounded) / archerTroops).toFixed(2) : "0.00";
-          const cavalryKPT = cavalryTroops ? ((cavalryKills - cavalryLosses - cavalryWounded) / cavalryTroops).toFixed(2) : "0.00";
+          const archerTotals = sumReportEntries(data, archerKeys);
+          const cavalryTotals = sumReportEntries(data, cavalryKeys);
+          const archerTroops = archerTotals.Losses + archerTotals.Wounded + archerTotals.Survivors;
+          const cavalryTroops = cavalryTotals.Losses + cavalryTotals.Wounded + cavalryTotals.Survivors;
+          const archerKPT = computeKPT(archerTotals.Kills, archerTotals.Losses, archerTotals.Wounded, archerTotals.Survivors);
+          const cavalryKPT = computeKPT(cavalryTotals.Kills, cavalryTotals.Losses, cavalryTotals.Wounded, cavalryTotals.Survivors);
           return {
             name,
-            archerKills,
+            archerKills: archerTotals.Kills,
             archerTroops,
-            cavalryKills,
+            cavalryKills: cavalryTotals.Kills,
             cavalryTroops,
             archerDamage: statsMap[name]?.archerDamage || 0,
             cavalryDamage: statsMap[name]?.cavalryDamage || 0,
@@ -138,7 +119,7 @@ export default function AnalyticsSummary({ isAdmin }) {
             damage: player.cavalryDamage
           };
         });
-        if (!currentUser) {
+        if (!currentUser || !isAdmin) {
           return;
         }
         await Promise.all([
@@ -153,7 +134,7 @@ export default function AnalyticsSummary({ isAdmin }) {
     };
 
     fetchAllPlayerStats();
-  }, []);
+  }, [isAdmin]);
 
   const handleSort = (key) => {
     setSortConfig((prev) => {

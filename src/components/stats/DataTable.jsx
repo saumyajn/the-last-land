@@ -12,10 +12,11 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import SettingsIcon from '@mui/icons-material/Settings';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTheme } from "@mui/material/styles";
-import { calcs, getNumber, buildCopyableTable, removePercentage } from "../../utils/calcs";
+import { getNumber, buildCopyableTable, removePercentage } from "../../utils/calcs";
 import { db } from '../../utils/firebase';
 import { usePermissionSnackbar } from "../Permissions";
 import { getColorByThreshold, normalizeThresholds } from "../../utils/colorUtils";
+import { calculateStatOutputs } from "../../utils/statCalculations";
 
 const columnGroups = [
     { label: "Troop", keys: ["Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received", "Troop Attack Blessing", "Troop Protection Blessing"] },
@@ -91,35 +92,9 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const names = useMemo(() => Object.keys(localData), [localData]);
 
-    // 🔥 Centralized Calculation: Now computes Average Damage directly!
+    // Shared stat output calculation: final damage and average damage.
     const calculateAll = useCallback((player, currentWeights) => {
-        const archerAtlantis = player["Archer Atlantis"] || 0;
-        const cavalryAtlantis = player["Cavalry Atlantis"] || 0;
-        const siegeAtlantis = player["Siege Atlantis"] || 0;
-
-        const w = currentWeights || {};
-
-        const archer = getNumber(calcs(player, "archer", archerAtlantis, w));
-        const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis, w));
-        const siege = getNumber(calcs(player, "siege", siegeAtlantis, w));
-
-        let multiplier = w.multiplier ;
-
-        const finalArcher = archer * multiplier;
-        const finalCavalry = cavalry * multiplier;
-        const finalSiege = siege * multiplier;
-
-        // Apply dynamic ratios (defaulting to 0.5 to act as an average if not set)
-        const aRatio = w.archerRatio ?? 0.5;
-        const cRatio = w.cavalryRatio ?? 0.5;
-        const avgDamage = (finalArcher * aRatio) + (finalCavalry * cRatio);
-
-        return {
-            "Final Archer Damage": finalArcher.toFixed(5),
-            "Final Cavalry Damage": finalCavalry.toFixed(5),
-            "Final Siege Damage": finalSiege.toFixed(5),
-            "Average Damage": avgDamage.toFixed(2),
-        };
+        return calculateStatOutputs(player, currentWeights);
     }, []);
 
     const handleCopyTable = () => {
@@ -185,10 +160,12 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
             // Wait for all 30 players to finish saving
             await Promise.all(promises);
-            console.log("✅ All settings and player stats updated perfectly!");
+            if (process.env.NODE_ENV === "development") {
+                console.log("All settings and player stats updated perfectly!");
+            }
 
         } catch (error) {
-            console.error("❌ Error saving settings:", error);
+            console.error("Error saving settings:", error);
         }
     };
 
@@ -290,12 +267,17 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 </DialogActions>
             </Dialog>
 
-            <Paper elevation={0} sx={{ p: 2, mb: 4, border: '1px solid #e0e0e0', borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                        Player Stats Database
-                    </Typography>
+            <Paper elevation={0} sx={{ p: { xs: 1.5, md: 2 }, mb: 4, border: '1px solid rgba(15,23,42,0.08)', borderRadius: 2, boxShadow: "0 18px 45px rgba(15,23,42,0.06)" }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexDirection: { xs: 'column', sm: 'row' }, mb: 2 }}>
                     <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: "text.primary" }}>
+                            Player Stats Database
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Editable OCR output, derived damage scores, thresholds, and Atlantis multipliers.
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 0.5 }}>
                         <Tooltip title="Copy to Clipboard">
                             <IconButton color="secondary" onClick={handleCopyTable}>
                                 <ContentCopyIcon />
@@ -309,13 +291,13 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     </Box>
                 </Box>
 
-                <TableContainer sx={{ minWidth: isMobile ? 700 : "100%", maxHeight: '75vh', borderRadius: 1, border: '1px solid #f0f0f0' }}>
+                <TableContainer sx={{ minWidth: isMobile ? 700 : "100%", maxHeight: '75vh', borderRadius: 1, border: '1px solid rgba(15,23,42,0.08)' }}>
                     <Table size="small" stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ position: 'sticky', left: 0, top: 0, zIndex: 1200, backgroundColor: '#fafafa', borderRight: '2px solid #e0e0e0' }} rowSpan={2}><b>Name</b></TableCell>
+                                <TableCell sx={{ position: 'sticky', left: 0, top: 0, zIndex: 1200, backgroundColor: '#f8fafc', borderRight: '1px solid rgba(15,23,42,0.12)' }} rowSpan={2}><b>Name</b></TableCell>
                                 {columnGroups.map(group => (
-                                    <TableCell key={group.label} align="center" colSpan={expandedGroups[group.label] ? group.keys.length : 1} sx={{ backgroundColor: '#fafafa', cursor: "pointer", userSelect: "none", borderRight: "1px solid #e0e0e0" }} onClick={() => handleGroupToggle(group.label)}>
+                                    <TableCell key={group.label} align="center" colSpan={expandedGroups[group.label] ? group.keys.length : 1} sx={{ backgroundColor: '#f8fafc', cursor: "pointer", userSelect: "none", borderRight: "1px solid rgba(15,23,42,0.08)" }} onClick={() => handleGroupToggle(group.label)}>
                                         <Box display="flex" alignItems="center" justifyContent="center">
                                             {expandedGroups[group.label] ? <ArrowDropDownIcon fontSize="small" /> : <ArrowRightIcon fontSize="small" />}
                                             <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{group.label}</Typography>
@@ -323,7 +305,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                     </TableCell>
                                 ))}
                                 {extraColumns.map(col => (
-                                    <TableCell key={col.key} rowSpan={2} align="center" sx={{ backgroundColor: '#fafafa', minWidth: 80, lineHeight: 1.2 }}>
+                                    <TableCell key={col.key} rowSpan={2} align="center" sx={{ backgroundColor: '#f8fafc', minWidth: 80, lineHeight: 1.2 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 600 }}>{col.label}</Typography>
                                     </TableCell>
                                 ))}
@@ -331,8 +313,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                             <TableRow>
                                 {columnGroups.map(group =>
                                     expandedGroups[group.label]
-                                        ? group.keys.map(key => <TableCell key={`${group.label}-${key}`} align="center" sx={{ backgroundColor: '#fff', borderRight: "1px solid #f8f8f8" }}><Typography variant="caption" color="textSecondary">{key.replace(group.label + " ", "")}</Typography></TableCell>)
-                                        : <TableCell key={`${group.label}-collapsed`} sx={{ backgroundColor: '#fff', borderRight: "1px solid #f8f8f8" }} />
+                                        ? group.keys.map(key => <TableCell key={`${group.label}-${key}`} align="center" sx={{ backgroundColor: '#fff', borderRight: "1px solid rgba(15,23,42,0.04)" }}><Typography variant="caption" color="textSecondary">{key.replace(group.label + " ", "")}</Typography></TableCell>)
+                                        : <TableCell key={`${group.label}-collapsed`} sx={{ backgroundColor: '#fff', borderRight: "1px solid rgba(15,23,42,0.04)" }} />
                                 )}
                             </TableRow>
                         </TableHead>
@@ -346,7 +328,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
                                 return (
                                     <TableRow key={name} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell align="left" sx={{ position: 'sticky', left: 0, backgroundColor: '#fff', zIndex: 1100, borderRight: '2px solid #e0e0e0' }}>
+                                        <TableCell align="left" sx={{ position: 'sticky', left: 0, backgroundColor: '#fff', zIndex: 1100, borderRight: '1px solid rgba(15,23,42,0.12)' }}>
                                             <CleanInput
                                                 value={rowData?.tempName ?? name}
                                                 onChange={(e) => setLocalData((prev) => ({ ...prev, [name]: { ...prev[name], tempName: e.target.value } }))}

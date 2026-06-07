@@ -36,7 +36,9 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
         damage_troops: calcDamage(formState.total, formState.guards),
       };
       await setDoc(doc(db, "settings", docName), payload);
-      console.log("Saved", docName);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Saved", docName);
+      }
     } catch (error) {
       console.error("Error saving formation:", error);
     }
@@ -56,17 +58,17 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
     });
   };
   return (
-    <Paper elevation={2} sx={{
-      p: 3,
+    <Paper elevation={0} sx={{
+      p: { xs: 1.5, md: 2 },
       mb: 3,
-      borderRadius: 3,
-      backgroundColor: "#fdfdfd",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      borderRadius: 2,
+      backgroundColor: "#f8fafc",
+      border: "1px solid rgba(15,23,42,0.08)",
     }}
     >
 
-      <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid item xs={12} sm={3}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={4}>
           <TextField
             label="Total Troops"
             value={formState.total}
@@ -74,7 +76,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={4}>
           <TextField
             label="Guards"
             value={formState.guards}
@@ -82,7 +84,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={4}>
           <TextField
             label="Damage Troops"
             value={formState.damage_troops}
@@ -90,14 +92,13 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
           onFocus={(e) => e.target.select()}
 
           />
-          {console.log(String((Number(formState.total) || 0) - (Number(formState.guards) || 0)))}
         </Grid>
 
 
       </Grid>
-      <Divider sx={{ m: 2 }} />
-      <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid item xs={12} sm={3}>
+      <Divider sx={{ my: 2 }} />
+      <Grid container spacing={2}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T10 Archers"
             value={formState.at10}
@@ -105,7 +106,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T9 Archers"
             value={formState.at9}
@@ -113,7 +114,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T8 Archers"
             value={formState.at8}
@@ -121,7 +122,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T7 Archers"
             value={formState.at7}
@@ -131,9 +132,9 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
         </Grid>
 
       </Grid>
-      <Divider sx={{ m: 2 }} />
-      <Grid container spacing={2} sx={{ justifyContent: 'space-around' }}>
-        <Grid item xs={12} sm={3}>
+      <Divider sx={{ my: 2 }} />
+      <Grid container spacing={2}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T10 Cavalry"
             value={formState.ct10}
@@ -141,7 +142,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T9 Cavalry"
             value={formState.ct9}
@@ -149,7 +150,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T8 Cavalry"
             value={formState.ct8}
@@ -157,7 +158,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={3}>
           <TextField
             label="T7 Cavalry"
             value={formState.ct7}

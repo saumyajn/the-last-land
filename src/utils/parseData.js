@@ -45,6 +45,8 @@ export const parseData = (rawText, desiredKeys) => {
     if (!attributes[key]) attributes[key] = "NA";
   });
 
-  console.log("Parsed attributes:", attributes);
+  if (process.env.NODE_ENV === "development") {
+    console.log("Parsed attributes:", attributes);
+  }
   return attributes;
 };

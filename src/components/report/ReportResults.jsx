@@ -16,34 +16,11 @@ import {
 import { useState, useMemo } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { calculateEntryKPT, calculateGroupKPT } from "../../utils/kptCalculations";
+
 const archerKeys = ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"];
 const cavalryKeys = ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"];
 const siegeKeys = ["T10_siege",  "T8_siege"];
-
-
-const computeKPT = (kills, losses, wounded, survivors) => {
-  const total = losses + wounded + survivors;
-  if (total === 0) return "0.00";
-  return ((kills - losses - wounded) / total).toFixed(2);
-};
-
-const calcKPT = (data, keys) => {
-  let kills = 0, losses = 0, wounded = 0, survivors = 0;
-
-
-  keys.forEach((key) => {
-    const entry = data[key];
-    if (entry) {
-      kills += parseInt(entry.Kills || 0);
-      losses += parseInt(entry.Losses || 0);
-      wounded += parseInt(entry.Wounded || 0);
-      survivors += parseInt(entry.Survivors || 0);
-
-    }
-  });
-
-  return computeKPT(kills, losses, wounded, survivors);
-};
 
 export default function ReportResultTable({
   structuredResults,
@@ -80,33 +57,29 @@ export default function ReportResultTable({
 
 
   const handleKPT = (data) => {
-    const kills = parseInt(data?.Kills || "0");
-    const losses = parseInt(data?.Losses || "0");
-    const wounded = parseInt(data?.Wounded || "0");
-    const survivors = parseInt(data?.Survivors || "0");
-    return computeKPT(kills, losses, wounded, survivors);
+    return calculateEntryKPT(data);
   }
 
 
   const memoizedPlayers = useMemo(() => {
     return structuredResults.map(player => ({
       ...player,
-      archerKPT: calcKPT(player.data, archerKeys),
-      cavalryKPT: calcKPT(player.data, cavalryKeys),
-      siegeKPT: calcKPT(player.data, siegeKeys)
+      archerKPT: calculateGroupKPT(player.data, archerKeys),
+      cavalryKPT: calculateGroupKPT(player.data, cavalryKeys),
+      siegeKPT: calculateGroupKPT(player.data, siegeKeys)
     }));
   }, [structuredResults]);
   return (
     <>
-      {memoizedPlayers.map((player, pIdx) => {
+      {memoizedPlayers.map((player) => {
         const { archerKPT, cavalryKPT, siegeKPT } = player;
 
         return (
-          <Box key={player.name} sx={{ mt: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Paper key={player.name} elevation={0} sx={{ mt: 3, p: { xs: 1.5, md: 2 }, borderRadius: 2, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 18px 45px rgba(15,23,42,0.06)" }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 1.5, flexDirection: { xs: 'column', md: 'row' } }}>
               <Typography variant="h6">📊 {player.name}</Typography>
               <Typography variant="body2">Archer: {archerKPT}</Typography>
-              <Typography variant="body2">Calavry: {cavalryKPT}</Typography>
+              <Typography variant="body2">Cavalry: {cavalryKPT}</Typography>
                <Typography variant="body2">Siege: {siegeKPT}</Typography>
               <IconButton color="primary" onClick={() => handleCopy(player)}>
                 <ContentCopyIcon />
@@ -116,7 +89,7 @@ export default function ReportResultTable({
               </IconButton>
             </Box>
 
-            <TableContainer component={Paper} sx={{ mt: 1 }}>
+            <TableContainer sx={{ mt: 2, borderRadius: 1, border: "1px solid rgba(15,23,42,0.08)" }}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -141,7 +114,7 @@ export default function ReportResultTable({
                               size="small"
                               value={rowData[label] || "0"}
                               onChange={(e) => onEdit(player.name, tmplKey, label, e.target.value)}
-                              style={{ width: '100px' }}
+                              sx={{ width: 92 }}
                             />
                           </TableCell>
                         ))}
@@ -156,7 +129,7 @@ export default function ReportResultTable({
               </Table>
             </TableContainer>
 
-          </Box>
+          </Paper>
 
         )
       }

@@ -12,8 +12,21 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
     // We need two states: one for preview URLs (images) and one for actual File objects (files)
     const [images, setImages] = React.useState([]);
     const [files, setFiles] = React.useState([]);
+    const imagesRef = React.useRef([]);
 
     const [loading, setLoading] = React.useState(false);
+
+    const handleFiles = React.useCallback((fileList) => {
+        const filesArray = Array.from(fileList);
+
+        const urls = filesArray.map(file => URL.createObjectURL(file));
+        setImages(prev => [...prev, ...urls]);
+        setFiles(prev => [...prev, ...filesArray]);
+
+        if (onUpload) {
+            onUpload({ target: { files: fileList } });
+        }
+    }, [onUpload]);
 
     React.useEffect(() => {
         const handlePaste = (event) => {
@@ -40,23 +53,17 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    }); // Added dependency array to prevent double-binding
+    }, [handleFiles]);
 
-    const handleFiles = (fileList) => {
-        const filesArray = Array.from(fileList);
+    React.useEffect(() => {
+        imagesRef.current = images;
+    }, [images]);
 
-        // 1. Create Preview URLs for UI
-        const urls = filesArray.map(file => URL.createObjectURL(file));
-        setImages(prev => [...prev, ...urls]);
-
-        // 2. Store actual File objects for the API
-        setFiles(prev => [...prev, ...filesArray]);
-
-        // Optional: Still notify parent of raw upload if needed
-        if (onUpload) {
-            onUpload({ target: { files: fileList } });
-        }
-    };
+    React.useEffect(() => {
+        return () => {
+            imagesRef.current.forEach((url) => URL.revokeObjectURL(url));
+        };
+    }, []);
 
     const handleUploadClick = () => {
         if (fileInputRef.current) {

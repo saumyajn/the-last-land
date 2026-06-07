@@ -1,11 +1,13 @@
 import { useContext, useState, useEffect } from "react";
 import {
   Box, Avatar, AppBar, Toolbar, IconButton, Typography, Button,
-  useMediaQuery, Menu, MenuItem
+  useMediaQuery, Menu, MenuItem, Chip
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTheme } from "@mui/material/styles";
 import { useLocation, useNavigate } from "react-router-dom";
 import { signInWithGoogle, logout } from "../utils/auth";
@@ -27,27 +29,52 @@ export default function Header() {
   const handleMenuClose = () => setAnchorEl(null);
 
   const isMenuOpen = Boolean(anchorEl);
+  const roleLabel = isAdmin ? "Admin" : "View only";
+  const roleIcon = isAdmin ? <AdminPanelSettingsIcon /> : <VisibilityIcon />;
 
   return (
-    <Box sx={{ backgroundColor: '#360652', borderBottom: '1px solid #ddd' }}>
-      <AppBar position="static" elevation={0} sx={{ borderBottom: '1px solid #ddd', backgroundColor: '#360652' }}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
+    <Box sx={{ backgroundColor: 'background.paper' }}>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          top: 0,
+          zIndex: 30,
+          color: 'text.primary',
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(15,23,42,0.08)',
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 60, md: 68 } }}>
           <Box display="flex" alignItems="center" sx={{ flexGrow: 1 }}>
             <Avatar
               src="/logo192.png"
               alt="Logo"
-              sx={{ width: 36, height: 36, mr: 1, cursor: 'pointer' }}
-              onClick={() => navigate("/about")}
+              sx={{
+                width: 42,
+                height: 42,
+                mr: 1.5,
+                cursor: 'pointer',
+                border: '1px solid rgba(15,23,42,0.1)',
+                boxShadow: '0 8px 20px rgba(15,23,42,0.1)',
+              }}
+              onClick={() => navigate("/")}
             />
-            <Typography variant="h6" noWrap sx={{ fontWeight: 'bold' }}>
-              The Last Land
-            </Typography>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="h6" noWrap sx={{ fontWeight: 900, lineHeight: 1.1, color: 'text.primary' }}>
+                The Last Land
+              </Typography>
+              <Typography variant="caption" noWrap sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.secondary', fontWeight: 650 }}>
+                OCR analytics workspace
+              </Typography>
+            </Box>
           </Box>
 
           {user ? (
             isMobile ? (
               <>
-                <IconButton edge="end" color="inherit" onClick={handleMenuOpen}>
+                <IconButton edge="end" color="primary" onClick={handleMenuOpen} aria-label="Open account menu">
                   <MenuIcon />
                 </IconButton>
                 <Menu
@@ -58,7 +85,7 @@ export default function Header() {
                   transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                   keepMounted
                 >
-                  <MenuItem disabled>{user.displayName} ({isAdmin ? "Admin" : "View only"})</MenuItem>
+                  <MenuItem disabled>{user.displayName} ({roleLabel})</MenuItem>
                   <MenuItem onClick={() => { logout(); handleMenuClose(); }}>
                     <LogoutIcon sx={{ mr: 1 }} /> Logout
                   </MenuItem>
@@ -66,16 +93,28 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Typography variant="body1" sx={{ mr: 2 }}>
-                  {user.displayName} ({isAdmin ? "Admin" : "View only"})
+                <Typography variant="body2" sx={{ mr: 1.5, maxWidth: 280, color: 'text.secondary', fontWeight: 650 }} noWrap>
+                  {user.displayName}
                 </Typography>
-                <Button variant="outlined" size="small" color="inherit" onClick={logout}>
+                <Chip
+                  icon={roleIcon}
+                  label={roleLabel}
+                  size="small"
+                  sx={{
+                    mr: 2,
+                    color: isAdmin ? 'secondary.dark' : 'primary.dark',
+                    backgroundColor: isAdmin ? 'secondary.light' : 'primary.light',
+                    border: '1px solid rgba(15,23,42,0.08)',
+                    '& .MuiChip-icon': { color: 'inherit' },
+                  }}
+                />
+                <Button variant="outlined" size="small" color="primary" onClick={logout}>
                   <LogoutIcon sx={{ mr: 1 }} /> Logout
                 </Button>
               </>
             )
           ) : (
-            <Button variant="outlined" size="small" color="inherit" onClick={signInWithGoogle}>
+            <Button variant="contained" size="small" color="primary" onClick={signInWithGoogle}>
               <LoginIcon sx={{ mr: 1 }} /> Login
             </Button>
           )}

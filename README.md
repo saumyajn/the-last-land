@@ -1,100 +1,138 @@
-# The Last Land - Alliance Stats & Match Report Tracker
-A high-performance React application designed to manage, extract, and analyze player statistics and battle reports for alliance members. Built with React, Material-UI, and Firebase, this tool uses Google Cloud Vision OCR and OpenCV to automatically extract data from game screenshots, transforming them into actionable, color-coded data tables.
+# The Last Land OCR Analytics Platform
 
-# Key Features
-📸 Automated OCR Data Extraction: * Upload or paste screenshots of player stat pages or battle reports.
+The Last Land is a real-workflow OCR analytics platform for alliance stats, formations, and battle reports. It converts game screenshots into structured Firebase data using Google Cloud Vision OCR, OpenCV template matching, deterministic parsing, and analytics dashboards.
 
-Uses Google Cloud Vision (Document Text Detection) via Firebase Cloud Functions for highly accurate, column-aware text extraction.
+This repository is intentionally treated as a production-sensitive app because it is used with real data.
 
-Uses OpenCV Multi-Scale Template Matching to accurately find specific troop icons (T10 Cavalry, T9 Archer, etc.) regardless of screen size or device resolution.
+## What It Does
 
-📊 Advanced Stats & Damage Calculator:
+- Extracts player stat screenshots into structured stat records.
+- Uses Google Cloud Vision through Firebase Cloud Functions for OCR.
+- Uses OpenCV.js template matching to locate troop report rows from screenshots.
+- Stores stats, formations, reports, settings, and analytics in Firestore.
+- Computes derived combat metrics and KPT summaries.
+- Supports admin-only writes and view-only access for non-admin users.
+- Exports tabular data for spreadsheet workflows.
 
-Automatically parses 30+ game attributes (Attack, Health, Defense, Damage, Lethal Hit Rate).
+## Data Safety Rule
 
-Calculates derived stats such as Final Archer Damage based on customizable Multipliers and Atlantis levels.
+Do not change parsing, formulas, Firebase collection shapes, report aggregation, or export formats without a regression test and explicit approval.
 
-⚡ High-Performance Data Table:
+Protected files include:
 
-Optimized to handle dozens of players and over 1,200 individual data points simultaneously without lag using React.memo and parallel data fetching.
+- `src/utils/parseData.js`
+- `src/utils/calcs.js`
+- `src/utils/dbActions.js`
+- `src/components/report/ReportPage.jsx`
+- `src/components/analytics/AnalyticsPage.jsx`
+- `src/components/analytics/AnalyticsSummary.jsx`
+- `src/components/stats/DataTable.jsx`
 
-Spreadsheet-like interface with invisible inputs for a clean reading experience.
+## Architecture
 
-🎨 Customizable Thresholds: * Set custom color-coded limits (e.g., Green/Yellow/Red) to easily spot top performers and weak points across the alliance.
+```mermaid
+flowchart LR
+  User["Admin or viewer"] --> UI["React CRA + MUI app"]
+  UI --> Auth["Firebase Auth"]
+  UI --> Firestore["Firestore collections"]
+  UI --> OCR["Firebase Callable Function"]
+  OCR --> Vision["Google Cloud Vision API"]
+  UI --> CV["OpenCV.js template matching"]
+  CV --> Parser["Deterministic parsing and cleanup"]
+  Parser --> Calcs["Current stat and KPT formulas"]
+  Calcs --> Firestore
+  Firestore --> Analytics["Analytics and export views"]
+```
 
-🔐 Admin Controls & Cloud Sync: * Live synchronization using Firebase Firestore.
+More detail:
 
-Role-based access ensures only Admins can edit data, rename players, or adjust threshold settings.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Calculation Audit](docs/CALCULATION_AUDIT.md)
+- [Data Safety, Firestore Contract, Admin Security, and Fixtures](docs/DATA_SAFETY.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Roadmap and Refactor Plan](docs/ROADMAP_AND_REFACTOR.md)
 
-📋 Quick Export: Copy entire tables to the clipboard in a TSV format for instant pasting into Excel or Google Sheets.
+## Tech Stack
 
-# Tech Stack
-Frontend: React.js, Material-UI (MUI)
+- React 19 with Create React App
+- Material UI
+- Firebase Auth
+- Firebase Firestore
+- Firebase Cloud Functions for Python
+- Google Cloud Vision API
+- OpenCV.js
+- Jest and React Scripts test runner
 
-Backend / Database: Firebase Firestore
+## Local Development
 
-Serverless Functions: Firebase Cloud Functions (Python)
-
-Image Processing: Google Cloud Vision API, OpenCV.js
-
-State Management: React Context API
-
-# Getting Started
-Prerequisites
-Node.js (v16 or higher recommended)
-
-Firebase CLI (npm install -g firebase-tools)
-
-A Firebase Project with Firestore and Cloud Functions enabled.
-
-Google Cloud Vision API enabled in your Google Cloud Console.
-
-1. Clone the Repository
-Bash
-git clone https://github.com/your-username/the-last-land.git
-cd the-last-land
-2. Install Dependencies
-Install the frontend React dependencies:
-
-Bash
+```bash
 npm install
-Install the backend Python Cloud Function dependencies:
+npm start
+```
 
-Bash
+Local app:
+
+```bash
+http://localhost:3000
+```
+
+Production Firebase remains the default unless emulator mode is explicitly enabled.
+
+## Local Data Testing With Emulators
+
+Use this path when testing parser, report, analytics, or UI changes without touching real Firebase data.
+
+Terminal 1:
+
+```bash
+npm run emulators
+```
+
+Terminal 2:
+
+```bash
+npm run seed:emulators
+```
+
+Terminal 3:
+
+```bash
+npm run start:emulators
+```
+
+The seed script writes synthetic data only to the Firestore emulator.
+
+## Tests
+
+```bash
+npm test -- --watchAll=false
+```
+
+Current tests are characterization tests. They lock down existing parser, calculator, and export-helper behavior so future refactors do not accidentally change real data workflows.
+
+Sanitized fixtures live in `src/testFixtures/lastLandFixtures.js`. They intentionally avoid real player identities, alliance data, screenshots, and Firebase exports.
+
+## Build
+
+```bash
+npm run build
+```
+
+## Firebase Functions
+
+```bash
 cd functions
 pip install -r requirements.txt
 cd ..
-3. Environment Variables
-Create a .env file in the root of your React project and add your Firebase configuration keys:
-
-Code snippet
-REACT_APP_FIREBASE_API_KEY=your_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-REACT_APP_FIREBASE_APP_ID=your_app_id
-4. Deploying Cloud Functions
-The OCR extraction relies on a Python-based Firebase Cloud Function. To deploy it to your live Firebase environment:
-
-Bash
 firebase deploy --only functions
-(Ensure the FUNCTION_URL in src/components/stats/ImageUpload.jsx matches your deployed function's URL).
+```
 
-5. Run the App Locally
-Start the React development server:
+## Production Direction
 
-Bash
-npm start
-The app will be available at http://localhost:3000.
+The strongest next steps are not UI-heavy. They are:
 
-# Contributing
-Fork the Project
-
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-
-Push to the Branch (git push origin feature/AmazingFeature)
-
-Open a Pull Request
+- Add fixture-based OCR/parser regression tests using representative screenshots.
+- Move admin authorization from hardcoded email lists toward custom claims or a Firestore role document.
+- Add extraction confidence and manual review states without changing current parsing output.
+- Migrate carefully from CRA to Vite + TypeScript only after behavior is locked by tests.
+- Document Firebase rules and collection contracts before changing access control.

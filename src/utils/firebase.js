@@ -1,7 +1,13 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import {
+    connectFirestoreEmulator,
+    initializeFirestore,
+    memoryLocalCache,
+    persistentLocalCache,
+    persistentMultipleTabManager
+} from "firebase/firestore";
 import {
     firebaseEmulatorHost,
     firebaseEmulatorPorts,
@@ -18,8 +24,17 @@ const firebaseConfig = {
     measurementId: "G-9R1GWTW2NG"
   };
 
+const shouldUsePersistentFirestoreCache =
+    process.env.NODE_ENV === "production" && !shouldUseFirebaseEmulators;
+
 export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+    localCache: shouldUsePersistentFirestoreCache
+        ? persistentLocalCache({
+            tabManager: persistentMultipleTabManager()
+        })
+        : memoryLocalCache()
+});
 export const auth = getAuth(app);
 
 if (shouldUseFirebaseEmulators) {
