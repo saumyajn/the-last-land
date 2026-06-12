@@ -1,11 +1,24 @@
-export const REPORT_META_KEYS = new Set(["archerKPT", "cavalryKPT", "siegeKPT"]);
+export const REPORT_META_KEYS = new Set([
+  "archerKPT",
+  "cavalryKPT",
+  "siegeKPT",
+  "archerLPT",
+  "cavalryLPT",
+  "siegeLPT",
+]);
 
 export const numberFromReportValue = (value) => parseInt(value || 0);
 
 export const computeKPT = (kills, losses, wounded, survivors, decimals = 2) => {
   const denominator = losses + wounded + survivors;
   if (denominator === 0) return Number(0).toFixed(decimals);
-  return ((kills - losses - wounded) / denominator).toFixed(decimals);
+  return ((kills) / denominator).toFixed(decimals);
+};
+
+export const computeLPT = (losses, wounded, survivors, decimals = 2) => {
+  const denominator = losses + wounded + survivors;
+  if (denominator === 0) return Number(0).toFixed(decimals);
+  return ((losses + wounded) / denominator).toFixed(decimals);
 };
 
 export const sumReportEntries = (reportData = {}, keys = []) => {
@@ -30,9 +43,21 @@ export const calculateEntryKPT = (entry = {}) =>
     numberFromReportValue(entry.Survivors),
   );
 
+export const calculateEntryLPT = (entry = {}) =>
+  computeLPT(
+    numberFromReportValue(entry.Losses),
+    numberFromReportValue(entry.Wounded),
+    numberFromReportValue(entry.Survivors),
+  );
+
 export const calculateGroupKPT = (reportData = {}, keys = []) => {
   const totals = sumReportEntries(reportData, keys);
   return computeKPT(totals.Kills, totals.Losses, totals.Wounded, totals.Survivors);
+};
+
+export const calculateGroupLPT = (reportData = {}, keys = []) => {
+  const totals = sumReportEntries(reportData, keys);
+  return computeLPT(totals.Losses, totals.Wounded, totals.Survivors);
 };
 
 export const aggregateTroopTypeKpt = (reports = []) => {
@@ -60,6 +85,7 @@ export const aggregateTroopTypeKpt = (reports = []) => {
       {
         ...totals,
         KPT: computeKPT(totals.Kills, totals.Losses, totals.Wounded, totals.Survivors),
+        LPT: computeLPT(totals.Losses, totals.Wounded, totals.Survivors),
       },
     ]),
   );

@@ -21,7 +21,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { getAuth } from "firebase/auth";
-import { computeKPT, sumReportEntries } from "../../utils/kptCalculations";
+import { computeKPT, computeLPT, sumReportEntries } from "../../utils/kptCalculations";
 
 export default function AnalyticsSummary({ isAdmin }) {
   const [summaryData, setSummaryData] = useState([]);
@@ -66,6 +66,8 @@ export default function AnalyticsSummary({ isAdmin }) {
           const cavalryTroops = cavalryTotals.Losses + cavalryTotals.Wounded + cavalryTotals.Survivors;
           const archerKPT = computeKPT(archerTotals.Kills, archerTotals.Losses, archerTotals.Wounded, archerTotals.Survivors);
           const cavalryKPT = computeKPT(cavalryTotals.Kills, cavalryTotals.Losses, cavalryTotals.Wounded, cavalryTotals.Survivors);
+          const archerLPT = computeLPT(archerTotals.Losses, archerTotals.Wounded, archerTotals.Survivors);
+          const cavalryLPT = computeLPT(cavalryTotals.Losses, cavalryTotals.Wounded, cavalryTotals.Survivors);
           return {
             name,
             archerKills: archerTotals.Kills,
@@ -75,7 +77,9 @@ export default function AnalyticsSummary({ isAdmin }) {
             archerDamage: statsMap[name]?.archerDamage || 0,
             cavalryDamage: statsMap[name]?.cavalryDamage || 0,
             archerKPT,
-            cavalryKPT
+            archerLPT,
+            cavalryKPT,
+            cavalryLPT
           };
         });
 
@@ -91,8 +95,8 @@ export default function AnalyticsSummary({ isAdmin }) {
           return ranksMap;
         };
 
-        const archerRanks = calculateColumnRanks(summary, ["archerKills", "archerTroops", "archerKPT", "archerDamage"]);
-        const cavalryRanks = calculateColumnRanks(summary, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"]);
+        const archerRanks = calculateColumnRanks(summary, ["archerKills", "archerTroops", "archerKPT", "archerLPT", "archerDamage"]);
+        const cavalryRanks = calculateColumnRanks(summary, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryLPT", "cavalryDamage"]);
 
         const rankedSummary = summary.map(player => ({
           ...player,
@@ -110,12 +114,14 @@ export default function AnalyticsSummary({ isAdmin }) {
             kills: player.archerKills,
             troops: player.archerTroops,
             kpt: player.archerKPT,
+            lpt: player.archerLPT,
             damage: player.archerDamage
           };
           cavalryFinal[player.name] = {
             kills: player.cavalryKills,
             troops: player.cavalryTroops,
             kpt: player.cavalryKPT,
+            lpt: player.cavalryLPT,
             damage: player.cavalryDamage
           };
         });
@@ -157,12 +163,16 @@ export default function AnalyticsSummary({ isAdmin }) {
 
   if (loading) return <Typography>Loading data...</Typography>;
 
-  const renderRankedTable = (title, data, keys, prefix, kptKey) => {
+  const renderRankedTable = (title, data, keys, prefix, metricKeys) => {
 
-    const averageKPT = (data, key) => (
-      data.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) /
-      data.filter(row => parseFloat(row[key]) > 0).length
-    ).toFixed(2);
+    const averageMetric = (data, key) => {
+      const rows = data.filter(row => parseFloat(row[key]) > 0);
+      if (rows.length === 0) return "0.00";
+      return (
+        rows.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) /
+        rows.length
+      ).toFixed(2);
+    };
 
     const sorted = applySorting(data, prefix);
     return (
@@ -172,12 +182,15 @@ export default function AnalyticsSummary({ isAdmin }) {
           color: 'white'
         }}>
           <Typography variant="h6" gutterBottom color="primary.dark">{title} </Typography>
-  <Chip
-              label={`Average ${kptKey.toUpperCase()}: ${averageKPT(data, kptKey)}`}
+  {metricKeys.map(metricKey => (
+            <Chip
+              key={metricKey}
+              label={`Average ${metricKey.toUpperCase()}: ${averageMetric(data, metricKey)}`}
               color="secondary"
               variant="outlined"
               sx={{ fontWeight: "bold" , marginLeft: 2, backgroundColor: '#f0f0f0', color: 'secondary.main' }}
             />
+          ))}
         </AccordionSummary>
 
         <AccordionDetails>
@@ -227,10 +240,10 @@ export default function AnalyticsSummary({ isAdmin }) {
   return (
     <Grid spacing={2} container>
        <Grid item size={{xs:12, md:6}} sx={{ mb: 2 }}>
-        {renderRankedTable("Cavalry Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryDamage"], "cavalry", "cavalryKPT")}
+        {renderRankedTable("Cavalry Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryLPT", "cavalryDamage"], "cavalry", ["cavalryKPT", "cavalryLPT"])}
       </Grid>
        <Grid item size={{xs:12, md:6}} sx={{ mb: 2 }}>
-        {renderRankedTable("Archer Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerDamage"], "archer", "archerKPT")}
+        {renderRankedTable("Archer Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerLPT", "archerDamage"], "archer", ["archerKPT", "archerLPT"])}
       </Grid>
     </Grid>
   );

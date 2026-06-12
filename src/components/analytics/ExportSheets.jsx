@@ -89,8 +89,8 @@ export default function ExportToGoogleSheet() {
       "T8_siege", "T7_cavalry", "T7_archer"
     ];
 
-    sheet.appendRow(["TROOP TYPE KPT SUMMARY"]);
-    var troopHeaders = ["Troop Type", "Kills", "Losses", "Wounded", "Survivors", "KPT", "March Size", "% of March"];
+    sheet.appendRow(["TROOP TYPE KPT/LPT SUMMARY"]);
+    var troopHeaders = ["Troop Type", "Kills", "Losses", "Wounded", "Survivors", "KPT", "LPT", "March Size", "% of March"];
     sheet.appendRow(troopHeaders);
 
     troopOrder.forEach(function(type) {
@@ -102,6 +102,7 @@ export default function ExportToGoogleSheet() {
         s.Wounded || 0,
         s.Survivors || 0,
         s.KPT || "0.00",
+        s.LPT || "0.00",
         s.calculatedMarchSize || 0,
         s.marchPercentage || "0.00%"
       ]);
@@ -109,12 +110,12 @@ export default function ExportToGoogleSheet() {
 
     // Add Totals row for Troop Table
     var t = troopData.totals || {};
-    sheet.appendRow(["TOTAL", t.Kills, t.Losses, t.Wounded, t.Survivors, t.KPT, t.totalMarchSize, "100.00%"]);
+    sheet.appendRow(["TOTAL", t.Kills, t.Losses, t.Wounded, t.Survivors, t.KPT, t.LPT, t.totalMarchSize, "100.00%"]);
     
     // Style Troop Table
-    sheet.getRange(1, 1, 1, 8).setFontWeight("bold").setBackground("#cfe2f3");
-    sheet.getRange(2, 1, 1, 8).setFontWeight("bold");
-    sheet.getRange(sheet.getLastRow(), 1, 1, 8).setFontWeight("bold").setBackground("#eeeeee");
+    sheet.getRange(1, 1, 1, 9).setFontWeight("bold").setBackground("#cfe2f3");
+    sheet.getRange(2, 1, 1, 9).setFontWeight("bold");
+    sheet.getRange(sheet.getLastRow(), 1, 1, 9).setFontWeight("bold").setBackground("#eeeeee");
 
     // Add spacing rows
     sheet.appendRow([""]);
@@ -128,7 +129,7 @@ export default function ExportToGoogleSheet() {
 
     var playerStartRow = sheet.getLastRow() + 2;
     sheet.appendRow(["ARCHER FINAL", "", "", "", "", "", "", "CAVALRY FINAL"]);
-    sheet.appendRow(["Player Name", "Kills", "Damage", "Troops", "KPT", "", "", "Player Name", "Kills", "Damage", "Troops", "KPT"]);
+    sheet.appendRow(["Player Name", "Kills", "Damage", "Troops", "KPT", "LPT", "", "", "Player Name", "Kills", "Damage", "Troops", "KPT", "LPT"]);
 
     var maxRows = Math.max(archerPlayers.length, cavalryPlayers.length);
     for (var i = 0; i < maxRows; i++) {
@@ -137,9 +138,9 @@ export default function ExportToGoogleSheet() {
       if (i < archerPlayers.length) {
         var aP = archerPlayers[i];
         var aS = archerData[aP];
-        row.push(aP, aS.kills || 0, aS.damage || 0, aS.troops || 0, aS.kpt || "0");
+        row.push(aP, aS.kills || 0, aS.damage || 0, aS.troops || 0, aS.kpt || "0", aS.lpt || "0");
       } else {
-        row.push("", "", "", "", "");
+        row.push("", "", "", "", "", "");
       }
       // Gap
       row.push("", "");
@@ -147,15 +148,15 @@ export default function ExportToGoogleSheet() {
       if (i < cavalryPlayers.length) {
         var cP = cavalryPlayers[i];
         var cS = cavalryData[cP];
-        row.push(cP, cS.kills || 0, cS.damage || 0, cS.troops || 0, cS.kpt || "0");
+        row.push(cP, cS.kills || 0, cS.damage || 0, cS.troops || 0, cS.kpt || "0", cS.lpt || "0");
       } else {
-        row.push("", "", "", "", "");
+        row.push("", "", "", "", "", "");
       }
       sheet.appendRow(row);
     }
 
     // Style Player Tables
-    sheet.getRange(playerStartRow, 1, 2, 12).setFontWeight("bold");
+    sheet.getRange(playerStartRow, 1, 2, 14).setFontWeight("bold");
 
     return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
   } catch (err) {

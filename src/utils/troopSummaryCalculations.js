@@ -1,4 +1,4 @@
-import { computeKPT } from "./kptCalculations";
+import { computeKPT, computeLPT } from "./kptCalculations";
 
 export const calculateTroopTypeSummary = (kptData = {}) => {
   let totalKills = 0;
@@ -27,6 +27,7 @@ export const calculateTroopTypeSummary = (kptData = {}) => {
 
     troopDetails[type] = {
       ...stats,
+      LPT: stats.LPT ?? computeLPT(stats.Losses || 0, stats.Wounded || 0, stats.Survivors || 0),
       calculatedMarchSize: Math.round(marchSize),
       marchPercentage: totalDenominator > 0
         ? `${((marchSize / totalDenominator) * 100).toFixed(2)}%`
@@ -41,6 +42,7 @@ export const calculateTroopTypeSummary = (kptData = {}) => {
       Wounded: totalWounded,
       Survivors: totalSurvivors,
       KPT: computeKPT(totalKills, totalLosses, totalWounded, totalSurvivors, 3),
+      LPT: computeLPT(totalLosses, totalWounded, totalSurvivors, 3),
       totalMarchSize: totalDenominator,
     },
     troopDetails,

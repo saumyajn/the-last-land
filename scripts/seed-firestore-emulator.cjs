@@ -126,8 +126,8 @@ async function seed() {
   await setDoc(doc(db, "settings", "tower_formation"), formationSettings);
   await setDoc(doc(db, "settings", "throne_formation"), formationSettings);
   await setDoc(doc(db, "analytics", "troop_type_kpt"), {
-    T10_cavalry: { Kills: 12034, Losses: 567, Wounded: 8901, Survivors: 0, KPT: "0.15" },
-    T10_archer: { Kills: 11000, Losses: 500, Wounded: 7000, Survivors: 3200, KPT: "0.40" },
+    T10_cavalry: { Kills: 12034, Losses: 567, Wounded: 8901, Survivors: 0, KPT: "0.15", LPT: "1.00" },
+    T10_archer: { Kills: 11000, Losses: 500, Wounded: 7000, Survivors: 3200, KPT: "0.40", LPT: "0.70" },
   });
 
   console.log(`Seeded Firestore emulator at ${host}:${port} for project ${projectId}`);

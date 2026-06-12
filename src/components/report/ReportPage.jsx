@@ -17,7 +17,12 @@ import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
 import { updateTroopTypeKpt } from "../../utils/dbActions";
 import { REPORT_LABELS, TROOP_ORDER } from "../../utils/appConstants";
-import { calculateEntryKPT, calculateGroupKPT } from "../../utils/kptCalculations";
+import {
+  calculateEntryKPT,
+  calculateEntryLPT,
+  calculateGroupKPT,
+  calculateGroupLPT,
+} from "../../utils/kptCalculations";
 
 const templateMap = Object.fromEntries(TROOP_ORDER.map((troopType) => [troopType, [troopType]]));
 const templateKeys = Object.keys(templateMap);
@@ -318,8 +323,11 @@ export default function ReportPage() {
     if (!updatedPlayer) return;
 
     updatedPlayer.data[tmplKey].KPT = calculateEntryKPT(updatedPlayer.data[tmplKey]);
+    updatedPlayer.data[tmplKey].LPT = calculateEntryLPT(updatedPlayer.data[tmplKey]);
     updatedPlayer.archerKPT = calculateGroupKPT(updatedPlayer.data, ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
+    updatedPlayer.archerLPT = calculateGroupLPT(updatedPlayer.data, ["T10_archer", "T9_archer", "T8_archer", "T7_archer", "T6_archer"]);
     updatedPlayer.cavalryKPT = calculateGroupKPT(updatedPlayer.data, ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
+    updatedPlayer.cavalryLPT = calculateGroupLPT(updatedPlayer.data, ["T10_cavalry", "T9_cavalry", "T8_cavalry", "T7_cavalry"]);
 
     setStructuredResults(updatedResults);
 
@@ -328,7 +336,9 @@ export default function ReportPage() {
       await setDoc(doc(db, "reports", targetPlayerName), {
         ...updatedPlayer.data,
         archerKPT: updatedPlayer.archerKPT,
-        cavalryKPT: updatedPlayer.cavalryKPT
+        archerLPT: updatedPlayer.archerLPT,
+        cavalryKPT: updatedPlayer.cavalryKPT,
+        cavalryLPT: updatedPlayer.cavalryLPT
       }, { merge: true });
 
       // 🔄 TRIGGER GLOBAL ANALYTICS UPDATE (both KPT and Summary)

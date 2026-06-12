@@ -32,6 +32,7 @@ describe("troopSummaryCalculations", () => {
       Wounded: 40,
       Survivors: 240,
       KPT: "0.742",
+      LPT: "0.226",
       totalMarchSize: 310,
     });
 
@@ -40,6 +41,7 @@ describe("troopSummaryCalculations", () => {
       marchPercentage: "0.00%",
     });
     expect(summary.troopDetails.T10_archer).toMatchObject({
+      LPT: "0.25",
       calculatedMarchSize: 270,
       marchPercentage: "86.96%",
     });

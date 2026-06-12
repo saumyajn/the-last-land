@@ -23,6 +23,7 @@ import ExportToGoogleSheet from './ExportSheets';
 import { AuthContext } from "../../utils/authContext";
 import { TROOP_ORDER } from "../../utils/appConstants";
 import { calculateTroopTypeSummary } from "../../utils/troopSummaryCalculations";
+import { computeLPT } from "../../utils/kptCalculations";
 
 export default function AnalyticsPage() {
     const { isAdmin } = useContext(AuthContext);
@@ -89,7 +90,7 @@ export default function AnalyticsPage() {
             >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: "background.paper" }}>
                     <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: "text.primary" }}>Troop Type KPT Summary</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: "text.primary" }}>Troop Type KPT/LPT Summary</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Aggregated report outcomes and calculated march share by troop type.
                         </Typography>
@@ -106,6 +107,7 @@ export default function AnalyticsPage() {
                                     <TableCell><b>Wounded</b></TableCell>
                                     <TableCell><b>Survivors</b></TableCell>
                                     <TableCell><b>KPT</b></TableCell>
+                                    <TableCell><b>LPT</b></TableCell>
                                     <TableCell><b>March Size</b></TableCell>
                                     <TableCell><b>% of March</b></TableCell>
                                 </TableRow>
@@ -113,12 +115,13 @@ export default function AnalyticsPage() {
                             <TableBody>
                                 {TROOP_ORDER.map((type) => {
                                     const stats = combinedData[type] || {
-                                        Kills: 0, Losses: 0, Wounded: 0, Survivors: 0, KPT: "0.00"
+                                        Kills: 0, Losses: 0, Wounded: 0, Survivors: 0, KPT: "0.00", LPT: "0.00"
                                     };
 
                                     const summaryStats = troopDetails[type] || {};
                                     const marchSize = summaryStats.calculatedMarchSize || 0;
                                     const marchPercent = summaryStats.marchPercentage || "0.00%";
+                                    const lpt = summaryStats.LPT ?? stats.LPT ?? computeLPT(stats.Losses || 0, stats.Wounded || 0, stats.Survivors || 0);
 
                                     return (
                                     <TableRow key={type}>
@@ -129,6 +132,9 @@ export default function AnalyticsPage() {
                                         <TableCell>{stats.Survivors.toLocaleString()}</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold' }}>
                                             {stats.KPT}
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>
+                                            {lpt}
                                         </TableCell>
                                         <TableCell>{marchSize.toLocaleString()}</TableCell>
                                         <TableCell>{marchPercent}</TableCell>
@@ -143,6 +149,7 @@ export default function AnalyticsPage() {
                                     <TableCell>{totals.Wounded.toLocaleString()}</TableCell>
                                     <TableCell>{totals.Survivors.toLocaleString()}</TableCell>
                                     <TableCell>{totals.KPT}</TableCell>
+                                    <TableCell>{totals.LPT}</TableCell>
                                     <TableCell>{totalMarchSize.toLocaleString()}</TableCell>
                                     <TableCell>100.00%</TableCell>
                                 </TableRow>
