@@ -10,7 +10,7 @@ This repository is intentionally treated as a production-sensitive app because i
 - Uses Google Cloud Vision through Firebase Cloud Functions for OCR.
 - Uses OpenCV.js template matching to locate troop report rows from screenshots.
 - Stores stats, formations, reports, settings, and analytics in Firestore.
-- Computes derived combat metrics and KPT summaries.
+- Computes derived combat metrics plus KPT and LPT summaries.
 - Supports admin-only writes and view-only access for non-admin users.
 - Exports tabular data for spreadsheet workflows.
 
@@ -39,7 +39,7 @@ flowchart LR
   OCR --> Vision["Google Cloud Vision API"]
   UI --> CV["OpenCV.js template matching"]
   CV --> Parser["Deterministic parsing and cleanup"]
-  Parser --> Calcs["Current stat and KPT formulas"]
+  Parser --> Calcs["Current stat, KPT, and LPT formulas"]
   Calcs --> Firestore
   Firestore --> Analytics["Analytics and export views"]
 ```

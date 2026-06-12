@@ -31,7 +31,7 @@ describe("troopSummaryCalculations", () => {
       Losses: 30,
       Wounded: 40,
       Survivors: 240,
-      KPT: "0.742",
+      KPT: "0.968",
       LPT: "0.226",
       totalMarchSize: 310,
     });
@@ -42,8 +42,8 @@ describe("troopSummaryCalculations", () => {
     });
     expect(summary.troopDetails.T10_archer).toMatchObject({
       LPT: "0.25",
-      calculatedMarchSize: 270,
-      marchPercentage: "86.96%",
+      calculatedMarchSize: 207,
+      marchPercentage: "66.67%",
     });
   });
 });

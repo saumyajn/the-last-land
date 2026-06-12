@@ -12,7 +12,7 @@ export const numberFromReportValue = (value) => parseInt(value || 0);
 export const computeKPT = (kills, losses, wounded, survivors, decimals = 2) => {
   const denominator = losses + wounded + survivors;
   if (denominator === 0) return Number(0).toFixed(decimals);
-  return ((kills) / denominator).toFixed(decimals);
+  return (kills / denominator).toFixed(decimals);
 };
 
 export const computeLPT = (losses, wounded, survivors, decimals = 2) => {

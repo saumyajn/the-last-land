@@ -12,7 +12,7 @@ Protected behavior includes:
 
 - `parseData` matching order and next-line value behavior.
 - `calcs` power score formula and rounding.
-- KPT aggregation in `updateTroopTypeKpt`.
+- KPT/LPT aggregation in `updateTroopTypeKpt`.
 - Report extraction OCR cleanup.
 - OpenCV template matching threshold and scaling behavior.
 - Firestore collection names and document shapes.
@@ -43,7 +43,7 @@ Treat these collection names and shapes as production-sensitive until verified a
 }
 ```
 
-- Derived fields: `archerKPT`, `cavalryKPT`.
+- Derived fields: `archerKPT`, `archerLPT`, `cavalryKPT`, `cavalryLPT`.
 
 ### `analytics`
 

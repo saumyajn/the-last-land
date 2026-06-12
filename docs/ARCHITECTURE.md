@@ -34,7 +34,7 @@ Report extraction:
 3. Matched rows are cropped.
 4. Crops are sent to Google Cloud Vision.
 5. OCR text is cleaned into Kills, Losses, Wounded, and Survivors.
-6. Admin users persist report data and trigger KPT aggregation.
+6. Admin users persist report data and trigger KPT/LPT aggregation.
 
 ## Firestore Collections
 
@@ -66,6 +66,6 @@ Do not change these without approval and regression fixtures:
 - Template match thresholds and scale loop
 - Stat parser key matching
 - Damage formulas
-- KPT formulas
+- KPT/LPT formulas
 - Firestore collection/document shapes
 - TSV export shape

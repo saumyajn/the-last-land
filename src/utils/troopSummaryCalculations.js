@@ -17,7 +17,7 @@ export const calculateTroopTypeSummary = (kptData = {}) => {
 
   const totalDenominator = totalLosses + totalWounded + totalSurvivors;
   const globalKPTValue = totalDenominator > 0
-    ? (totalKills - totalLosses - totalWounded) / totalDenominator
+    ? totalKills / totalDenominator
     : 0;
 
   const troopDetails = {};

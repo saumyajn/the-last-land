@@ -33,11 +33,12 @@ Use this map to jump straight to the implementation before changing any calculat
 | Shared stat outputs | Final Archer/Cavalry/Siege damage, multiplier, ratio-weighted Average Damage | `src/utils/statCalculations.js:4-30` |
 | Upload stat outputs | Stats upload path calls the shared helper before saving to Firestore | `src/components/stats/StatsPage.jsx:105-106` |
 | Table stat outputs | DataTable edit/settings path calls the same shared helper | `src/components/stats/DataTable.jsx:96-98` |
-| Shared KPT formula | `KPT = (Kills - Losses - Wounded) / (Losses + Wounded + Survivors)` | `src/utils/kptCalculations.js:5-9` |
-| Report row KPT display | Uses shared row KPT helper | `src/components/report/ReportResults.jsx:60` |
-| Report group KPT display | Uses shared group KPT helper | `src/components/report/ReportResults.jsx:67-69` |
-| Report edit KPT save | Uses shared row/group KPT helpers before Firestore save | `src/components/report/ReportPage.jsx:320-322` |
-| Global troop KPT | Aggregates report docs through shared helper and writes `analytics/troop_type_kpt` | `src/utils/dbActions.js:49-52` |
+| Shared KPT formula | `KPT = Kills / (Losses + Wounded + Survivors)` | `src/utils/kptCalculations.js` |
+| Shared LPT formula | `LPT = (Losses + Wounded) / (Losses + Wounded + Survivors)` | `src/utils/kptCalculations.js` |
+| Report row KPT/LPT display | Uses shared row KPT/LPT helpers | `src/components/report/ReportResults.jsx` |
+| Report group KPT/LPT display | Uses shared group KPT/LPT helpers | `src/components/report/ReportResults.jsx` |
+| Report edit KPT/LPT save | Uses shared row/group KPT/LPT helpers before Firestore save | `src/components/report/ReportPage.jsx` |
+| Global troop KPT/LPT | Aggregates report docs through shared helper and writes `analytics/troop_type_kpt` | `src/utils/dbActions.js` |
 | Shared troop summary | `globalKPT`, `calculatedMarchSize`, guard exception, march percentage | `src/utils/troopSummaryCalculations.js:3-48` |
 | Analytics summary write/display | Uses shared troop summary helper | `src/components/analytics/AnalyticsPage.jsx:40-48`, `src/components/analytics/AnalyticsPage.jsx:73-75` |
 | Export TSV output | Header and row both include Final Archer, Final Siege, Final Cavalry damage | `src/utils/calcs.js:74-87` |
@@ -229,7 +230,7 @@ Current formula:
 
 ```text
 denominator = Losses + Wounded + Survivors
-KPT = (Kills - Losses - Wounded) / denominator
+KPT = Kills / denominator
 ```
 
 Status:
@@ -261,7 +262,7 @@ Current formula:
 ```text
 totals exclude T10_guards
 totalDenominator = totalLosses + totalWounded + totalSurvivors
-globalKPT = (totalKills - totalLosses - totalWounded) / totalDenominator
+globalKPT = totalKills / totalDenominator
 
 for each troop type:
   calculatedMarchSize = Kills / globalKPT

@@ -22,7 +22,7 @@ Do not change these without explicit approval and regression fixtures:
 - Stat parser behavior in `src/utils/parseData.js`.
 - Damage score formula in `src/utils/calcs.js`.
 - Report OCR cleanup and OpenCV threshold behavior in `src/components/report/ReportPage.jsx`.
-- KPT and troop type aggregation behavior in `src/utils/dbActions.js` and analytics pages.
+- KPT/LPT and troop type aggregation behavior in `src/utils/dbActions.js` and analytics pages.
 - Firestore collection and document shapes.
 - Existing admin/viewer workflow.
 
@@ -31,7 +31,7 @@ Do not change these without explicit approval and regression fixtures:
 These are safe because they can be done behind tests without changing outputs:
 
 - Extract report OCR cleanup into a tested utility.
-- Extract report KPT helpers from `ReportPage.jsx`.
+- Keep report KPT/LPT helpers centralized and covered by tests.
 - Extract analytics summary and troop type calculations into pure helpers.
 - Extract OpenCV template matching into a browser-only service module.
 - Keep adding sanitized fixture coverage before moving code.
@@ -103,7 +103,7 @@ Status: in progress.
 
 - Add more sanitized Lord Info stat pages.
 - Add real battle report OCR text fixtures.
-- Add expected analytics/KPT outputs.
+- Add expected analytics KPT/LPT outputs.
 - Keep screenshots with sensitive player data out of the repo unless sanitized.
 
 ### Phase 3: Admin and Security Hardening
@@ -139,6 +139,5 @@ The LLM should not become the silent source of truth for real data.
 ## Known Issues To Investigate
 
 - Negative Damage Received values currently lose their minus sign and are treated as positive.
-- Upload-time average damage and DataTable recalculation use different average formulas.
-- Analytics/KPT formulas are duplicated and should be extracted into pure tested helpers.
+- Analytics summary writes should be fixture-tested against expected Firestore document shapes.
 - Some app status text has encoding artifacts and should be cleaned after behavior tests remain green.
