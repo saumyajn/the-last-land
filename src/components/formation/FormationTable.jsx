@@ -33,12 +33,49 @@ const getSavedOrCalculatedValue = (data, key, calculatedValue) => {
 
 const getMarchSize = (row) => troopValueFields.reduce((sum, field) => sum + (parseFloat(row[field]) || 0), 0);
 
-export default function FormationTable({ label, groupedData = null, isAdmin, type }) {
+const getZeroTroopValues = () => ({
+  troops: 0,
+  at10: 0,
+  at9: 0,
+  at8: 0,
+  at7: 0,
+  ct10: 0,
+  ct9: 0,
+  ct8: 0,
+  ct7: 0,
+  marchSize: 0,
+  total: 0,
+});
+
+const buildFormationPayload = (rows) => {
+  const payload = {};
+  rows.forEach(row => {
+    payload[row.group] = {
+      avgDamage: row.damage,
+      count: row.count,
+      troops: row.troops,
+      at10: row.at10,
+      at9: row.at9,
+      at8: row.at8,
+      at7: row.at7,
+      ct10: row.ct10,
+      ct9: row.ct9,
+      ct8: row.ct8,
+      ct7: row.ct7,
+      marchSize: row.marchSize,
+      total: row.total
+    };
+  });
+  return payload;
+};
+
+export default function FormationTable({ label, groupedData = null, isAdmin, type, recalculateToken = 0 }) {
   const [totalTroopValue, setTotalTroopValue] = useState(0);
   const [ratios, setRatios] = useState({ at10: 0, at9: 0, at8: 0, at7: 0, ct10: 0, ct9: 0, ct8: 0, ct7: 0 });
   const [rows, setRows] = useState([]);
   const [isEdited, setIsEdited] = useState(false);
   const previousGroupedData = useRef(null);
+  const previousRecalculateToken = useRef(recalculateToken);
   const { showNoPermission } = usePermissionSnackbar();
 
   const settingDocName = useMemo(
@@ -60,6 +97,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       const formationData = formationSnap.exists() ? formationSnap.data() : {};
       const thresholdData = thresholdsSnap.exists() ? normalizeThresholds(thresholdsSnap.data().thresholds) : [];
       const colorOrder = thresholdData.map(t => t.name);
+      const shouldForceRecalculate = previousRecalculateToken.current !== recalculateToken;
 
       const totalTroops = parseFloat(settingData.damage_troops || 0);
 
@@ -97,14 +135,14 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
         const calculatedCt8 = MathRound((troops * (settingData.ct8 || 0) / 100) / 1000);
         const calculatedCt7 = MathRound((troops * (settingData.ct7 || 0) / 100) / 1000);
 
-        const at10 = getSavedOrCalculatedValue(data, "at10", calculatedAt10);
-        const at9 = getSavedOrCalculatedValue(data, "at9", calculatedAt9);
-        const at8 = getSavedOrCalculatedValue(data, "at8", calculatedAt8);
-        const at7 = getSavedOrCalculatedValue(data, "at7", calculatedAt7);
-        const ct10 = getSavedOrCalculatedValue(data, "ct10", calculatedCt10);
-        const ct9 = getSavedOrCalculatedValue(data, "ct9", calculatedCt9);
-        const ct8 = getSavedOrCalculatedValue(data, "ct8", calculatedCt8);
-        const ct7 = getSavedOrCalculatedValue(data, "ct7", calculatedCt7);
+        const at10 = shouldForceRecalculate ? calculatedAt10 : getSavedOrCalculatedValue(data, "at10", calculatedAt10);
+        const at9 = shouldForceRecalculate ? calculatedAt9 : getSavedOrCalculatedValue(data, "at9", calculatedAt9);
+        const at8 = shouldForceRecalculate ? calculatedAt8 : getSavedOrCalculatedValue(data, "at8", calculatedAt8);
+        const at7 = shouldForceRecalculate ? calculatedAt7 : getSavedOrCalculatedValue(data, "at7", calculatedAt7);
+        const ct10 = shouldForceRecalculate ? calculatedCt10 : getSavedOrCalculatedValue(data, "ct10", calculatedCt10);
+        const ct9 = shouldForceRecalculate ? calculatedCt9 : getSavedOrCalculatedValue(data, "ct9", calculatedCt9);
+        const ct8 = shouldForceRecalculate ? calculatedCt8 : getSavedOrCalculatedValue(data, "ct8", calculatedCt8);
+        const ct7 = shouldForceRecalculate ? calculatedCt7 : getSavedOrCalculatedValue(data, "ct7", calculatedCt7);
 
 
         return {
@@ -134,18 +172,18 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
         groupedRows.forEach((newRow) => {
           const idx = formattedRows.findIndex(r => r.group === newRow.group);
-          if (idx !== -1 && newRow.isUpdated) {
-            formattedRows[idx].damage = newRow.damage;
+          if (idx !== -1) {
+            formattedRows[idx] = {
+              ...formattedRows[idx],
+              damage: newRow.damage,
+              ...(newRow.isUpdated ? {} : getZeroTroopValues()),
+            };
           } else if (idx === -1) {
             formattedRows.push({
               group: newRow.group,
               damage: newRow.damage,
               count: newRow.isUpdated ? 1 : 0,
-              troops: 0,
-              at10: 0, at9: 0, at8: 0, at7: 0,
-              ct10: 0, ct9: 0, ct8: 0, ct7: 0,
-              marchSize: 0,
-              total: 0
+              ...getZeroTroopValues(),
             });
           }
         });
@@ -156,10 +194,14 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
       setRows(formattedRows);
       setIsEdited(false);
+      if ((shouldForceRecalculate || groupedData) && isAdmin) {
+        await setDoc(doc(db, "formation", `${label}`), buildFormationPayload(formattedRows));
+      }
+      previousRecalculateToken.current = recalculateToken;
     } catch (err) {
       console.error("Error fetching formation:", err);
     }
-  }, [groupedData, label, settingDocName]);
+  }, [groupedData, isAdmin, label, recalculateToken, settingDocName]);
 
   useEffect(() => {
     loadFormationData();
@@ -230,27 +272,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
     const uploadToFirestore = async () => {
       if (!isAdmin || !isEdited) return;
       try {
-        const payload = {};
-        rows.forEach(row => {
-          payload[row.group] = {
-            avgDamage: row.damage,
-            count: row.count,
-            troops: row.troops,
-            at10: row.at10,
-            at9: row.at9,
-            at8: row.at8,
-            at7: row.at7,
-
-            ct10: row.ct10,
-            ct9: row.ct9,
-            ct8: row.ct8,
-            ct7: row.ct7,
-
-            marchSize: row.marchSize,
-            total: row.total
-          };
-        });
-        await setDoc(doc(db, "formation", `${label}`), payload);
+        await setDoc(doc(db, "formation", `${label}`), buildFormationPayload(rows));
         if (process.env.NODE_ENV === "development") {
           console.log("Formation data uploaded successfully.");
         }

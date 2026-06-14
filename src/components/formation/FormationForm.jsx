@@ -5,7 +5,7 @@ import { db } from "../../utils/firebase";
 
 import { usePermissionSnackbar } from "../Permissions";
 
-export default function FormationForm({ label, formState, setFormState, isAdmin }) {
+export default function FormationForm({ label, formState, setFormState, isAdmin, onSaved }) {
   const docName = (label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation")
 
 
@@ -36,6 +36,8 @@ export default function FormationForm({ label, formState, setFormState, isAdmin 
         damage_troops: calcDamage(formState.total, formState.guards),
       };
       await setDoc(doc(db, "settings", docName), payload);
+      setFormState(payload);
+      onSaved?.(payload);
       if (process.env.NODE_ENV === "development") {
         console.log("Saved", docName);
       }

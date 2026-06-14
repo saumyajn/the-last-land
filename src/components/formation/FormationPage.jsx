@@ -27,6 +27,8 @@ export default function FormationPage() {
 
   const [form1, setForm1] = useState({ total: "", guards: "", damage_troops: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
   const [form2, setForm2] = useState({ total: "", guards: "", damage_troops: "", at10: "", at9: "", at8: "", at7: "", ct10: "", ct9: "", ct8: "", ct7: "" });
+  const [towerFormationRefresh, setTowerFormationRefresh] = useState(0);
+  const [throneFormationRefresh, setThroneFormationRefresh] = useState(0);
 
   // 🔥 Moved the fetch logic here! It now runs fresh every time this page opens.
   useEffect(() => {
@@ -213,8 +215,8 @@ export default function FormationPage() {
           <Grid item xs={12}>
             <Paper elevation={0} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
-              <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} />
-              <FormationTable label="tower_formation" groupedData={groupedAverageData} isAdmin={isAdmin} />
+              <FormationForm label="Tower Formation" formState={form1} setFormState={setForm1} isAdmin={isAdmin} onSaved={() => setTowerFormationRefresh((value) => value + 1)} />
+              <FormationTable label="tower_formation" groupedData={groupedAverageData} isAdmin={isAdmin} recalculateToken={towerFormationRefresh} />
             </Paper>
           </Grid>
         </Grid>
@@ -231,8 +233,8 @@ export default function FormationPage() {
           <Grid item xs={12}>
             <Paper elevation={0} sx={paperStyles}>
               <Typography variant="h6" sx={titleStyles}>Formation</Typography>
-              <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} />
-              <FormationTable label="throne_formation" groupedData={groupedAverageData} isAdmin={isAdmin} />
+              <FormationForm label="Throne Formation" formState={form2} setFormState={setForm2} isAdmin={isAdmin} onSaved={() => setThroneFormationRefresh((value) => value + 1)} />
+              <FormationTable label="throne_formation" groupedData={groupedAverageData} isAdmin={isAdmin} recalculateToken={throneFormationRefresh} />
             </Paper>
           </Grid>
         </Grid>
