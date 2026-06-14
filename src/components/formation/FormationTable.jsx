@@ -7,6 +7,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
   TableRow,
   Typography,
@@ -32,6 +33,7 @@ const getSavedOrCalculatedValue = (data, key, calculatedValue) => {
 };
 
 const getMarchSize = (row) => troopValueFields.reduce((sum, field) => sum + (parseFloat(row[field]) || 0), 0);
+const getTotal = (marchSize, count) => ((parseFloat(marchSize) || 0) * (parseFloat(count) || 0)).toFixed(2);
 
 const getZeroTroopValues = () => ({
   troops: 0,
@@ -145,6 +147,8 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
         const ct7 = shouldForceRecalculate ? calculatedCt7 : getSavedOrCalculatedValue(data, "ct7", calculatedCt7);
 
 
+        const marchSize = getMarchSize({ at10, at9, at8, at7, ct10, ct9, ct8, ct7 });
+
         return {
           group,
           damage,
@@ -152,8 +156,8 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
           troops: isNaN(troops) ? 0 : troops,
           at10, at9, at8, at7,
           ct10, ct9, ct8, ct7,
-          marchSize: getMarchSize({ at10, at9, at8, at7, ct10, ct9, ct8, ct7 }),
-          total: (troops * count).toFixed(2)
+          marchSize,
+          total: getTotal(marchSize, count)
         };
       });
 
@@ -192,6 +196,8 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       }
 
       formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
+      console.log(formattedRows);
+     
       setRows(formattedRows);
       setIsEdited(false);
       if ((shouldForceRecalculate || groupedData) && isAdmin) {
@@ -237,7 +243,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       row.ct8 = MathRound(troops * ratios.ct8 / 1000);
       row.ct7 = MathRound(troops * ratios.ct7 / 1000);
       row.marchSize = getMarchSize(row);
-      row.total = (row.troops * row.count).toFixed(2);
+      row.total = getTotal(row.marchSize, row.count);
     });
 
     setRows(updated);
@@ -261,6 +267,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
         [field]: value === "" ? "" : numericValue
       };
       next.marchSize = getMarchSize(next);
+      next.total = getTotal(next.marchSize, next.count);
       return next;
     });
 
@@ -289,6 +296,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
     navigator.clipboard.writeText(text);
   };
   const totalDamage = rows.reduce((sum, row) => sum + row.damage * row.count, 0).toFixed(2);
+  const totalColumnSum = rows.reduce((sum, row) => sum + (parseFloat(row.total) || 0), 0).toFixed(2);
   const renderTroopInput = (row, idx, field) => (
     <TextField
       type="number"
@@ -410,6 +418,17 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                 </TableRow>
               ))}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={13} align="right" sx={{ fontWeight: 900, backgroundColor: "#f8fafc", color: "text.primary" }}>
+                  Total Column Sum
+                </TableCell>
+                <TableCell sx={{ fontWeight: 900, backgroundColor: "#f8fafc", color: "text.primary", fontVariantNumeric: "tabular-nums" }}>
+                  {totalColumnSum}
+                </TableCell>
+                <TableCell sx={{ backgroundColor: "#f8fafc" }} />
+              </TableRow>
+            </TableFooter>
           </Table>
         </TableContainer>
       </Paper>
