@@ -5,7 +5,7 @@ import { db } from "../../utils/firebase";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 // IMPORTANT: Replace with your deployed Web App URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKyzJuUNorasJxN7H8E3GMAr_mgA26vGr03JyZFvPLhzobz4jPcay1PZySKd0bTZMy/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCG9CyqzdgH-veca-87RyYnsKcZYyx2sd5UWmnScr-9qMbZK5VNACrAJrpEDwG1ZTt/exec";
 
 export default function ExportToGoogleSheet() {
   const [exporting, setExporting] = useState(false);
@@ -70,7 +70,8 @@ export default function ExportToGoogleSheet() {
 }
 
 /**
- function doPost(e) {
+
+function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -89,11 +90,11 @@ export default function ExportToGoogleSheet() {
       "T8_siege", "T7_cavalry", "T7_archer"
     ];
 
-    sheet.appendRow(["TROOP TYPE KPT/LPT SUMMARY"]);
+    sheet.appendRow(["TROOP TYPE KPT SUMMARY"]);
     var troopHeaders = ["Troop Type", "Kills", "Losses", "Wounded", "Survivors", "KPT", "LPT", "March Size", "% of March"];
     sheet.appendRow(troopHeaders);
 
-    troopOrder.forEach(function(type) {
+    troopOrder.forEach(function (type) {
       var s = troopDetails[type] || {};
       sheet.appendRow([
         type,
@@ -111,7 +112,7 @@ export default function ExportToGoogleSheet() {
     // Add Totals row for Troop Table
     var t = troopData.totals || {};
     sheet.appendRow(["TOTAL", t.Kills, t.Losses, t.Wounded, t.Survivors, t.KPT, t.LPT, t.totalMarchSize, "100.00%"]);
-    
+
     // Style Troop Table
     sheet.getRange(1, 1, 1, 9).setFontWeight("bold").setBackground("#cfe2f3");
     sheet.getRange(2, 1, 1, 9).setFontWeight("bold");
@@ -124,11 +125,11 @@ export default function ExportToGoogleSheet() {
     // --- SECTION B: PLAYER FINAL STATS (Archer & Cavalry Side-by-Side) ---
     var archerData = data.archer_final || {};
     var cavalryData = data.cavalry_final || {};
-    var archerPlayers = Object.keys(archerData).filter(function(p) { return p !== "id"; });
-    var cavalryPlayers = Object.keys(cavalryData).filter(function(p) { return p !== "id"; });
+    var archerPlayers = Object.keys(archerData).filter(function (p) { return p !== "id"; });
+    var cavalryPlayers = Object.keys(cavalryData).filter(function (p) { return p !== "id"; });
 
     var playerStartRow = sheet.getLastRow() + 2;
-    sheet.appendRow(["ARCHER FINAL", "", "", "", "", "", "", "CAVALRY FINAL"]);
+    sheet.appendRow(["ARCHER FINAL", "", "", "", "", "", "", "", "CAVALRY FINAL"]);
     sheet.appendRow(["Player Name", "Kills", "Damage", "Troops", "KPT", "LPT", "", "", "Player Name", "Kills", "Damage", "Troops", "KPT", "LPT"]);
 
     var maxRows = Math.max(archerPlayers.length, cavalryPlayers.length);
@@ -140,7 +141,7 @@ export default function ExportToGoogleSheet() {
         var aS = archerData[aP];
         row.push(aP, aS.kills || 0, aS.damage || 0, aS.troops || 0, aS.kpt || "0", aS.lpt || "0");
       } else {
-        row.push("", "", "", "", "", "");
+        row.push("", "", "", "", "");
       }
       // Gap
       row.push("", "");
@@ -150,7 +151,7 @@ export default function ExportToGoogleSheet() {
         var cS = cavalryData[cP];
         row.push(cP, cS.kills || 0, cS.damage || 0, cS.troops || 0, cS.kpt || "0", cS.lpt || "0");
       } else {
-        row.push("", "", "", "", "", "");
+        row.push("", "", "", "", "");
       }
       sheet.appendRow(row);
     }
