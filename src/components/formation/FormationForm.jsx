@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Paper, Grid, TextField, Button, Stack, Divider } from "@mui/material";
+import { Paper, Grid, TextField, Button, Stack, Divider, Box, Typography } from "@mui/material";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 
@@ -59,6 +59,13 @@ export default function FormationForm({ label, formState, setFormState, isAdmin,
       return next;
     });
   };
+
+  const getPercentValue = (key) => Number(formState[key]) || 0;
+  const archerPercentTotal = getPercentValue("at10") + getPercentValue("at9") + getPercentValue("at8") + getPercentValue("at7");
+  const cavalryPercentTotal = getPercentValue("ct10") + getPercentValue("ct9") + getPercentValue("ct8") + getPercentValue("ct7");
+  const formationPercentTotal = archerPercentTotal + cavalryPercentTotal;
+  const isFormationTotalValid = Math.abs(formationPercentTotal - 100) < 0.001;
+
   return (
     <Paper elevation={0} sx={{
       p: { xs: 1.5, md: 2 },
@@ -169,6 +176,30 @@ export default function FormationForm({ label, formState, setFormState, isAdmin,
           />
         </Grid>
       </Grid>
+      <Box
+        sx={{
+          mt: 2,
+          p: 1.25,
+          borderRadius: 2,
+          border: "1px solid",
+          borderColor: isFormationTotalValid ? "rgba(22,163,74,0.28)" : "rgba(220,38,38,0.28)",
+          backgroundColor: isFormationTotalValid ? "rgba(22,163,74,0.08)" : "rgba(220,38,38,0.08)",
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", sm: "center" }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 800, color: "text.primary" }}>
+            Total: {formationPercentTotal.toFixed(1)}%
+          </Typography>
+          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
+            Archers {archerPercentTotal.toFixed(1)}% + Cavalry {cavalryPercentTotal.toFixed(1)}% = 100%
+          </Typography>
+        </Stack>
+      </Box>
       <Stack direction="row" justifyContent="flex-end" mt={2}>
         <Button variant="contained" size="small" onClick={handleSave}>Save</Button>
       </Stack>
