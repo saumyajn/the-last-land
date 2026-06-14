@@ -14,7 +14,7 @@ import { signInWithGoogle, logout } from "../utils/auth";
 import { AuthContext } from "../utils/authContext"
 
 export default function Header() {
-  const { user, isAdmin } = useContext(AuthContext);
+  const { user, isAdmin, isEmulatorMode } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -29,7 +29,7 @@ export default function Header() {
   const handleMenuClose = () => setAnchorEl(null);
 
   const isMenuOpen = Boolean(anchorEl);
-  const roleLabel = isAdmin ? "Admin" : "View only";
+  const roleLabel = isEmulatorMode ? "Emulator Admin" : (isAdmin ? "Admin" : "View only");
   const roleIcon = isAdmin ? <AdminPanelSettingsIcon /> : <VisibilityIcon />;
 
   return (
@@ -86,9 +86,11 @@ export default function Header() {
                   keepMounted
                 >
                   <MenuItem disabled>{user.displayName} ({roleLabel})</MenuItem>
-                  <MenuItem onClick={() => { logout(); handleMenuClose(); }}>
-                    <LogoutIcon sx={{ mr: 1 }} /> Logout
-                  </MenuItem>
+                  {!isEmulatorMode && (
+                    <MenuItem onClick={() => { logout(); handleMenuClose(); }}>
+                      <LogoutIcon sx={{ mr: 1 }} /> Logout
+                    </MenuItem>
+                  )}
                 </Menu>
               </>
             ) : (
@@ -108,9 +110,11 @@ export default function Header() {
                     '& .MuiChip-icon': { color: 'inherit' },
                   }}
                 />
-                <Button variant="outlined" size="small" color="primary" onClick={logout}>
-                  <LogoutIcon sx={{ mr: 1 }} /> Logout
-                </Button>
+                {!isEmulatorMode && (
+                  <Button variant="outlined" size="small" color="primary" onClick={logout}>
+                    <LogoutIcon sx={{ mr: 1 }} /> Logout
+                  </Button>
+                )}
               </>
             )
           ) : (

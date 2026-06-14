@@ -23,6 +23,14 @@ import {
   calculateGroupKPT,
   calculateGroupLPT,
 } from "../../utils/kptCalculations";
+import {
+  buildReportEntryFromOcr,
+  DEFAULT_REPORT_CROP_WIDTH_MULTIPLIER,
+  DEFAULT_REPORT_MATCH_THRESHOLD,
+  DEFAULT_REPORT_OCR_SCALE,
+  rectanglesOverlap,
+} from "../../utils/reportExtraction";
+import { ensureOpenCvReady, isOpenCvReady } from "../../utils/opencvLoader";
 
 const templateMap = Object.fromEntries(TROOP_ORDER.map((troopType) => [troopType, [troopType]]));
 const templateKeys = Object.keys(templateMap);
@@ -37,10 +45,16 @@ export default function ReportPage() {
   const [customPlayerName, setCustomPlayerName] = useState("");
   const [playerOptions, setPlayerOptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isCvLoaded, setIsCvLoaded] = useState(!!(window.cv && window.cv.imread));
+  const [isCvLoaded, setIsCvLoaded] = useState(isOpenCvReady());
+  const [cvLoadError, setCvLoadError] = useState(false);
   const canvasRef = useRef();
   const mainImageUrlRef = useRef(null);
   const { showNoPermission } = usePermissionSnackbar();
+
+  const getImageSelectedStatus = () =>
+    isOpenCvReady()
+      ? "Image selected"
+      : "Image selected. OpenCV is still initializing...";
 
   const setMainImageFromFile = (file, nextStatus) => {
     if (mainImageUrlRef.current) {
@@ -67,16 +81,35 @@ export default function ReportPage() {
   }, []);
 
   useEffect(() => {
-    if (isCvLoaded) return;
+    let isMounted = true;
 
-    const handleCvLoad = () => {
+    if (isOpenCvReady()) {
       setIsCvLoaded(true);
       setStatus("✅ OpenCV Ready");
-    };
+      return () => {
+        isMounted = false;
+      };
+    }
 
-    window.addEventListener('opencv-loaded', handleCvLoad);
-    return () => window.removeEventListener('opencv-loaded', handleCvLoad);
-  }, [isCvLoaded]);
+    ensureOpenCvReady()
+      .then(() => {
+        if (!isMounted) return;
+        setCvLoadError(false);
+        setIsCvLoaded(true);
+        setStatus("✅ OpenCV Ready");
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error("OpenCV failed to initialize:", error);
+        setCvLoadError(true);
+        setIsCvLoaded(false);
+        setStatus("❌ OpenCV failed to load. Check your network and refresh the page.");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const fetchAllReports = async () => {
@@ -123,7 +156,11 @@ export default function ReportPage() {
           const file = item.getAsFile();
           if (file) {
             setMainImageFromFile(file);
-            setStatus("📥 Image pasted from clipboard");
+            setStatus(
+              isOpenCvReady()
+                ? "📥 Image pasted from clipboard"
+                : "📥 Image pasted. OpenCV is still initializing...",
+            );
           }
         }
       }
@@ -136,11 +173,17 @@ export default function ReportPage() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setMainImageFromFile(file, "Image selected");
+    setMainImageFromFile(file, getImageSelectedStatus());
   };
 
   const processImage = async () => {
     const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
+
+    if (!isOpenCvReady()) {
+      setIsCvLoaded(false);
+      setStatus("⏳ OpenCV is still initializing. Please wait a moment and try again.");
+      return;
+    }
 
     if (!mainImage || !finalPlayerName) {
       setStatus("❌ Please select an image and enter a player name.");
@@ -162,8 +205,11 @@ export default function ReportPage() {
       srcColor.delete();
 
       const resultData = {};
+      const acceptedMatches = [];
+      let bestCandidate = { troopType: "", score: 0 };
 
       for (const [troopType, variants] of Object.entries(templateMap)) {
+        if (resultData[troopType]) continue;
         let matchFound = false;
 
         for (const variant of variants) {
@@ -209,49 +255,91 @@ export default function ReportPage() {
             resizedTemplate.delete();
           }
 
-          const threshold = 0.65;
           if (process.env.NODE_ENV === "development") {
             console.log(`Matching ${variant}: Best maxVal=${bestMatch.maxVal.toFixed(3)} at scale ${bestMatch.scale.toFixed(1)}`);
           }
+          if (bestMatch.maxVal > bestCandidate.score) {
+            bestCandidate = { troopType: variant, score: bestMatch.maxVal };
+          }
 
-          if (bestMatch.maxVal >= threshold) {
+          if (bestMatch.maxVal >= DEFAULT_REPORT_MATCH_THRESHOLD) {
             const x = bestMatch.maxLoc.x;
             const paddingY = 8; 
             const y = Math.max(0, bestMatch.maxLoc.y - paddingY);
             
             const h = bestMatch.height + (paddingY * 2);
-            const rightWidth = mainImage.width - (x + bestMatch.width);
+            const matchRect = { x, y, width: bestMatch.width, height: h };
+            const overlappingMatch = acceptedMatches.find((match) =>
+              rectanglesOverlap(match.rect, matchRect),
+            );
+
+            if (overlappingMatch && overlappingMatch.score >= bestMatch.maxVal) {
+              if (process.env.NODE_ENV === "development") {
+                console.log(
+                  `Skipped ${variant}: overlaps ${overlappingMatch.troopType} with an equal or higher score.`,
+                );
+              }
+              originalTemplate.delete();
+              continue;
+            }
+
+            const cropX = x + bestMatch.width;
+            const maxCropWidth = Math.round(bestMatch.width * DEFAULT_REPORT_CROP_WIDTH_MULTIPLIER);
+            const rightWidth = Math.min(mainImage.width - cropX, maxCropWidth);
+            if (rightWidth <= 0) {
+              originalTemplate.delete();
+              continue;
+            }
 
             const cropCanvas = document.createElement("canvas");
-            cropCanvas.width = rightWidth;
-            cropCanvas.height = h;
+            cropCanvas.width = rightWidth * DEFAULT_REPORT_OCR_SCALE;
+            cropCanvas.height = h * DEFAULT_REPORT_OCR_SCALE;
             const cropCtx = cropCanvas.getContext("2d");
+            cropCtx.imageSmoothingEnabled = false;
 
             cropCtx.drawImage(
               mainImage,
-              x + bestMatch.width, y,
+              cropX, y,
               rightWidth, h,
               0, 0,
-              rightWidth, h
+              cropCanvas.width, cropCanvas.height
             );
 
-            const base64 = await fileToBase64(await fetch(cropCanvas.toDataURL()).then(r => r.blob()));
-            const ocrText = await detectText(base64);
-
-            const cleanValues = ocrText
-              .replace(/[Oo]/g, '0')
-              .replace(/[,.]/g, '')
-              .replace(/[^0-9\s]/g, ' ')
-              .split(/\s+/)
-              .filter(Boolean)
-              .slice(0, labels.length);
-
-            const entry = {};
-            labels.forEach((label, i) => {
-              entry[label] = cleanValues[i] || "0";
+            const cropBlob = await new Promise((resolve) => {
+              cropCanvas.toBlob(resolve, "image/png");
             });
+            if (!cropBlob) {
+              originalTemplate.delete();
+              continue;
+            }
+
+            const base64 = await fileToBase64(cropBlob);
+            const ocrText = await detectText(base64);
+            const { entry, isValid, values } = buildReportEntryFromOcr(ocrText, labels);
+
+            if (!isValid) {
+              if (process.env.NODE_ENV === "development") {
+                console.log(`Skipped ${variant}: OCR did not produce a full report row.`, values, ocrText);
+              }
+              originalTemplate.delete();
+              continue;
+            }
+
+            if (overlappingMatch) {
+              delete resultData[overlappingMatch.troopType];
+              const overlappingIndex = acceptedMatches.indexOf(overlappingMatch);
+              if (overlappingIndex >= 0) {
+                acceptedMatches.splice(overlappingIndex, 1);
+              }
+              if (process.env.NODE_ENV === "development") {
+                console.log(
+                  `Replacing ${overlappingMatch.troopType} (${overlappingMatch.score.toFixed(3)}) with ${variant} (${bestMatch.maxVal.toFixed(3)}) for the same row.`,
+                );
+              }
+            }
 
             resultData[troopType] = entry;
+            acceptedMatches.push({ troopType, rect: matchRect, score: bestMatch.maxVal });
             if (process.env.NODE_ENV === "development") {
               console.log(`Matched ${variant} with values:`, entry);
             }
@@ -265,6 +353,15 @@ export default function ReportPage() {
       }
 
       src.delete();
+
+      if (Object.keys(resultData).length === 0) {
+        const bestScore = bestCandidate.score.toFixed(3);
+        setStatus(
+          `⚠️ No report rows were extracted, so nothing was saved. Best icon match: ${bestCandidate.troopType || "none"} (${bestScore}); threshold is ${DEFAULT_REPORT_MATCH_THRESHOLD}.`,
+        );
+        return;
+      }
+
       if (!isAdmin) {
         showNoPermission();
         return;
@@ -292,7 +389,11 @@ export default function ReportPage() {
       setStatus("✅ Match results saved & Global Analytics Updated.");
     } catch (err) {
       console.error("Matching failed", err);
-      setStatus("❌ Error during image processing");
+      setStatus(
+        err?.name === "OcrError"
+          ? `❌ OCR failed: ${err.message}`
+          : "❌ Error during image processing",
+      );
     } finally {
       setLoading(false);
     }
@@ -396,7 +497,7 @@ export default function ReportPage() {
           onClick={processImage}
           disabled={loading || !isCvLoaded}
         >
-          {!isCvLoaded ? "Initializing Engine..." : (loading ? <CircularProgress size={20} /> : "Upload & Scan")}
+          {!isCvLoaded ? (cvLoadError ? "Engine Load Failed" : "Initializing Engine...") : (loading ? <CircularProgress size={20} /> : "Upload & Scan")}
         </Button>
       </Box>
       <Typography variant="body2" color="text.secondary">{status}</Typography>

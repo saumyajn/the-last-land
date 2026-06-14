@@ -8,6 +8,7 @@ import Header from "./components/Header";
 import HomeTabs from "./components/HomeTabs";
 import Footer from "./components/Footer";
 import { appTheme } from "./utils/theme";
+import { shouldUseFirebaseEmulators } from "./utils/firebaseEnv";
 
 import { getAuth, onAuthStateChanged, getRedirectResult } from "firebase/auth";
 
@@ -42,6 +43,10 @@ function PageLoading() {
 
 export default function App() {
   useEffect(() => {
+    if (shouldUseFirebaseEmulators) {
+      return undefined;
+    }
+
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (process.env.NODE_ENV === 'development') {

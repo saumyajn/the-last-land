@@ -202,14 +202,14 @@ export const reportOcrCleanupFixtures = [
   {
     id: "synthetic-report-row-noisy-ocr",
     description:
-      "Documents the current report cleanup expectation after OCR: O/O becomes 0, punctuation is removed, and the first four values map to labels.",
+      "Documents report cleanup after OCR: O/O becomes 0 only inside numeric-looking values, punctuation is removed, and the first four values map to labels.",
     rawText: "12,O34 56.7 8,901 Survivors 2345 extra",
-    expectedCleanValues: ["12034", "567", "8901", "0"],
+    expectedCleanValues: ["12034", "567", "8901", "2345"],
     expectedEntry: {
       Kills: "12034",
       Losses: "567",
       Wounded: "8901",
-      Survivors: "0",
+      Survivors: "2345",
     },
   },
 ];

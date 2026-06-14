@@ -20,7 +20,6 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import { getAuth } from "firebase/auth";
 import { computeKPT, computeLPT, sumReportEntries } from "../../utils/kptCalculations";
 
 export default function AnalyticsSummary({ isAdmin }) {
@@ -29,8 +28,6 @@ export default function AnalyticsSummary({ isAdmin }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "desc" });
 
   useEffect(() => {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
     const fetchAllPlayerStats = async () => {
       try {
         const [reportSnap, statSnap] = await Promise.all([
@@ -125,7 +122,7 @@ export default function AnalyticsSummary({ isAdmin }) {
             damage: player.cavalryDamage
           };
         });
-        if (!currentUser || !isAdmin) {
+        if (!isAdmin) {
           return;
         }
         await Promise.all([

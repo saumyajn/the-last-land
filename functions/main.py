@@ -2,9 +2,112 @@ from firebase_functions import https_fn, options, firestore_fn
 import google.cloud.firestore
 from firebase_admin import initialize_app, firestore
 from google.cloud import vision
+from google.api_core.exceptions import PermissionDenied
+from google.auth.exceptions import DefaultCredentialsError
 import json
+import os
 
 app = initialize_app()
+
+
+def is_running_in_emulator() -> bool:
+    return (
+        os.environ.get("FUNCTIONS_EMULATOR") == "true"
+        or os.environ.get("FIREBASE_EMULATOR_HUB") is not None
+        or os.environ.get("FIREBASE_AUTH_EMULATOR_HOST") is not None
+    )
+
+
+def bounding_poly_to_box(bounding_poly) -> dict:
+    vertices = bounding_poly.vertices or []
+    xs = [vertex.x for vertex in vertices if vertex.x is not None]
+    ys = [vertex.y for vertex in vertices if vertex.y is not None]
+
+    if not xs or not ys:
+        return {"x": 0, "y": 0, "width": 0, "height": 0}
+
+    left = min(xs)
+    top = min(ys)
+    return {
+        "x": left,
+        "y": top,
+        "width": max(xs) - left,
+        "height": max(ys) - top,
+    }
+
+
+def collect_vision_words(full_text_annotation) -> list:
+    words = []
+
+    for page in full_text_annotation.pages:
+        for block in page.blocks:
+            for paragraph in block.paragraphs:
+                for word in paragraph.words:
+                    text = "".join(symbol.text for symbol in word.symbols).strip()
+                    if not text:
+                        continue
+
+                    box = bounding_poly_to_box(word.bounding_box)
+                    words.append(
+                        {
+                            "text": text,
+                            "x": box["x"],
+                            "y": box["y"],
+                            "width": box["width"],
+                            "height": box["height"],
+                        }
+                    )
+
+    return words
+
+
+def extract_text_with_google_vision(base64_image: str, include_words: bool = False) -> dict:
+    try:
+        client = vision.ImageAnnotatorClient()
+        image = vision.Image(content=base64_image)
+        response = client.document_text_detection(image=image)
+    except DefaultCredentialsError as exc:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+            message=(
+                "Google Vision credentials are missing. For local emulator OCR, "
+                "run `gcloud auth application-default login` or set "
+                "GOOGLE_APPLICATION_CREDENTIALS to a service account JSON file."
+            ),
+        ) from exc
+    except PermissionDenied as exc:
+        error_text = str(exc)
+        if "USER_PROJECT_DENIED" in error_text or "serviceusage.services.use" in error_text:
+            message = (
+                "Google Vision permission denied for project image-to-data-9a90b. "
+                "Grant the caller Service Usage Consumer on that Google Cloud project, "
+                "then run `gcloud auth application-default set-quota-project image-to-data-9a90b`, "
+                "or use a service account JSON with Vision access."
+            )
+        else:
+            message = (
+                "Google Vision permission denied. Grant the caller Cloud Vision API User "
+                "or use a service account JSON with Vision access."
+            )
+
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message=message,
+        ) from exc
+    except Exception as exc:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Google Vision OCR failed: {str(exc)}",
+        ) from exc
+
+    full_text_annotation = response.full_text_annotation
+    texts = full_text_annotation.text if full_text_annotation else ""
+    result = {"text": texts if texts else "No text found."}
+
+    if include_words and full_text_annotation:
+        result["words"] = collect_vision_words(full_text_annotation)
+
+    return result
 
 
 @https_fn.on_request(min_instances=0)
@@ -42,18 +145,7 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
 
     # --- 3. GOOGLE VISION API ---
     try:
-        client = vision.ImageAnnotatorClient()
-        image = vision.Image(content=base64_image)
-
-        # Call Google Cloud to detect text
-        response = client.document_text_detection(image=image)
-        texts = response.full_text_annotation.text
-
-        if not texts:
-            response_data = {"text": "No text found."}
-        else:
-            # The first element contains the full text
-            response_data = {"text": texts}
+        response_data = extract_text_with_google_vision(base64_image)
 
         return https_fn.Response(
             json.dumps(response_data),
@@ -62,10 +154,10 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
             content_type="application/json",
         )
 
-    except Exception as e:
-        print(f"Vision API Error: {e}")
+    except https_fn.HttpsError as e:
+        print(f"Vision API Error: {e.message}")
         return https_fn.Response(
-            json.dumps({"error": f"Server Error: {str(e)}"}),
+            json.dumps({"error": e.message}),
             status=500,
             headers=cors_headers,
             content_type="application/json",
@@ -78,15 +170,23 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
         cors_origins=[
             "https://the-last-land-analytics.vercel.app",
             "http://localhost:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:3001",
         ],
         cors_methods=["get", "post"],
     )
 )
 def process_image_ocr(req: https_fn.CallableRequest):
+    is_emulator = is_running_in_emulator()
+
     if req.auth is None:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED, message="Log in first!"
-        )
+        if not is_emulator:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.UNAUTHENTICATED, message="Log in first!"
+            )
+    elif is_emulator:
+        print("Functions emulator detected; treating OCR caller as local admin.")
 
     # Keep this list synchronized with src/utils/config.js until admin roles are moved
     # to Firebase custom claims or a Firestore-backed role document.
@@ -102,20 +202,16 @@ def process_image_ocr(req: https_fn.CallableRequest):
         "coemaincastle@gmail.com",
     ]
 
-    user_email = req.auth.token.get("email")
-    if user_email not in allowed_admins:
+    user_email = req.auth.token.get("email") if req.auth is not None else None
+    if not is_emulator and user_email not in allowed_admins:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED, message="Admins only!"
         )
 
-    # 3. OCR LOGIC: Call Google Vision
-    client = vision.ImageAnnotatorClient()
-    # req.data["image"] is the base64 string sent from your frontend
-    image = vision.Image(content=req.data["image"])
-    response = client.document_text_detection(image=image)
-
-    texts = response.full_text_annotation.text
-    return {"text": texts if texts else "No text found."}
+    return extract_text_with_google_vision(
+        req.data["image"],
+        bool(req.data.get("includeWords")),
+    )
 
 
 # @firestore_fn.on_document_created(document="reports/{reportId}")

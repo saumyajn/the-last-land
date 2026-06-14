@@ -1,19 +1,11 @@
 import { calcs } from "./calcs";
 import { parseData } from "./parseData";
+import { buildReportEntryFromOcr, cleanReportOcrValues } from "./reportExtraction";
 import {
   reportOcrCleanupFixtures,
   STAT_DESIRED_KEYS,
   statOcrFixtures,
 } from "../testFixtures/lastLandFixtures";
-
-const cleanReportOcrValuesLikeReportPage = (ocrText) =>
-  ocrText
-    .replace(/[Oo]/g, "0")
-    .replace(/[,.]/g, "")
-    .replace(/[^0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 4);
 
 describe("Last Land fixture dataset", () => {
   let consoleSpy;
@@ -47,13 +39,8 @@ describe("Last Land fixture dataset", () => {
   it.each(reportOcrCleanupFixtures)(
     "documents current report OCR cleanup expectation: $id",
     (fixture) => {
-      const cleanValues = cleanReportOcrValuesLikeReportPage(fixture.rawText);
-      const labels = ["Kills", "Losses", "Wounded", "Survivors"];
-      const entry = {};
-
-      labels.forEach((label, index) => {
-        entry[label] = cleanValues[index] || "0";
-      });
+      const cleanValues = cleanReportOcrValues(fixture.rawText);
+      const { entry } = buildReportEntryFromOcr(fixture.rawText);
 
       expect(cleanValues).toEqual(fixture.expectedCleanValues);
       expect(entry).toEqual(fixture.expectedEntry);

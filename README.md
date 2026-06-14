@@ -85,22 +85,28 @@ Use this path when testing parser, report, analytics, or UI changes without touc
 Terminal 1:
 
 ```bash
-npm run emulators
+npm.cmd run emulators
 ```
 
 Terminal 2:
 
 ```bash
-npm run seed:emulators
+npm.cmd run seed:emulators
 ```
 
 Terminal 3:
 
 ```bash
-npm run start:emulators
+npm.cmd run start:emulators
 ```
 
+`start:emulators` checks that Auth and Firestore emulators are reachable before launching React. It defaults the local app to `http://localhost:3001` to avoid conflicts with other CRA apps on port 3000.
+
 The seed script writes synthetic data only to the Firestore emulator.
+
+Report extraction in emulator mode still uses the production Google Vision-backed OCR endpoint, but all app reads and writes use local Auth and Firestore emulators. This keeps extraction behavior aligned with production without requiring local `gcloud`, service account JSON files, or the Functions emulator.
+
+In PowerShell, use `npm.cmd` instead of `npm` if script execution policy blocks `npm.ps1`.
 
 ## Tests
 
