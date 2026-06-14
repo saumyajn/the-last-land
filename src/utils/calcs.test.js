@@ -1,4 +1,4 @@
-import { buildCopyableTable, calcs, getNumber, removePercentage } from "./calcs";
+import { buildCopyableTable, calculateRoleOutputs, calcs, getNumber, removePercentage } from "./calcs";
 import { calculateStatOutputs } from "./statCalculations";
 
 describe("calcs", () => {
@@ -34,8 +34,21 @@ describe("calcs", () => {
     "Lethal Hit Rate": "20%",
   };
 
-  it("preserves the current archer power score formula output", () => {
-    expect(calcs(baseAttributes, "archer", "10%")).toBe("2.2");
+  it("returns only the configured role strength value", () => {
+    const strength = calculateRoleOutputs(baseAttributes, "archer", "10%", {
+      archerAttack: 1000,
+      archerHealth: 2000,
+      archerDefense: 3000,
+      archerRatio: 1,
+    });
+
+    expect(strength).toBeCloseTo(41.17208);
+    expect(calcs(baseAttributes, "archer", "10%", {
+      archerAttack: 1000,
+      archerHealth: 2000,
+      archerDefense: 3000,
+      archerRatio: 1,
+    })).toBe("41.17");
   });
 
   it("keeps current numeric parsing behavior for formatted values", () => {
@@ -50,22 +63,24 @@ describe("calcs", () => {
         ...baseAttributes,
         "Archer Atlantis": "10%",
       }, {
-        attack: 1,
-        health: 1,
-        defense: 1,
-        damage: 1,
-        damageReceived: 1,
-        attackBlessing: 1,
-        protectBlessing: 1,
+        archerAttack: 1,
+        archerHealth: 1,
+        archerDefense: 1,
+        cavalryAttack: 1,
+        cavalryHealth: 1,
+        cavalryDefense: 1,
+        siegettack: 1,
+        siegeHealth: 1,
+        siegeDefense: 1,
         archerRatio: 0.25,
-        cavalryRatio: 0.75,
-        multiplier: 2,
+        cavalryRatio: 0.5,
+        siegeRatio: 0.25,
       }),
     ).toEqual({
-      "Final Archer Damage": "4.40000",
-      "Final Cavalry Damage": "4.20000",
-      "Final Siege Damage": "3.40000",
-      "Average Damage": "4.25",
+      "Final Archer Damage": "0.00000",
+      "Final Cavalry Damage": "0.01000",
+      "Final Siege Damage": "0.00000",
+      "Average Damage": "0.01",
     });
   });
 });

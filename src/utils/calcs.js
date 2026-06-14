@@ -76,10 +76,7 @@ export const calculateRoleOutputs = (attributes, role, atlValue, weights = {}) =
     multiplier(roleProtectionBlessing + troopProtectionBlessing) *
     getConfiguredBase(weights, config.ratio);
 
-  console.log(`${label} attack:` + attack);
-  console.log(`${label} health:` + health);
-  console.log(`${label} defense:` + defense);
-  return (attack + (health * 4.5) + (defense * 4))/1000;
+  return (attack + (health * 4.5) + (defense * 4)) / 1000;
 };
 
 export const calcs = (attributes, role, atlValue, weights) => {

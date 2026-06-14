@@ -18,6 +18,7 @@ import { usePermissionSnackbar } from "../Permissions";
 import { getColorByThreshold, normalizeThresholds } from "../../utils/colorUtils";
 import { calculateStatOutputs } from "../../utils/statCalculations";
 import { STAT_WEIGHT_KEYS, normalizeStatWeights } from "../../utils/appConstants";
+import DamageCharts from "./DamageCharts";
 
 const columnGroups = [
     { label: "Troop", keys: ["Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received", "Troop Attack Blessing", "Troop Protection Blessing"] },
@@ -381,6 +382,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     </Table>
                 </TableContainer>
             </Paper>
+
+            <DamageCharts data={localData} />
 
             {/* Rename Dialog */}
             {renamePrompt && (
