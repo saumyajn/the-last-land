@@ -34,6 +34,10 @@ const getSavedOrCalculatedValue = (data, key, calculatedValue) => {
 
 const getMarchSize = (row) => troopValueFields.reduce((sum, field) => sum + (parseFloat(row[field]) || 0), 0);
 const getTotal = (marchSize, count) => ((parseFloat(marchSize) || 0) * (parseFloat(count) || 0)).toFixed(2);
+const formatNumber = (value) => {
+  const number = parseFloat(value) || 0;
+  return Number.isInteger(number) ? String(number) : number.toFixed(2);
+};
 
 const getZeroTroopValues = () => ({
   troops: 0,
@@ -71,10 +75,59 @@ const buildFormationPayload = (rows) => {
   return payload;
 };
 
+const buildKillPayload = (killData) => ({
+  archer: {
+    troops: killData.archerTroops,
+    multiplier: killData.archerMultiplier,
+    guardsKilled: killData.archerGuardKills,
+  },
+  cavalry: {
+    troops: killData.cavalryTroops,
+    multiplier: killData.cavalryMultiplier,
+    guardsKilled: killData.cavalryGuardKills,
+  },
+  totalGuards: killData.totalGuards,
+  totalGuardKills: killData.totalGuardKills,
+});
+
+const calculateKillTable = (settingData = {}, savedKillData = {}) => {
+  const damageTroops = parseFloat(settingData.damage_troops || 0) || 0;
+  const totalGuards = parseFloat(settingData.guards || 0) || 0;
+  const archerPercent =
+    (parseFloat(settingData.at10) || 0) +
+    (parseFloat(settingData.at9) || 0) +
+    (parseFloat(settingData.at8) || 0) +
+    (parseFloat(settingData.at7) || 0);
+  const cavalryPercent =
+    (parseFloat(settingData.ct10) || 0) +
+    (parseFloat(settingData.ct9) || 0) +
+    (parseFloat(settingData.ct8) || 0) +
+    (parseFloat(settingData.ct7) || 0);
+
+  const archerTroops = (archerPercent / 100) * damageTroops;
+  const cavalryTroops = (cavalryPercent / 100) * damageTroops;
+  const archerMultiplier = savedKillData.archer?.multiplier ?? savedKillData.archerMultiplier ?? "";
+  const cavalryMultiplier = savedKillData.cavalry?.multiplier ?? savedKillData.cavalryMultiplier ?? "";
+  const archerGuardKills = archerTroops * (parseFloat(archerMultiplier) || 0);
+  const cavalryGuardKills = cavalryTroops * (parseFloat(cavalryMultiplier) || 0);
+
+  return {
+    archerTroops,
+    cavalryTroops,
+    archerMultiplier,
+    cavalryMultiplier,
+    archerGuardKills,
+    cavalryGuardKills,
+    totalGuards,
+    totalGuardKills: archerGuardKills + cavalryGuardKills,
+  };
+};
+
 export default function FormationTable({ label, groupedData = null, isAdmin, type, recalculateToken = 0 }) {
   const [totalTroopValue, setTotalTroopValue] = useState(0);
   const [ratios, setRatios] = useState({ at10: 0, at9: 0, at8: 0, at7: 0, ct10: 0, ct9: 0, ct8: 0, ct7: 0 });
   const [rows, setRows] = useState([]);
+  const [killData, setKillData] = useState(() => calculateKillTable());
   const [isEdited, setIsEdited] = useState(false);
   const previousGroupedData = useRef(null);
   const previousRecalculateToken = useRef(recalculateToken);
@@ -84,20 +137,26 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
     () => label.toLowerCase().includes("throne") ? "throne_formation" : "tower_formation",
     [label]
   );
+  const killsDocName = useMemo(
+    () => label.toLowerCase().includes("throne") ? "throne_kills" : "tower_kills",
+    [label]
+  );
 
 
   const loadFormationData = useCallback(async () => {
     try {
 
-      const [settingSnap, formationSnap, thresholdsSnap] = await Promise.all([
+      const [settingSnap, formationSnap, thresholdsSnap, killsSnap] = await Promise.all([
         getDoc(doc(db, "settings", settingDocName)),
         getDoc(doc(db, "formation", `${label}`)),
-        getDoc(doc(db, "settings", "thresholds"))
+        getDoc(doc(db, "settings", "thresholds")),
+        getDoc(doc(db, "formation", killsDocName))
       ]);
 
       const settingData = settingSnap.exists() ? settingSnap.data() : {};
       const formationData = formationSnap.exists() ? formationSnap.data() : {};
       const thresholdData = thresholdsSnap.exists() ? normalizeThresholds(thresholdsSnap.data().thresholds) : [];
+      const nextKillData = calculateKillTable(settingData, killsSnap.exists() ? killsSnap.data() : {});
       const colorOrder = thresholdData.map(t => t.name);
       const shouldForceRecalculate = previousRecalculateToken.current !== recalculateToken;
 
@@ -196,18 +255,20 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
       }
 
       formattedRows.sort((a, b) => colorOrder.indexOf(b.group) - colorOrder.indexOf(a.group));
-      console.log(formattedRows);
-     
       setRows(formattedRows);
+      setKillData(nextKillData);
       setIsEdited(false);
       if ((shouldForceRecalculate || groupedData) && isAdmin) {
         await setDoc(doc(db, "formation", `${label}`), buildFormationPayload(formattedRows));
+      }
+      if ((shouldForceRecalculate || !killsSnap.exists()) && isAdmin) {
+        await setDoc(doc(db, "formation", killsDocName), buildKillPayload(nextKillData));
       }
       previousRecalculateToken.current = recalculateToken;
     } catch (err) {
       console.error("Error fetching formation:", err);
     }
-  }, [groupedData, isAdmin, label, recalculateToken, settingDocName]);
+  }, [groupedData, isAdmin, killsDocName, label, recalculateToken, settingDocName]);
 
   useEffect(() => {
     loadFormationData();
@@ -273,6 +334,46 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
 
     setRows(updated);
     setIsEdited(true);
+  };
+
+  const handleKillMultiplierChange = (field) => async (event) => {
+    if (!isAdmin) {
+      showNoPermission();
+      return;
+    }
+
+    const value = event.target.value;
+    const numericValue = parseFloat(value);
+    if (value !== "" && (Number.isNaN(numericValue) || numericValue < 0)) return;
+
+    const nextKillData = calculateKillTable(
+      {
+        damage_troops: totalTroopValue,
+        at10: ratios.at10 * 100,
+        at9: ratios.at9 * 100,
+        at8: ratios.at8 * 100,
+        at7: ratios.at7 * 100,
+        ct10: ratios.ct10 * 100,
+        ct9: ratios.ct9 * 100,
+        ct8: ratios.ct8 * 100,
+        ct7: ratios.ct7 * 100,
+      },
+      {
+        archer: {
+          multiplier: field === "archerMultiplier" ? value : killData.archerMultiplier,
+        },
+        cavalry: {
+          multiplier: field === "cavalryMultiplier" ? value : killData.cavalryMultiplier,
+        },
+      }
+    );
+
+    setKillData(nextKillData);
+    try {
+      await setDoc(doc(db, "formation", killsDocName), buildKillPayload(nextKillData));
+    } catch (error) {
+      console.error("Error saving kill table:", error);
+    }
   };
 
   useEffect(() => {
@@ -429,6 +530,81 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                 <TableCell sx={{ backgroundColor: "#f8fafc" }} />
               </TableRow>
             </TableFooter>
+          </Table>
+        </TableContainer>
+      </Paper>
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.25, md: 2 },
+          mb: 2,
+          borderRadius: 3,
+          backgroundColor: "#ffffff",
+          border: "1px solid rgba(15,23,42,0.08)",
+        }}
+      >
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>
+            Guard Kills Possible
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Troops are calculated from the formation percentages and damage troops. Multipliers are editable and saved.
+          </Typography>
+        </Box>
+
+        <TableContainer sx={{ borderRadius: 2, border: "1px solid rgba(15,23,42,0.08)" }}>
+          <Table size="small" sx={{ minWidth: 620 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>Metric</b></TableCell>
+                <TableCell align="center"><b>Archer</b></TableCell>
+                <TableCell align="center"><b>Cavalry</b></TableCell>
+                <TableCell align="center"><b>Total Guard Kills</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>Troops</TableCell>
+                <TableCell align="center">{formatNumber(killData.archerTroops)}</TableCell>
+                <TableCell align="center">{formatNumber(killData.cavalryTroops)}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+                  {formatNumber(killData.totalGuards)}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Multiplier</TableCell>
+                <TableCell align="center">
+                  <TextField
+                    type="number"
+                    value={killData.archerMultiplier}
+                    onChange={handleKillMultiplierChange("archerMultiplier")}
+                    size="small"
+                    inputProps={{ min: 0, step: 0.1 }}
+                    sx={{ width: 92 }}
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <TextField
+                    type="number"
+                    value={killData.cavalryMultiplier}
+                    onChange={handleKillMultiplierChange("cavalryMultiplier")}
+                    size="small"
+                    inputProps={{ min: 0, step: 0.1 }}
+                    sx={{ width: 92 }}
+                  />
+                </TableCell>
+                <TableCell align="center">-</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Guards That Can Be Killed</TableCell>
+                <TableCell align="center">{formatNumber(killData.archerGuardKills)}</TableCell>
+                <TableCell align="center">{formatNumber(killData.cavalryGuardKills)}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900, backgroundColor: "#f8fafc", fontVariantNumeric: "tabular-nums" }}>
+                  {formatNumber(killData.totalGuardKills)}
+                </TableCell>
+              </TableRow>
+            </TableBody>
           </Table>
         </TableContainer>
       </Paper>

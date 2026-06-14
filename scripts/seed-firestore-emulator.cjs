@@ -119,6 +119,21 @@ const formationSettings = {
   ct7: "15",
 };
 
+const formationKillSettings = {
+  archer: {
+    troops: 900000,
+    multiplier: "",
+    guardsKilled: 0,
+  },
+  cavalry: {
+    troops: 900000,
+    multiplier: "",
+    guardsKilled: 0,
+  },
+  totalGuards: 0,
+  totalGuardKills: 0,
+};
+
 async function seed() {
   await setDoc(doc(db, "stats", player), statDoc);
   await setDoc(doc(db, "reports", player), reportDoc);
@@ -127,6 +142,8 @@ async function seed() {
   await setDoc(doc(db, "settings", "atlantis_damage"), atlantisDamage);
   await setDoc(doc(db, "settings", "tower_formation"), formationSettings);
   await setDoc(doc(db, "settings", "throne_formation"), formationSettings);
+  await setDoc(doc(db, "formation", "tower_kills"), formationKillSettings);
+  await setDoc(doc(db, "formation", "throne_kills"), formationKillSettings);
   await setDoc(doc(db, "analytics", "troop_type_kpt"), {
     T10_cavalry: { Kills: 12034, Losses: 567, Wounded: 8901, Survivors: 0, KPT: "0.15", LPT: "1.00" },
     T10_archer: { Kills: 11000, Losses: 500, Wounded: 7000, Survivors: 3200, KPT: "0.40", LPT: "0.70" },
