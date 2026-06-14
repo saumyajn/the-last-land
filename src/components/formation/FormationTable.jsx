@@ -568,9 +568,7 @@ export default function FormationTable({ label, groupedData = null, isAdmin, typ
                 <TableCell>Troops</TableCell>
                 <TableCell align="center">{formatNumber(killData.archerTroops)}</TableCell>
                 <TableCell align="center">{formatNumber(killData.cavalryTroops)}</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
-                  {formatNumber(killData.totalGuards)}
-                </TableCell>
+                <TableCell align="center">-</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Multiplier</TableCell>
