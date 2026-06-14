@@ -206,7 +206,7 @@ export default function DamageCharts({ data = {} }) {
                   width={bin.barWidth}
                   height={Math.max(2, bin.height)}
                   rx="6"
-                  fill={bin.players.length ? "#2563eb" : "#e2e8f0"}
+                  fill={bin.players.length ? "#e1abe8" : "#e2e8f0"}
                   opacity={bin.players.length ? 0.78 : 0.8}
                 >
                   <title>{`${bin.label}: ${bin.players.length} player${bin.players.length === 1 ? "" : "s"}`}</title>
