@@ -1,11 +1,7 @@
-import { DEFAULT_STAT_WEIGHTS } from "./appConstants";
 import { calcs, getNumber } from "./calcs";
 
 export const calculateStatOutputs = (player, currentWeights = {}) => {
-  const weights = {
-    ...DEFAULT_STAT_WEIGHTS,
-    ...currentWeights,
-  };
+  const weights = currentWeights || {};
 
   const archerAtlantis = player["Archer Atlantis"] || 0;
   const cavalryAtlantis = player["Cavalry Atlantis"] || 0;
@@ -15,11 +11,10 @@ export const calculateStatOutputs = (player, currentWeights = {}) => {
   const cavalry = getNumber(calcs(player, "cavalry", cavalryAtlantis, weights));
   const siege = getNumber(calcs(player, "siege", siegeAtlantis, weights));
 
-  const finalArcher = archer * weights.multiplier;
-  const finalCavalry = cavalry * weights.multiplier;
-  const finalSiege = siege * weights.multiplier;
-  const avgDamage =
-    finalArcher * weights.archerRatio + finalCavalry * weights.cavalryRatio;
+  const finalArcher = archer;
+  const finalCavalry = cavalry;
+  const finalSiege = siege;
+  const avgDamage = (finalArcher + finalCavalry)/2;
 
   return {
     "Final Archer Damage": finalArcher.toFixed(5),

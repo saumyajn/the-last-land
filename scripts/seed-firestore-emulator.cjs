@@ -75,16 +75,18 @@ const reportDoc = {
 
 const settings = {
   weights: {
-    attack: 1,
-    health: 1,
-    defense: 1,
-    damage: 1,
-    damageReceived: 1,
-    attackBlessing: 1,
-    protectBlessing: 1,
-    archerRatio: 0.5,
-    cavalryRatio: 0.5,
-    multiplier: 1.5,
+    archerAttack: "",
+    archerHealth: "",
+    archerDefense: "",
+    cavalryAttack: "",
+    cavalryHealth: "",
+    cavalryDefense: "",
+    siegettack: "",
+    siegeHealth: "",
+    siegeDefense: "",
+    archerRatio: "",
+    cavalryRatio: "",
+    siegeRatio: "",
   },
 };
 

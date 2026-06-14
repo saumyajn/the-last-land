@@ -1,5 +1,6 @@
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
+import { normalizeStatWeights } from "./appConstants";
 
 export const readCollectionMap = async (collectionName) => {
   const snapshot = await getDocs(collection(db, collectionName));
@@ -25,7 +26,7 @@ export const loadStatsAndWeights = async () => {
 
   return {
     stats,
-    weights: statWeights?.weights || null,
+    weights: statWeights?.weights ? normalizeStatWeights(statWeights.weights) : null,
   };
 };
 

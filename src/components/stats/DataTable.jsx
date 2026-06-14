@@ -17,6 +17,7 @@ import { db } from '../../utils/firebase';
 import { usePermissionSnackbar } from "../Permissions";
 import { getColorByThreshold, normalizeThresholds } from "../../utils/colorUtils";
 import { calculateStatOutputs } from "../../utils/statCalculations";
+import { STAT_WEIGHT_KEYS, normalizeStatWeights } from "../../utils/appConstants";
 
 const columnGroups = [
     { label: "Troop", keys: ["Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received", "Troop Attack Blessing", "Troop Protection Blessing"] },
@@ -36,18 +37,7 @@ const extraColumns = [
     { label: "Avg Damage", key: "Average Damage" },
     { label: "Actions", key: "Actions" }
 ];
-const weightKeysOrder = [
-    "attack",
-    "health",
-    "defense",
-    "damage",
-    "damageReceived",
-    "attackBlessing",
-    "protectBlessing",
-    "archerRatio",
-    "cavalryRatio",
-    "multiplier"
-];
+const weightKeysOrder = STAT_WEIGHT_KEYS;
 
 const CleanInput = ({ value, onChange, width = '75px' }) => (
     <TextField
@@ -141,7 +131,9 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
         try {
             // A. Save the new weights to Firestore
-            await setDoc(doc(db, "settings", "statWeights"), { weights: statWeights });
+            await setDoc(doc(db, "settings", "statWeights"), {
+                weights: normalizeStatWeights(statWeights)
+            });
 
             // B. Save the thresholds just in case they were changed
             await setDoc(doc(db, "settings", "thresholds"), { thresholds });
@@ -171,8 +163,14 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
 
     const handleWeightChange = (key, value) => {
         if (!isAdmin) return showNoPermission();
-        const numVal = parseFloat(value) || 0;
-        setStatWeights(prev => ({ ...prev, [key]: numVal }));
+        const numVal = value === "" ? "" : parseFloat(value);
+        const nextValue = Number.isFinite(numVal) ? numVal : "";
+        setStatWeights(prev => {
+            const nextWeights = normalizeStatWeights({ ...prev, [key]: nextValue });
+            setDoc(doc(db, "settings", "statWeights"), { weights: nextWeights })
+                .catch((error) => console.error("Error saving stat weight:", error));
+            return nextWeights;
+        });
     };
 
     useEffect(() => {
@@ -242,8 +240,8 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     </Typography>
                     <Grid container spacing={3}>
                         {weightKeysOrder.map((key) => {
-                            // Safely grab the value, default to 0 if it somehow doesn't exist
-                            const value = statWeights?.[key] ?? 0;
+                            // Keep missing settings visibly blank until the admin saves a value.
+                            const value = statWeights?.[key] ?? "";
 
                             return (
                                 <Grid item xs={6} sm={4} md={3} key={key}>
@@ -274,7 +272,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                             Player Stats Database
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Editable OCR output, derived damage scores, thresholds, and Atlantis multipliers.
+                            Editable OCR output, derived damage scores, thresholds, and Atlantis values.
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: 0.5 }}>

@@ -1,15 +1,25 @@
-export const DEFAULT_STAT_WEIGHTS = {
-  attack: 1,
-  health: 1,
-  defense: 1,
-  damage: 1,
-  damageReceived: 1,
-  attackBlessing: 1,
-  protectBlessing: 1,
-  archerRatio: 0.5,
-  cavalryRatio: 0.5,
-  multiplier: 1.5,
-};
+export const STAT_WEIGHT_KEYS = [
+  "archerAttack",
+  "archerHealth",
+  "archerDefense",
+  "cavalryAttack",
+  "cavalryHealth",
+  "cavalryDefense",
+  "siegeAttack",
+  "siegeHealth",
+  "siegeDefense",
+  "archerRatio",
+  "cavalryRatio",
+  "siegeRatio",
+];
+
+export const normalizeStatWeights = (weights = {}) =>
+  STAT_WEIGHT_KEYS.reduce((acc, key) => {
+    acc[key] = weights[key] ?? "";
+    return acc;
+  }, {});
+
+export const DEFAULT_STAT_WEIGHTS = normalizeStatWeights();
 
 export const DESIRED_STAT_KEYS = [
   "Troop Attack",
