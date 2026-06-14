@@ -31,7 +31,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin,
         showNoPermission();
         return;
       }
-       const payload = {
+      const payload = {
         ...formState,
         damage_troops: calcDamage(formState.total, formState.guards),
       };
@@ -98,7 +98,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin,
             label="Damage Troops"
             value={formState.damage_troops}
             inputProps={{ readOnly: true }}
-          onFocus={(e) => e.target.select()}
+            onFocus={(e) => e.target.select()}
 
           />
         </Grid>
@@ -196,7 +196,7 @@ export default function FormationForm({ label, formState, setFormState, isAdmin,
             Total: {formationPercentTotal.toFixed(1)}%
           </Typography>
           <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
-            Archers {archerPercentTotal.toFixed(1)}% + Cavalry {cavalryPercentTotal.toFixed(1)}% = 100%
+            Archers {archerPercentTotal.toFixed(1)}% | Cavalry {cavalryPercentTotal.toFixed(1)}% 
           </Typography>
         </Stack>
       </Box>
