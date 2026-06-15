@@ -51,4 +51,28 @@ describe("parseData", () => {
       "Troop Damage Received": "11%",
     });
   });
+
+  it("extracts multiple labels from one OCR line", () => {
+    const rawText = "Troop Attack 123.4% Troop Health 88.1% Troop Defense 77%";
+    const desiredKeys = ["Troop Attack", "Troop Health", "Troop Defense"];
+
+    expect(parseData(rawText, desiredKeys)).toEqual({
+      "Troop Attack": "123.4%",
+      "Troop Health": "88.1%",
+      "Troop Defense": "77%",
+    });
+  });
+
+  it("does not borrow the next label value when a matched label has no value", () => {
+    const rawText = [
+      "Troop Attack",
+      "Troop Health 88.1%",
+    ].join("\n");
+    const desiredKeys = ["Troop Attack", "Troop Health"];
+
+    expect(parseData(rawText, desiredKeys)).toEqual({
+      "Troop Attack": "NA",
+      "Troop Health": "88.1%",
+    });
+  });
 });

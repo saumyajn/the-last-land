@@ -30,11 +30,54 @@ const getAverageMetricValue = (data, key) => {
   return rows.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) / rows.length;
 };
 
-const isWithinBand = (value, average) => {
-  if (average <= 0) return value === 0;
+const performanceColors = {
+  green: {
+    bg: "#16a34a",
+    soft: "rgba(22,163,74,0.12)",
+    text: "#166534",
+  },
+  yellow: {
+    bg: "#f59e0b",
+    soft: "rgba(245,158,11,0.16)",
+    text: "#92400e",
+  },
+  red: {
+    bg: "#dc2626",
+    soft: "rgba(220,38,38,0.10)",
+    text: "#991b1b",
+  },
+};
+
+const getPerformanceStatus = (value, average, metricType) => {
+  if (average <= 0) return "yellow";
+
   const lower = average * 0.9;
   const upper = average * 1.1;
-  return value >= lower && value <= upper;
+
+  if (metricType === "kpt") {
+    if (value > upper) return "green";
+    if (value < lower) return "red";
+    return "yellow";
+  }
+
+  if (value > upper) return "red";
+  if (value < lower) return "green";
+  return "yellow";
+};
+
+const getPointStatus = (kpt, lpt, kptAverage, lptAverage) => {
+  const kptStatus = getPerformanceStatus(kpt, kptAverage, "kpt");
+  const lptStatus = getPerformanceStatus(lpt, lptAverage, "lpt");
+
+  if (kptStatus === "green" && lptStatus === "green") return "green";
+  if (kptStatus === "red" || lptStatus === "red") return "red";
+  return "yellow";
+};
+
+const getPointStatusLabel = (status) => {
+  if (status === "green") return "Strong: high KPT and low LPT";
+  if (status === "red") return "Risk: low KPT or high LPT";
+  return "Average band or mixed result";
 };
 
 function PerformanceChart({ title, data, kptKey, lptKey }) {
@@ -50,9 +93,22 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
 
   if (!chartRows.length) return null;
 
-  const maxMetric = Math.max(1, ...chartRows.flatMap(row => [row.kpt, row.lpt]));
-  const getBarColor = (good) => good ? "#16a34a" : "#dc2626";
-  const getBarWidth = (value) => `${Math.max(4, (value / maxMetric) * 100)}%`;
+  const getScore = (row) => {
+    const kptScore = kptAverage > 0 ? row.kpt / kptAverage : 0;
+    const lptScore = lptAverage > 0 ? row.lpt / lptAverage : 0;
+    return kptScore - lptScore;
+  };
+  const groupedRows = chartRows.reduce((groups, row) => {
+    const status = getPointStatus(row.kpt, row.lpt, kptAverage, lptAverage);
+    groups[status].push({ ...row, status, score: getScore(row) });
+    return groups;
+  }, { green: [], yellow: [], red: [] });
+  Object.values(groupedRows).forEach((rows) => rows.sort((a, b) => b.score - a.score));
+  const bandConfig = [
+    { key: "green", title: "Strong", helper: "High KPT + low LPT" },
+    { key: "yellow", title: "Average / Mixed", helper: "Around average or split result" },
+    { key: "red", title: "Risk", helper: "Low KPT or high LPT" },
+  ];
 
   return (
     <Accordion disableGutters sx={{ mt: 2, borderRadius: 2, border: "1px solid rgba(15,23,42,0.08)", overflow: "hidden", boxShadow: "none", "&:before": { display: "none" } }}>
@@ -68,84 +124,60 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
         </Box>
       </AccordionSummary>
       <AccordionDetails sx={{ backgroundColor: "#f8fafc", p: 1.5 }}>
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1 }}>
-          <Chip size="small" label="Green = within 10%" sx={{ backgroundColor: "rgba(22,163,74,0.12)", color: "#166534", fontWeight: 700 }} />
-          <Chip size="small" label="Red = outside 10%" sx={{ backgroundColor: "rgba(220,38,38,0.10)", color: "#991b1b", fontWeight: 700 }} />
-        </Box>
-        <Box sx={{ display: "grid", gap: 1 }}>
-          {chartRows.map((row) => {
-            const kptGood = isWithinBand(row.kpt, kptAverage);
-            const lptGood = isWithinBand(row.lpt, lptAverage);
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 1.25 }}>
+          {bandConfig.map((band) => {
+            const color = performanceColors[band.key];
+            const rows = groupedRows[band.key];
+
             return (
               <Box
-                key={row.name}
+                key={band.key}
                 sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "110px 1fr" },
-                  gap: { xs: 0.75, sm: 1.25 },
-                  alignItems: "center",
-                  p: 0.5,
-                  borderRadius: 1,
+                  minHeight: 170,
+                  borderRadius: 2,
+                  border: `1px solid ${color.soft}`,
                   backgroundColor: "#ffffff",
-                  border: "1px solid rgba(15,23,42,0.06)",
+                  overflow: "hidden",
                 }}
               >
-                <Typography variant="body2" sx={{ fontWeight: 800, color: "text.primary" }}>
-                  {row.name}
-                </Typography>
-                <Box sx={{ display: "grid", gap: 0.75 }}>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "36px 1fr 48px", gap: 1, alignItems: "center" }}>
-                    <Typography variant="caption" sx={{ fontWeight: 900, color: "text.secondary" }}>
-                      KPT
+                <Box sx={{ p: 1.25, backgroundColor: color.soft, borderBottom: "1px solid rgba(15,23,42,0.06)" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 900, color: color.text }}>
+                      {band.title}
                     </Typography>
+                    <Chip size="small" label={rows.length} sx={{ height: 22, color: color.text, backgroundColor: "#ffffff", fontWeight: 900 }} />
+                  </Box>
+                  <Typography variant="caption" sx={{ color: color.text, fontWeight: 700 }}>
+                    {band.helper}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "grid", gap: 0.75, p: 1 }}>
+                  {rows.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
+                      No players
+                    </Typography>
+                  ) : rows.map((row) => (
                     <Box
-                      title={`${row.name} KPT ${formatMetric(row.kpt)} (${kptGood ? "within" : "outside"} 10% of avg ${formatMetric(kptAverage)})`}
+                      key={row.name}
+                      title={`${row.name}: KPT ${formatMetric(row.kpt)}, LPT ${formatMetric(row.lpt)} - ${getPointStatusLabel(row.status)}`}
                       sx={{
-                        height: 10,
-                        borderRadius: 1,
-                        backgroundColor: "rgba(15,23,42,0.08)",
-                        overflow: "hidden",
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 1fr) auto auto",
+                        alignItems: "center",
+                        gap: 0.75,
+                        p: 0.75,
+                        borderRadius: 1.25,
+                        border: "1px solid rgba(15,23,42,0.07)",
+                        backgroundColor: "#fbfdff",
                       }}
                     >
-                      <Box
-                        sx={{
-                          width: getBarWidth(row.kpt),
-                          height: "100%",
-                          backgroundColor: getBarColor(kptGood),
-                          borderRadius: 1,
-                        }}
-                      />
+                      <Typography variant="body2" sx={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {row.name}
+                      </Typography>
+                      <Chip size="small" label={`K ${formatMetric(row.kpt)}`} sx={{ height: 22, fontWeight: 800, color: performanceColors[getPerformanceStatus(row.kpt, kptAverage, "kpt")].text, backgroundColor: performanceColors[getPerformanceStatus(row.kpt, kptAverage, "kpt")].soft }} />
+                      <Chip size="small" label={`L ${formatMetric(row.lpt)}`} sx={{ height: 22, fontWeight: 800, color: performanceColors[getPerformanceStatus(row.lpt, lptAverage, "lpt")].text, backgroundColor: performanceColors[getPerformanceStatus(row.lpt, lptAverage, "lpt")].soft }} />
                     </Box>
-                    <Typography variant="caption" sx={{ fontWeight: 800, fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
-                      {formatMetric(row.kpt)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "36px 1fr 48px", gap: 1, alignItems: "center" }}>
-                    <Typography variant="caption" sx={{ fontWeight: 900, color: "text.secondary" }}>
-                      LPT
-                    </Typography>
-                    <Box
-                      title={`${row.name} LPT ${formatMetric(row.lpt)} (${lptGood ? "within" : "outside"} 10% of avg ${formatMetric(lptAverage)})`}
-                      sx={{
-                        height: 10,
-                        borderRadius: 1,
-                        backgroundColor: "rgba(15,23,42,0.08)",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: getBarWidth(row.lpt),
-                          height: "100%",
-                          backgroundColor: getBarColor(lptGood),
-                          borderRadius: 1,
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="caption" sx={{ fontWeight: 800, fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
-                      {formatMetric(row.lpt)}
-                    </Typography>
-                  </Box>
+                  ))}
                 </Box>
               </Box>
             );
@@ -361,10 +393,10 @@ export default function AnalyticsSummary({ isAdmin }) {
 
   return (
     <Grid spacing={2} container>
-       <Grid item size={{xs:12, md:6}} sx={{ mb: 2 }}>
+       <Grid item size={{xs:12}} sx={{ mb: 2 }}>
         {renderRankedTable("Cavalry Summary", summaryData, ["cavalryKills", "cavalryTroops", "cavalryKPT", "cavalryLPT", "cavalryDamage"], "cavalry", ["cavalryKPT", "cavalryLPT"])}
       </Grid>
-       <Grid item size={{xs:12, md:6}} sx={{ mb: 2 }}>
+       <Grid item size={{xs:12}} sx={{ mb: 2 }}>
         {renderRankedTable("Archer Summary", summaryData, ["archerKills", "archerTroops", "archerKPT", "archerLPT", "archerDamage"], "archer", ["archerKPT", "archerLPT"])}
       </Grid>
     </Grid>
