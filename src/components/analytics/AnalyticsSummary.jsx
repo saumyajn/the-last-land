@@ -67,8 +67,8 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
           </Box>
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ backgroundColor: "#f8fafc", p: 2 }}>
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
+      <AccordionDetails sx={{ backgroundColor: "#f8fafc", p: 1.5 }}>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1 }}>
           <Chip size="small" label="Green = within 10%" sx={{ backgroundColor: "rgba(22,163,74,0.12)", color: "#166534", fontWeight: 700 }} />
           <Chip size="small" label="Red = outside 10%" sx={{ backgroundColor: "rgba(220,38,38,0.10)", color: "#991b1b", fontWeight: 700 }} />
         </Box>
@@ -84,8 +84,8 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
                   gridTemplateColumns: { xs: "1fr", sm: "110px 1fr" },
                   gap: { xs: 0.75, sm: 1.25 },
                   alignItems: "center",
-                  p: 1,
-                  borderRadius: 1.5,
+                  p: 0.5,
+                  borderRadius: 1,
                   backgroundColor: "#ffffff",
                   border: "1px solid rgba(15,23,42,0.06)",
                 }}
@@ -94,14 +94,14 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
                   {row.name}
                 </Typography>
                 <Box sx={{ display: "grid", gap: 0.75 }}>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "42px 1fr 48px", gap: 1, alignItems: "center" }}>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "36px 1fr 48px", gap: 1, alignItems: "center" }}>
                     <Typography variant="caption" sx={{ fontWeight: 900, color: "text.secondary" }}>
                       KPT
                     </Typography>
                     <Box
                       title={`${row.name} KPT ${formatMetric(row.kpt)} (${kptGood ? "within" : "outside"} 10% of avg ${formatMetric(kptAverage)})`}
                       sx={{
-                        height: 12,
+                        height: 10,
                         borderRadius: 1,
                         backgroundColor: "rgba(15,23,42,0.08)",
                         overflow: "hidden",
@@ -120,14 +120,14 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
                       {formatMetric(row.kpt)}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "42px 1fr 48px", gap: 1, alignItems: "center" }}>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "36px 1fr 48px", gap: 1, alignItems: "center" }}>
                     <Typography variant="caption" sx={{ fontWeight: 900, color: "text.secondary" }}>
                       LPT
                     </Typography>
                     <Box
                       title={`${row.name} LPT ${formatMetric(row.lpt)} (${lptGood ? "within" : "outside"} 10% of avg ${formatMetric(lptAverage)})`}
                       sx={{
-                        height: 12,
+                        height: 10,
                         borderRadius: 1,
                         backgroundColor: "rgba(15,23,42,0.08)",
                         overflow: "hidden",
