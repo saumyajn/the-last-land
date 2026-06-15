@@ -91,23 +91,50 @@ export default function StatsPage() {
   }, []);
 
   const extractText = async (extractedTexts) => {
-    if (!extractedTexts || !extractedTexts.length) return;
+    const playerName = name.trim();
+    if (!extractedTexts || !extractedTexts.length || !playerName) return;
+
     setLoading(true);
+    setStatsError("");
 
-    const allExtracted = extractedTexts.join("\n");
-    setText(allExtracted);
+    try {
+      const failedExtraction = extractedTexts.find((entry) => String(entry || "").startsWith("Error:"));
+      if (failedExtraction) {
+        throw new Error(failedExtraction);
+      }
 
-    const attributes = parseData(allExtracted, DESIRED_STAT_KEYS);
-    attributes["Archer Atlantis"] = "0";
-    attributes["Cavalry Atlantis"] = "0";
-    attributes["Siege Atlantis"] = "0";
+      const allExtracted = extractedTexts.join("\n");
+      setText(allExtracted);
 
-    const calculatedStats = calculateStatOutputs(attributes, statWeights);
-    Object.assign(attributes, calculatedStats);
+      const attributes = parseData(allExtracted, DESIRED_STAT_KEYS);
+      const missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
+      const extractedCount = DESIRED_STAT_KEYS.length - missingKeys.length;
 
-    setDataTable((prev) => ({ ...prev, [name]: attributes }));
-    await handleUpdate(name, attributes);
-    setLoading(false);
+      if (extractedCount === 0) {
+        throw new Error("No recognizable stat labels were found. The saved player data was not changed.");
+      }
+
+      if (missingKeys.length) {
+        setStatsError(
+          `Extracted ${extractedCount}/${DESIRED_STAT_KEYS.length} stat fields. Missing: ${missingKeys.slice(0, 6).join(", ")}${missingKeys.length > 6 ? "..." : ""}`,
+        );
+      }
+
+      attributes["Archer Atlantis"] = "0";
+      attributes["Cavalry Atlantis"] = "0";
+      attributes["Siege Atlantis"] = "0";
+
+      const calculatedStats = calculateStatOutputs(attributes, statWeights);
+      Object.assign(attributes, calculatedStats);
+
+      setDataTable((prev) => ({ ...prev, [playerName]: attributes }));
+      await handleUpdate(playerName, attributes);
+    } catch (error) {
+      console.error("Error extracting player stats:", error);
+      setStatsError(error.message || "Could not extract player stats from the uploaded image.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

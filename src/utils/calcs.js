@@ -18,7 +18,7 @@ const roleConfigs = {
   },
   siege: {
     label: "Siege",
-    attackBase: "siegettack",
+    attackBase: ["siegeAttack", "siegettack"],
     healthBase: "siegeHealth",
     defenseBase: "siegeDefense",
     ratio: "siegeRatio"
@@ -27,9 +27,12 @@ const roleConfigs = {
 
 const multiplier = (value) => 1 + getNumber(value) / 100;
 
-const getConfiguredBase = (weights, key) => {
-  if (weights?.[key] === undefined || weights?.[key] === "") return 0;
-  return getNumber(weights[key]);
+const getConfiguredBase = (weights, keyOrKeys) => {
+  const keys = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys];
+  const foundKey = keys.find((key) => weights?.[key] !== undefined && weights?.[key] !== "");
+
+  if (!foundKey) return 0;
+  return getNumber(weights[foundKey]);
 };
 
 export const calculateRoleOutputs = (attributes, role, atlValue, weights = {}) => {

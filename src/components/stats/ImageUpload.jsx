@@ -16,8 +16,20 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
     const [loading, setLoading] = React.useState(false);
 
+    const clearFiles = React.useCallback(() => {
+        imagesRef.current.forEach((url) => URL.revokeObjectURL(url));
+        imagesRef.current = [];
+        setImages([]);
+        setFiles([]);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    }, []);
+
     const handleFiles = React.useCallback((fileList) => {
         const filesArray = Array.from(fileList);
+        if (!filesArray.length) return;
 
         const urls = filesArray.map(file => URL.createObjectURL(file));
         setImages(prev => [...prev, ...urls]);
@@ -86,7 +98,7 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
     };
 
     const handleExtractClick = async () => {
-        if (files.length === 0) return;
+        if (files.length === 0 || !name.trim()) return;
 
         setLoading(true);
         try {
@@ -126,8 +138,9 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
             // Pass the extracted text back to the parent component
             if (onExtract) {
-                onExtract(extractedTexts);
+                await onExtract(extractedTexts);
             }
+            clearFiles();
 
         } catch (error) {
             console.error("Extraction failed", error);
@@ -164,7 +177,7 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
                 <Button
                     variant="contained"
                     onClick={handleExtractClick} // Changed from onExtract to local handler
-                    disabled={!files.length || loading}
+                    disabled={!files.length || loading || parentLoading || !name.trim()}
                 >
                     {loading || parentLoading? <CircularProgress size={24} color="inherit" /> : "Extract Text"}
                 </Button>

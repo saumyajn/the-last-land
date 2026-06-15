@@ -1,52 +1,80 @@
-export const parseData = (rawText, desiredKeys) => {
-  const lines = rawText
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+const NUMBER_PATTERN = /-?\d[\d,.]*\s*%?/;
 
-  const attributes = {};
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // Sort keys by length descending to match longest phrases first
-  const sortedKeys = [...desiredKeys].sort((a, b) => b.length - a.length);
+const normalizeOcrText = (rawText = "") =>
+  rawText
+    .replace(/[\uFF1A:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  // 🔥 FIX 2: Keep track of lines we've already parsed so we don't reuse them
-  const usedIndexes = new Set();
+const buildLabelRegex = (key) => {
+  const flexibleKey = key
+    .split(/\s+/)
+    .map(escapeRegex)
+    .join("\\s+");
 
-  for (const key of sortedKeys) {
-    const regex = new RegExp(`${key}(?![a-zA-Z])`, 'i');
-    
-    // Find the index of the match, completely ignoring lines we've already used
-    const index = lines.findIndex((line, i) => !usedIndexes.has(i) && regex.test(line));
+  return new RegExp(`(^|[^a-zA-Z])(${flexibleKey})(?![a-zA-Z])`, "gi");
+};
 
-    if (index !== -1) {
-      // Mark the label line as used
-      usedIndexes.add(index);
-      
-      // Try to find the number on the EXACT SAME line first
-      let valueMatch = lines[index].match(/\d+[\d,.]*%?/);
-      
-      // 🔥 FIX 1: If no number is on the same line, check the NEXT line down
-      if (!valueMatch && index + 1 < lines.length) {
-        valueMatch = lines[index + 1].match(/\d+[\d,.]*%?/);
-        if (valueMatch) {
-          // If we used the next line for the value, mark it as used too
-          usedIndexes.add(index + 1); 
-        }
+const normalizeValue = (value) =>
+  value
+    .replace(/\s+/g, "")
+    .replace(/^-/, "");
+
+const findLabelMatches = (text, desiredKeys) => {
+  const matches = [];
+
+  desiredKeys.forEach((key) => {
+    const regex = buildLabelRegex(key);
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const leadingLength = match[1]?.length || 0;
+      const start = match.index + leadingLength;
+      const label = match[2];
+
+      matches.push({
+        key,
+        start,
+        end: start + label.length,
+        length: label.length,
+      });
+    }
+  });
+
+  return matches
+    .sort((a, b) => a.start - b.start || b.length - a.length)
+    .reduce((accepted, match) => {
+      const overlapsLongerLabel = accepted.some(
+        (existing) => match.start < existing.end && match.end > existing.start,
+      );
+
+      if (!overlapsLongerLabel) {
+        accepted.push(match);
       }
 
-      attributes[key] = valueMatch ? valueMatch[0] : "NA";
-    } else {
-      attributes[key] = "NA";
-    }
-  }
+      return accepted;
+    }, [])
+    .sort((a, b) => a.start - b.start);
+};
 
-  // Ensure all original keys exist in the object
-  desiredKeys.forEach((key) => {
-    if (!attributes[key]) attributes[key] = "NA";
+export const parseData = (rawText, desiredKeys) => {
+  const text = normalizeOcrText(rawText);
+  const labelMatches = findLabelMatches(text, desiredKeys);
+  const attributes = Object.fromEntries(desiredKeys.map((key) => [key, "NA"]));
+
+  labelMatches.forEach((match, index) => {
+    const nextLabelStart = labelMatches[index + 1]?.start ?? text.length;
+    const valueText = text.slice(match.end, nextLabelStart);
+    const valueMatch = valueText.match(NUMBER_PATTERN);
+
+    attributes[match.key] = valueMatch ? normalizeValue(valueMatch[0]) : "NA";
   });
 
   if (process.env.NODE_ENV === "development") {
     console.log("Parsed attributes:", attributes);
   }
+
   return attributes;
 };
