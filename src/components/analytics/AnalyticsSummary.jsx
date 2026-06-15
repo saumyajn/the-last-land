@@ -6,9 +6,6 @@ import {
   Chip,
   Grid,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Table,
   TableBody,
   TableCell,
@@ -16,12 +13,148 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TableSortLabel
+  TableSortLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { computeKPT, computeLPT, sumReportEntries } from "../../utils/kptCalculations";
 
+const formatMetric = (value) => Number(value || 0).toFixed(2);
+
+const getAverageMetricValue = (data, key) => {
+  const rows = data.filter(row => parseFloat(row[key]) > 0);
+  if (rows.length === 0) return 0;
+  return rows.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) / rows.length;
+};
+
+const isWithinBand = (value, average) => {
+  if (average <= 0) return value === 0;
+  const lower = average * 0.9;
+  const upper = average * 1.1;
+  return value >= lower && value <= upper;
+};
+
+function PerformanceChart({ title, data, kptKey, lptKey }) {
+  const kptAverage = getAverageMetricValue(data, kptKey);
+  const lptAverage = getAverageMetricValue(data, lptKey);
+  const chartRows = data
+    .map((row) => ({
+      name: row.name,
+      kpt: parseFloat(row[kptKey]) || 0,
+      lpt: parseFloat(row[lptKey]) || 0,
+    }))
+    .filter((row) => row.kpt > 0 || row.lpt > 0);
+
+  if (!chartRows.length) return null;
+
+  const maxMetric = Math.max(1, ...chartRows.flatMap(row => [row.kpt, row.lpt]));
+  const getBarColor = (good) => good ? "#16a34a" : "#dc2626";
+  const getBarWidth = (value) => `${Math.max(4, (value / maxMetric) * 100)}%`;
+
+  return (
+    <Accordion disableGutters sx={{ mt: 2, borderRadius: 2, border: "1px solid rgba(15,23,42,0.08)", overflow: "hidden", boxShadow: "none", "&:before": { display: "none" } }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: "#f8fafc" }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap", width: "100%" }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>
+            {title} KPT/LPT Performance Chart
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mr: 1 }}>
+            <Chip size="small" label={`KPT avg ${formatMetric(kptAverage)}`} color="success" variant="outlined" />
+            <Chip size="small" label={`LPT avg ${formatMetric(lptAverage)}`} color="success" variant="outlined" />
+          </Box>
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails sx={{ backgroundColor: "#f8fafc", p: 2 }}>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
+          <Chip size="small" label="Green = within 10%" sx={{ backgroundColor: "rgba(22,163,74,0.12)", color: "#166534", fontWeight: 700 }} />
+          <Chip size="small" label="Red = outside 10%" sx={{ backgroundColor: "rgba(220,38,38,0.10)", color: "#991b1b", fontWeight: 700 }} />
+        </Box>
+        <Box sx={{ display: "grid", gap: 1 }}>
+          {chartRows.map((row) => {
+            const kptGood = isWithinBand(row.kpt, kptAverage);
+            const lptGood = isWithinBand(row.lpt, lptAverage);
+            return (
+              <Box
+                key={row.name}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "110px 1fr" },
+                  gap: { xs: 0.75, sm: 1.25 },
+                  alignItems: "center",
+                  p: 1,
+                  borderRadius: 1.5,
+                  backgroundColor: "#ffffff",
+                  border: "1px solid rgba(15,23,42,0.06)",
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 800, color: "text.primary" }}>
+                  {row.name}
+                </Typography>
+                <Box sx={{ display: "grid", gap: 0.75 }}>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "42px 1fr 48px", gap: 1, alignItems: "center" }}>
+                    <Typography variant="caption" sx={{ fontWeight: 900, color: "text.secondary" }}>
+                      KPT
+                    </Typography>
+                    <Box
+                      title={`${row.name} KPT ${formatMetric(row.kpt)} (${kptGood ? "within" : "outside"} 10% of avg ${formatMetric(kptAverage)})`}
+                      sx={{
+                        height: 12,
+                        borderRadius: 1,
+                        backgroundColor: "rgba(15,23,42,0.08)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: getBarWidth(row.kpt),
+                          height: "100%",
+                          backgroundColor: getBarColor(kptGood),
+                          borderRadius: 1,
+                        }}
+                      />
+                    </Box>
+                    <Typography variant="caption" sx={{ fontWeight: 800, fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
+                      {formatMetric(row.kpt)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "42px 1fr 48px", gap: 1, alignItems: "center" }}>
+                    <Typography variant="caption" sx={{ fontWeight: 900, color: "text.secondary" }}>
+                      LPT
+                    </Typography>
+                    <Box
+                      title={`${row.name} LPT ${formatMetric(row.lpt)} (${lptGood ? "within" : "outside"} 10% of avg ${formatMetric(lptAverage)})`}
+                      sx={{
+                        height: 12,
+                        borderRadius: 1,
+                        backgroundColor: "rgba(15,23,42,0.08)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: getBarWidth(row.lpt),
+                          height: "100%",
+                          backgroundColor: getBarColor(lptGood),
+                          borderRadius: 1,
+                        }}
+                      />
+                    </Box>
+                    <Typography variant="caption" sx={{ fontWeight: 800, fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
+                      {formatMetric(row.lpt)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </AccordionDetails>
+    </Accordion>
+  );
+}
 export default function AnalyticsSummary({ isAdmin }) {
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -163,37 +296,24 @@ export default function AnalyticsSummary({ isAdmin }) {
   const renderRankedTable = (title, data, keys, prefix, metricKeys) => {
 
     const averageMetric = (data, key) => {
-      const rows = data.filter(row => parseFloat(row[key]) > 0);
-      if (rows.length === 0) return "0.00";
-      return (
-        rows.reduce((sum, row) => sum + parseFloat(row[key] || 0), 0) /
-        rows.length
-      ).toFixed(2);
+      return getAverageMetricValue(data, key).toFixed(2);
     };
 
     const sorted = applySorting(data, prefix);
     return (
-      <Accordion defaultExpanded sx={{ borderRadius: 2,  width: '100%'  }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
-             bgcolor: '#e3f2fd',// You can change to any MUI theme color or hex
-          color: 'white'
-        }}>
-          <Typography variant="h6" gutterBottom color="primary.dark">{title} </Typography>
-  {metricKeys.map(metricKey => (
-            <Chip
-              key={metricKey}
-              label={`Average ${metricKey.toUpperCase()}: ${averageMetric(data, metricKey)}`}
-              color="secondary"
-              variant="outlined"
-              sx={{ fontWeight: "bold" , marginLeft: 2, backgroundColor: '#f0f0f0', color: 'secondary.main' }}
-            />
-          ))}
-        </AccordionSummary>
-
-        <AccordionDetails>
-          <Box sx={{ mb: 2 }}>
-          
-          </Box>
+      <Paper elevation={0} sx={{ borderRadius: 2, width: "100%", p: { xs: 1.5, md: 2 }, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 14px 34px rgba(15,23,42,0.05)" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
+          <Typography variant="h6" color="primary.dark" sx={{ fontWeight: 900 }}>{title}</Typography>
+          {metricKeys.map(metricKey => (
+              <Chip
+                key={metricKey}
+                label={`Average ${metricKey.toUpperCase()}: ${averageMetric(data, metricKey)}`}
+                color="secondary"
+                variant="outlined"
+                sx={{ fontWeight: "bold", backgroundColor: '#f0f0f0', color: 'secondary.main' }}
+              />
+            ))}
+        </Box>
           <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
             <Table size="small">
               <TableHead>
@@ -229,8 +349,13 @@ export default function AnalyticsSummary({ isAdmin }) {
               </TableBody>
             </Table>
           </TableContainer>
-        </AccordionDetails>
-      </Accordion>
+          <PerformanceChart
+            title={title.replace(" Summary", "")}
+            data={sorted}
+            kptKey={metricKeys[0]}
+            lptKey={metricKeys[1]}
+          />
+      </Paper>
     );
   };
 
