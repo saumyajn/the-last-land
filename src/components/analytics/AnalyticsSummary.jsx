@@ -65,19 +65,10 @@ const getPerformanceStatus = (value, average, metricType) => {
   return "yellow";
 };
 
-const getPointStatus = (kpt, lpt, kptAverage, lptAverage) => {
-  const kptStatus = getPerformanceStatus(kpt, kptAverage, "kpt");
-  const lptStatus = getPerformanceStatus(lpt, lptAverage, "lpt");
-
-  if (kptStatus === "green" && lptStatus === "green") return "green";
-  if (kptStatus === "red" || lptStatus === "red") return "red";
-  return "yellow";
-};
-
 const getPointStatusLabel = (status) => {
-  if (status === "green") return "Strong: high KPT and low LPT";
-  if (status === "red") return "Risk: low KPT or high LPT";
-  return "Average band or mixed result";
+  if (status === "green") return "Strong KPT";
+  if (status === "red") return "Risk KPT";
+  return "Average KPT";
 };
 
 function PerformanceChart({ title, data, kptKey, lptKey }) {
@@ -95,19 +86,18 @@ function PerformanceChart({ title, data, kptKey, lptKey }) {
 
   const getScore = (row) => {
     const kptScore = kptAverage > 0 ? row.kpt / kptAverage : 0;
-    const lptScore = lptAverage > 0 ? row.lpt / lptAverage : 0;
-    return kptScore - lptScore;
+    return kptScore;
   };
   const groupedRows = chartRows.reduce((groups, row) => {
-    const status = getPointStatus(row.kpt, row.lpt, kptAverage, lptAverage);
+    const status = getPerformanceStatus(row.kpt, kptAverage, "kpt");
     groups[status].push({ ...row, status, score: getScore(row) });
     return groups;
   }, { green: [], yellow: [], red: [] });
   Object.values(groupedRows).forEach((rows) => rows.sort((a, b) => b.score - a.score));
   const bandConfig = [
-    { key: "green", title: "Strong", helper: "High KPT + low LPT" },
-    { key: "yellow", title: "Average / Mixed", helper: "Around average or split result" },
-    { key: "red", title: "Risk", helper: "Low KPT or high LPT" },
+    { key: "green", title: "Strong", helper: "KPT above average +10%" },
+    { key: "yellow", title: "Average", helper: "KPT within average +/-10%" },
+    { key: "red", title: "Risk", helper: "KPT below average -10%" },
   ];
 
   return (
