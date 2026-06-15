@@ -5,7 +5,7 @@ import { db } from "../../utils/firebase";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 // IMPORTANT: Replace with your deployed Web App URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCG9CyqzdgH-veca-87RyYnsKcZYyx2sd5UWmnScr-9qMbZK5VNACrAJrpEDwG1ZTt/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXY1uGOxWGiQQkRMYgz8RAZ0z-r4CnCUvTRwkt_BwA47RpJhqyKqhZ_hIMwis9voa4/exec";
 
 export default function ExportToGoogleSheet() {
   const [exporting, setExporting] = useState(false);
