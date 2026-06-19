@@ -1,9 +1,7 @@
 import { Button, Box, CircularProgress, Paper, Snackbar, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import * as React from "react";
-
-// REPLACE THIS with your actual Cloud Function URL from the terminal
-const FUNCTION_URL = "https://extract-text-from-image-4cyoytiwnq-uc.a.run.app";
+import { detectTextWithWords, fileToBase64 } from "../../utils/googleVisions";
 
 export default function ImageUpload({ onUpload, onExtract, name, loading: parentLoading  }) {
     const fileInputRef = React.useRef();
@@ -102,49 +100,22 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
         setLoading(true);
         try {
-            // Process all files concurrently
-            const promises = files.map(file => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-
-                    reader.onload = async () => {
-                        try {
-                            // Strip "data:image/png;base64," prefix
-                            const base64String = reader.result.split(",")[1];
-
-                            const response = await fetch(FUNCTION_URL, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ image: base64String }),
-                            });
-
-                            const data = await response.json();
-                            if (response.ok) {
-                                resolve(data.text);
-                            } else {
-                                console.error("API Error:", data);
-                                resolve(`Error: ${data.error || "Failed to extract"}`);
-                            }
-                        } catch (err) {
-                            reject(err);
-                        }
-                    };
-                    reader.onerror = (error) => reject(error);
-                });
-            });
-
-            const extractedTexts = await Promise.all(promises);
+            const extractedResults = await Promise.all(
+                files.map(async (file) => {
+                    const base64String = await fileToBase64(file);
+                    return detectTextWithWords(base64String);
+                })
+            );
 
             // Pass the extracted text back to the parent component
             if (onExtract) {
-                await onExtract(extractedTexts);
+                await onExtract(extractedResults);
             }
             clearFiles();
 
         } catch (error) {
             console.error("Extraction failed", error);
-            alert("Failed to connect to the server.");
+            alert("Failed to extract text from the uploaded image.");
         } finally {
             setLoading(false);
         }

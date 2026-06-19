@@ -22,7 +22,7 @@ const callOcrFunction = async (payload) => {
     const response = await fetch(emulatorOcrUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: payload.image }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json().catch(() => ({}));

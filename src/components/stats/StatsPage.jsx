@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState, lazy, Suspense } f
 import { Alert, Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
-import { parseData } from "../../utils/parseData";
+import { parseData, parseDataFromVisionWords } from "../../utils/parseData";
 import { AuthContext } from "../../utils/authContext";
 import { updateDocument, deleteDocument } from "../../utils/dbActions";
 import { DEFAULT_STAT_WEIGHTS, DESIRED_STAT_KEYS } from "../../utils/appConstants";
@@ -90,24 +90,44 @@ export default function StatsPage() {
     }
   }, []);
 
-  const extractText = async (extractedTexts) => {
+  const extractText = async (extractedResults) => {
     const playerName = name.trim();
-    if (!extractedTexts || !extractedTexts.length || !playerName) return;
+    if (!extractedResults || !extractedResults.length || !playerName) return;
 
     setLoading(true);
     setStatsError("");
 
     try {
-      const failedExtraction = extractedTexts.find((entry) => String(entry || "").startsWith("Error:"));
+      const failedExtraction = extractedResults.find((entry) => String(entry || "").startsWith("Error:"));
       if (failedExtraction) {
         throw new Error(failedExtraction);
       }
 
-      const allExtracted = extractedTexts.join("\n");
+      const allExtracted = extractedResults
+        .map((entry) => (typeof entry === "string" ? entry : entry?.text))
+        .filter(Boolean)
+        .join("\n");
+      const allWords = extractedResults.flatMap((entry) =>
+        Array.isArray(entry?.words) ? entry.words : []
+      );
+
       setText(allExtracted);
 
-      const attributes = parseData(allExtracted, DESIRED_STAT_KEYS);
-      const missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
+      let attributes = allWords.length
+        ? parseDataFromVisionWords(allWords, DESIRED_STAT_KEYS)
+        : parseData(allExtracted, DESIRED_STAT_KEYS);
+      let missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
+
+      if (allWords.length && missingKeys.length > DESIRED_STAT_KEYS.length / 2) {
+        const fallbackAttributes = parseData(allExtracted, DESIRED_STAT_KEYS);
+        const fallbackMissingKeys = DESIRED_STAT_KEYS.filter((key) => fallbackAttributes[key] === "NA");
+
+        if (fallbackMissingKeys.length < missingKeys.length) {
+          attributes = fallbackAttributes;
+          missingKeys = fallbackMissingKeys;
+        }
+      }
+
       const extractedCount = DESIRED_STAT_KEYS.length - missingKeys.length;
 
       if (extractedCount === 0) {
