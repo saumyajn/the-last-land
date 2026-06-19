@@ -1,4 +1,5 @@
 from firebase_functions import https_fn, options
+from firebase_functions.params import SecretParam
 from firebase_admin import initialize_app
 from google import genai
 from google.genai import types
@@ -8,6 +9,7 @@ import os
 import re
 
 app = initialize_app()
+GEMINI_API_KEY_SECRET = SecretParam("GEMINI_API_KEY")
 DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GEMINI_BACKUP_MODELS = [
     "gemini-2.5-flash-lite",
@@ -17,11 +19,11 @@ DEFAULT_GEMINI_BACKUP_MODELS = [
 
 
 def get_gemini_client():
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY") or GEMINI_API_KEY_SECRET.value
     if not api_key:
         raise RuntimeError(
-            "GEMINI_API_KEY is not set. Start the emulator with "
-            '`$env:GEMINI_API_KEY="your_key"` before `npm.cmd run emulators`.'
+            "GEMINI_API_KEY is not set. Add it as a Firebase Functions secret "
+            "for production, or set it locally before starting the emulator."
         )
 
     return genai.Client(api_key=api_key)
@@ -109,6 +111,7 @@ def remove_negative_signs(value):
 
 
 @https_fn.on_call(
+    secrets=[GEMINI_API_KEY_SECRET],
     cors=options.CorsOptions(
         cors_origins=[
             "https://the-last-land-analytics.vercel.app",

@@ -14,9 +14,14 @@
 # misc
 .DS_Store
 .env.local
+.env
+.env.*
 .env.development.local
 .env.test.local
 .env.production.local
+functions/.env
+functions/.env.*
+functions/.secret.local
 
 npm-debug.log*
 yarn-debug.log*
