@@ -1,23 +1,9 @@
-const { initializeApp } = require("firebase/app");
-const {
-  connectFirestoreEmulator,
-  doc,
-  getFirestore,
-  setDoc,
-} = require("firebase/firestore");
+const net = require("node:net");
 
 const projectId = process.env.REACT_APP_FIREBASE_PROJECT_ID || "image-to-data-9a90b";
 const host = process.env.REACT_APP_FIREBASE_EMULATOR_HOST || "127.0.0.1";
 const port = Number(process.env.REACT_APP_FIRESTORE_EMULATOR_PORT || 8080);
-
-const app = initializeApp({
-  apiKey: "local-emulator",
-  authDomain: `${projectId}.firebaseapp.com`,
-  projectId,
-});
-
-const db = getFirestore(app);
-connectFirestoreEmulator(db, host, port);
+const baseUrl = `http://${host}:${port}/v1/projects/${projectId}/databases/(default)/documents`;
 
 const player = "Fixture Player";
 const statDoc = {
@@ -81,7 +67,7 @@ const settings = {
     cavalryAttack: "",
     cavalryHealth: "",
     cavalryDefense: "",
-    siegettack: "",
+    siegeAttack: "",
     siegeHealth: "",
     siegeDefense: "",
     archerRatio: "",
@@ -107,52 +93,196 @@ const atlantisDamage = {
 
 const formationSettings = {
   total: "1000000",
-  guards: "0",
+  guards: "100000",
   damage_troops: "900000",
-  at10: "40",
-  at9: "25",
-  at8: "20",
-  at7: "15",
-  ct10: "40",
-  ct9: "25",
-  ct8: "20",
-  ct7: "15",
+  at10: "20",
+  at9: "15",
+  at8: "10",
+  at7: "5",
+  ct10: "20",
+  ct9: "15",
+  ct8: "10",
+  ct7: "5",
+};
+
+const formationDoc = {
+  Elite: {
+    avgDamage: 246.4,
+    count: 1,
+    troops: 900000,
+    at10: 180,
+    at9: 135,
+    at8: 90,
+    at7: 45,
+    ct10: 180,
+    ct9: 135,
+    ct8: 90,
+    ct7: 45,
+    marchSize: 900,
+    total: "900.00",
+  },
+  Strong: {
+    avgDamage: 0,
+    count: 0,
+    troops: 0,
+    at10: 0,
+    at9: 0,
+    at8: 0,
+    at7: 0,
+    ct10: 0,
+    ct9: 0,
+    ct8: 0,
+    ct7: 0,
+    marchSize: 0,
+    total: "0.00",
+  },
+  Solid: {
+    avgDamage: 0,
+    count: 0,
+    troops: 0,
+    at10: 0,
+    at9: 0,
+    at8: 0,
+    at7: 0,
+    ct10: 0,
+    ct9: 0,
+    ct8: 0,
+    ct7: 0,
+    marchSize: 0,
+    total: "0.00",
+  },
+  Building: {
+    avgDamage: 0,
+    count: 0,
+    troops: 0,
+    at10: 0,
+    at9: 0,
+    at8: 0,
+    at7: 0,
+    ct10: 0,
+    ct9: 0,
+    ct8: 0,
+    ct7: 0,
+    marchSize: 0,
+    total: "0.00",
+  },
 };
 
 const formationKillSettings = {
   archer: {
-    troops: 900000,
+    troops: 450000,
     multiplier: "",
     guardsKilled: 0,
   },
   cavalry: {
-    troops: 900000,
+    troops: 450000,
     multiplier: "",
     guardsKilled: 0,
   },
-  totalGuards: 0,
+  totalGuards: 100000,
   totalGuardKills: 0,
 };
 
-async function seed() {
-  await setDoc(doc(db, "stats", player), statDoc);
-  await setDoc(doc(db, "reports", player), reportDoc);
-  await setDoc(doc(db, "settings", "statWeights"), settings);
-  await setDoc(doc(db, "settings", "thresholds"), { thresholds });
-  await setDoc(doc(db, "settings", "atlantis_damage"), atlantisDamage);
-  await setDoc(doc(db, "settings", "tower_formation"), formationSettings);
-  await setDoc(doc(db, "settings", "throne_formation"), formationSettings);
-  await setDoc(doc(db, "formation", "tower_kills"), formationKillSettings);
-  await setDoc(doc(db, "formation", "throne_kills"), formationKillSettings);
-  await setDoc(doc(db, "analytics", "troop_type_kpt"), {
-    T10_cavalry: { Kills: 12034, Losses: 567, Wounded: 8901, Survivors: 0, KPT: "0.15", LPT: "1.00" },
-    T10_archer: { Kills: 11000, Losses: 500, Wounded: 7000, Survivors: 3200, KPT: "0.40", LPT: "0.70" },
+const documents = [
+  ["stats", player, statDoc],
+  ["reports", player, reportDoc],
+  ["settings", "statWeights", settings],
+  ["settings", "thresholds", { thresholds }],
+  ["settings", "atlantis_damage", atlantisDamage],
+  ["settings", "tower_formation", formationSettings],
+  ["settings", "throne_formation", formationSettings],
+  ["formation", "tower_formation", formationDoc],
+  ["formation", "throne_formation", formationDoc],
+  ["formation", "tower_kills", formationKillSettings],
+  ["formation", "throne_kills", formationKillSettings],
+  [
+    "analytics",
+    "troop_type_kpt",
+    {
+      T10_cavalry: { Kills: 12034, Losses: 567, Wounded: 8901, Survivors: 0, KPT: "0.15", LPT: "1.00" },
+      T10_archer: { Kills: 11000, Losses: 500, Wounded: 7000, Survivors: 3200, KPT: "0.40", LPT: "0.70" },
+    },
+  ],
+];
+
+function waitForPort(timeoutMs = 2500) {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host, port });
+    const timeout = setTimeout(() => {
+      socket.destroy();
+      reject(new Error(`Firestore emulator is not reachable at ${host}:${port}. Start it with \`npm.cmd run emulators\` first.`));
+    }, timeoutMs);
+
+    socket.once("connect", () => {
+      clearTimeout(timeout);
+      socket.end();
+      resolve();
+    });
+    socket.once("error", () => {
+      clearTimeout(timeout);
+      reject(new Error(`Firestore emulator is not reachable at ${host}:${port}. Start it with \`npm.cmd run emulators\` first.`));
+    });
+  });
+}
+
+function toFirestoreValue(value) {
+  if (value === null || value === undefined) {
+    return { nullValue: null };
+  }
+  if (Array.isArray(value)) {
+    return { arrayValue: { values: value.map(toFirestoreValue) } };
+  }
+  if (typeof value === "object") {
+    return {
+      mapValue: {
+        fields: Object.fromEntries(
+          Object.entries(value).map(([key, nestedValue]) => [key, toFirestoreValue(nestedValue)])
+        ),
+      },
+    };
+  }
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
+  }
+  if (typeof value === "boolean") {
+    return { booleanValue: value };
+  }
+  return { stringValue: String(value) };
+}
+
+function toFirestoreDocument(data) {
+  return {
+    fields: Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, toFirestoreValue(value)])
+    ),
+  };
+}
+
+async function writeDocument(collectionName, documentId, data) {
+  const url = `${baseUrl}/${encodeURIComponent(collectionName)}/${encodeURIComponent(documentId)}`;
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toFirestoreDocument(data)),
   });
 
-  console.log(`Seeded Firestore emulator at ${host}:${port} for project ${projectId}`);
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Failed to write ${collectionName}/${documentId}: ${response.status} ${body}`);
+  }
+}
+
+async function seed() {
+  await waitForPort();
+
+  for (const [collectionName, documentId, data] of documents) {
+    await writeDocument(collectionName, documentId, data);
+  }
+
+  console.log(`Seeded ${documents.length} Firestore emulator documents at ${host}:${port} for project ${projectId}`);
 }
 
 seed().catch((error) => {
-  console.error("Failed to seed Firestore emulator:", error);
+  console.error("Failed to seed Firestore emulator:", error.message);
   process.exit(1);
 });

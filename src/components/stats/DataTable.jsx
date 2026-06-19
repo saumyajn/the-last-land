@@ -22,8 +22,9 @@ import DamageCharts from "./DamageCharts";
 
 const columnGroups = [
     { label: "Troop", keys: ["Troop Attack", "Troop Health", "Troop Defense", "Troop Damage", "Troop Damage Received", "Troop Attack Blessing", "Troop Protection Blessing"] },
-    { label: "Archer", keys: ["Archer Attack", "Archer Health", "Archer Defense", "Archer Damage", "Archer Damage Received", "Archer Attack Blessing", "Archer Protection Blessing"] },
+
     { label: "Cavalry", keys: ["Cavalry Attack", "Cavalry Health", "Cavalry Defense", "Cavalry Damage", "Cavalry Damage Received", "Cavalry Attack Blessing", "Cavalry Protection Blessing"] },
+    { label: "Archer", keys: ["Archer Attack", "Archer Health", "Archer Defense", "Archer Damage", "Archer Damage Received", "Archer Attack Blessing", "Archer Protection Blessing"] },
     { label: "Siege", keys: ["Siege Attack", "Siege Health", "Siege Defense", "Siege Damage", "Siege Damage Received", "Siege Attack Blessing", "Siege Protection Blessing"] }
 ];
 

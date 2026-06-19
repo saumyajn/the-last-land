@@ -6,6 +6,7 @@ const emulatorHost = process.env.REACT_APP_FIREBASE_EMULATOR_HOST || "127.0.0.1"
 const emulatorPorts = {
   auth: Number(process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_PORT || "9099"),
   firestore: Number(process.env.REACT_APP_FIRESTORE_EMULATOR_PORT || "8080"),
+  functions: Number(process.env.REACT_APP_FUNCTIONS_EMULATOR_PORT || "5001"),
 };
 
 const reactScriptsBin = path.resolve(
@@ -50,7 +51,8 @@ const startReactApp = () => {
       REACT_APP_FIREBASE_EMULATOR_HOST: emulatorHost,
       REACT_APP_FIREBASE_AUTH_EMULATOR_PORT: String(emulatorPorts.auth),
       REACT_APP_FIRESTORE_EMULATOR_PORT: String(emulatorPorts.firestore),
-      REACT_APP_EMULATOR_OCR_SOURCE: process.env.REACT_APP_EMULATOR_OCR_SOURCE || "production-http",
+      REACT_APP_FUNCTIONS_EMULATOR_PORT: String(emulatorPorts.functions),
+      REACT_APP_EMULATOR_OCR_SOURCE: process.env.REACT_APP_EMULATOR_OCR_SOURCE || "functions-emulator",
     },
   }
   );

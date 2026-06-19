@@ -12,6 +12,34 @@ import { calculateStatOutputs } from "../../utils/statCalculations";
 const RawText = lazy(() => import("./RawData"));
 const DataTable = lazy(() => import("./DataTable"));
 
+const isPlainObject = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const getStructuredExtraction = (entry) => {
+  if (!isPlainObject(entry)) return null;
+  if (isPlainObject(entry.data)) return entry.data;
+  if ("text" in entry || "words" in entry) return null;
+  return entry;
+};
+
+const toAttributeValue = (value) => {
+  if (value === undefined || value === null || value === "") return "NA";
+  return String(value).replace(/-/g, "");
+};
+
+const mergeStructuredAttributes = (entries, desiredKeys) =>
+  desiredKeys.reduce((attributes, key) => {
+    const source = entries.find((entry) => entry[key] !== undefined && entry[key] !== null && entry[key] !== "");
+    attributes[key] = source ? toAttributeValue(source[key]) : "NA";
+    return attributes;
+  }, {});
+
+const formatRawExtractedValues = (attributes, desiredKeys) =>
+  desiredKeys
+    .filter((key) => attributes[key] !== undefined)
+    .map((key) => `${key} = ${attributes[key]}`)
+    .join("\n");
+
 let statsBootstrapPromise = null;
 
 const loadStatsBootstrap = () => {
@@ -31,7 +59,6 @@ export default function StatsPage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
   const [dataTable, setDataTable] = useState({});
-  const [parsedTextAttributes, setParsedTextAttributes] = useState({});
   const [name, setName] = useState("");
   const { showNoPermission } = usePermissionSnackbar();
   const [statWeights, setStatWeights] = useState(DEFAULT_STAT_WEIGHTS);
@@ -88,7 +115,6 @@ export default function StatsPage() {
     const files = Array.from(event.target.files);
     if (files.length) {
       setText("");
-      setParsedTextAttributes({});
     }
   }, []);
 
@@ -105,19 +131,27 @@ export default function StatsPage() {
         throw new Error(failedExtraction);
       }
 
-      const allExtracted = extractedResults
-        .map((entry) => (typeof entry === "string" ? entry : entry?.text))
-        .filter(Boolean)
-        .join("\n");
-      const allWords = extractedResults.flatMap((entry) =>
-        Array.isArray(entry?.words) ? entry.words : []
-      );
+      const structuredEntries = extractedResults
+        .map(getStructuredExtraction)
+        .filter(Boolean);
 
-      setText(allExtracted);
+      const allExtracted = structuredEntries.length
+        ? JSON.stringify(structuredEntries.length === 1 ? structuredEntries[0] : structuredEntries, null, 2)
+        : extractedResults
+          .map((entry) => (typeof entry === "string" ? entry : entry?.text))
+          .filter(Boolean)
+          .join("\n");
+      const allWords = structuredEntries.length
+        ? []
+        : extractedResults.flatMap((entry) =>
+          Array.isArray(entry?.words) ? entry.words : []
+        );
 
-      let attributes = parseData(allExtracted, DESIRED_STAT_KEYS);
+      let attributes = structuredEntries.length
+        ? mergeStructuredAttributes(structuredEntries, DESIRED_STAT_KEYS)
+        : parseData(allExtracted, DESIRED_STAT_KEYS);
 
-      if (allWords.length) {
+      if (!structuredEntries.length && allWords.length) {
         const wordAttributes = parseDataFromVisionWords(allWords, DESIRED_STAT_KEYS);
         attributes = DESIRED_STAT_KEYS.reduce((merged, key) => {
           if (merged[key] === "NA" && wordAttributes[key] !== "NA") {
@@ -142,7 +176,7 @@ export default function StatsPage() {
         );
       }
 
-      setParsedTextAttributes(attributes);
+      setText(formatRawExtractedValues(attributes, DESIRED_STAT_KEYS));
 
       attributes["Archer Atlantis"] = "0";
       attributes["Cavalry Atlantis"] = "0";
@@ -227,7 +261,7 @@ export default function StatsPage() {
               setStatWeights={setStatWeights}
             />
           )}
-          <RawText text={text} parsedAttributes={parsedTextAttributes} desiredKeys={DESIRED_STAT_KEYS} />
+          <RawText text={text} />
         </Suspense>
       </Container>
     </Box>

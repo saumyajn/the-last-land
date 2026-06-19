@@ -1,14 +1,20 @@
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { app } from './firebase'; // Import your firebase app instance
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import { app } from './firebase'; 
 import {
+  firebaseEmulatorHost,
+  firebaseEmulatorPorts,
   shouldUseFirebaseEmulators
-} from './firebaseEnv';
+} from './firebaseEnv'; 
 
-const functions = getFunctions(app);
-const emulatorOcrUrl =
-  process.env.REACT_APP_EMULATOR_OCR_URL ||
-  "https://us-central1-image-to-data-9a90b.cloudfunctions.net/extract_text_from_image";
+const functions = getFunctions(app, 'us-central1');
 
+if (shouldUseFirebaseEmulators) {
+  const emulatorConnectionKey = "__imageToDataFunctionsEmulatorConnected";
+  if (!window[emulatorConnectionKey]) {
+    connectFunctionsEmulator(functions, firebaseEmulatorHost, firebaseEmulatorPorts.functions);
+    window[emulatorConnectionKey] = true;
+  }
+}
 export const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -17,49 +23,52 @@ export const fileToBase64 = (file) =>
     reader.readAsDataURL(file);
   });
 
-const callOcrFunction = async (payload) => {
-  if (shouldUseFirebaseEmulators) {
-    const response = await fetch(emulatorOcrUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const ocrError = new Error(data.error || `OCR request failed with ${response.status}`);
-      ocrError.name = "OcrError";
-      throw ocrError;
-    }
-
-    return data;
-  }
-
-  // This "calls" the 'process_image_ocr' function in main.py
-  const ocrFunction = httpsCallable(functions, 'process_image_ocr'); 
+/**
+ * Extracts structured JSON data from a game screenshot using the backend Gemini pipeline.
+ * @param {string} base64Image - The image data without the data:image/png;base64, prefix.
+ * @param {string} expectedType - "REPORT" for table matrices, "STATS" for flat attributes.
+ */
+export const extractGameData = async (base64Image, expectedType = "STATS") => {
+  // Target the new function name created in Step 2
+  const extractionFunction = httpsCallable(functions, 'process_image_extraction'); 
   
   try {
-    const result = await ocrFunction(payload);
-    return result.data || {};
+    const result = await extractionFunction({ 
+        image: base64Image, 
+        expectedType 
+    });
+    
+    if (!result.data || !result.data.success) {
+        throw new Error(result?.data?.error || "Extraction failed on the server.");
+    }
+    
+    // Returns the clean, structured JSON object ready for immediate use
+    return result.data.data; 
   } catch (error) {
-    console.error("Cloud OCR failed:", error);
-    const message = error?.message || error?.details || "Cloud OCR failed.";
-    const ocrError = new Error(message);
-    ocrError.name = "OcrError";
-    throw ocrError;
+    const message =
+      error?.message ||
+      error?.details?.error ||
+      error?.details ||
+      error?.code ||
+      "Image extraction failed.";
+    console.error("Pipeline failure:", message, {
+      code: error?.code,
+      details: error?.details,
+    });
+    throw new Error(message);
   }
 };
 
 export const detectText = async (base64Image) => {
-  // result contains the {"text": "..."} object from Python
-  const data = await callOcrFunction({ image: base64Image });
-  return data.text || "No text found.";
+  const data = await extractGameData(base64Image, "STATS");
+  return JSON.stringify(data, null, 2);
 };
 
 export const detectTextWithWords = async (base64Image) => {
-  const data = await callOcrFunction({ image: base64Image, includeWords: true });
+  const data = await extractGameData(base64Image, "STATS");
   return {
-    text: data.text || "No text found.",
-    words: Array.isArray(data.words) ? data.words : [],
+    text: JSON.stringify(data, null, 2),
+    data,
+    words: [],
   };
 };

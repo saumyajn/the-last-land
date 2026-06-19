@@ -1,11 +1,12 @@
-import { Button, Box, CircularProgress, Paper, Snackbar, IconButton } from "@mui/material";
+import { Alert, Button, Box, CircularProgress, Paper, Snackbar, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import * as React from "react";
-import { detectTextWithWords, fileToBase64 } from "../../utils/googleVisions";
+import { extractGameData, fileToBase64 } from "../../utils/googleVisions";
 
 export default function ImageUpload({ onUpload, onExtract, name, loading: parentLoading  }) {
     const fileInputRef = React.useRef();
     const [pasteSnackbarOpen, setPasteSnackbarOpen] = React.useState(false);
+    const [extractionError, setExtractionError] = React.useState("");
 
     // We need two states: one for preview URLs (images) and one for actual File objects (files)
     const [images, setImages] = React.useState([]);
@@ -29,6 +30,7 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
         const filesArray = Array.from(fileList);
         if (!filesArray.length) return;
 
+        setExtractionError("");
         const urls = filesArray.map(file => URL.createObjectURL(file));
         setImages(prev => [...prev, ...urls]);
         setFiles(prev => [...prev, ...filesArray]);
@@ -99,11 +101,12 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
         if (files.length === 0 || !name.trim()) return;
 
         setLoading(true);
+        setExtractionError("");
         try {
             const extractedResults = await Promise.all(
                 files.map(async (file) => {
                     const base64String = await fileToBase64(file);
-                    return detectTextWithWords(base64String);
+                  return extractGameData(base64String, "STATS");
                 })
             );
 
@@ -115,7 +118,7 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
         } catch (error) {
             console.error("Extraction failed", error);
-            alert("Failed to extract text from the uploaded image.");
+            setExtractionError(error?.message || "Failed to extract text from the uploaded image.");
         } finally {
             setLoading(false);
         }
@@ -153,6 +156,12 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
                     {loading || parentLoading? <CircularProgress size={24} color="inherit" /> : "Extract Text"}
                 </Button>
             </Box>
+
+            {extractionError && (
+                <Alert severity="error" onClose={() => setExtractionError("")} sx={{ mt: 2 }}>
+                    {extractionError}
+                </Alert>
+            )}
 
             {/* Image Previews */}
             {images.length > 0 && (

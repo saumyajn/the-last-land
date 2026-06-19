@@ -6,3 +6,4 @@ flask
 flask-cors
 google-cloud-vision
 google-cloud-firestore
+google-genai==2.7.0
