@@ -29,7 +29,7 @@ export default function Footer() {
         }}
       >
         <Typography variant="body2">
-          Built with <strong>React</strong>, <strong>Firebase Auth</strong>, <strong>FireStore</strong>, <strong>Google Vision API</strong>, <strong>Material UI</strong>
+          Built with <strong>React</strong>, <strong>Firebase Auth</strong>, <strong>Firestore</strong>, <strong>Gemini API</strong>, <strong>Material UI</strong>
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems:'center' }}>

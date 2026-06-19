@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, } from "react";
-import { onSnapshot, doc, setDoc } from "firebase/firestore"; // Added setDoc
+import { onSnapshot, doc, setDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import {
     Box,
@@ -40,7 +40,6 @@ export default function AnalyticsPage() {
                 setCombinedData(data);
                 const summary = calculateTroopTypeSummary(data);
 
-                // 3. Update the database summary document if the user is an admin
                 if (isAdmin) {
                     try {
                         await setDoc(doc(db, "analytics", "troop_type_summary"), {
@@ -61,7 +60,7 @@ export default function AnalyticsPage() {
         });
 
         return () => unsubscribe();
-    }, [isAdmin]); // Added isAdmin to dependencies to handle permission-based writing
+    }, [isAdmin]);
 
     if (loading) return (
         <Stack spacing={1}>

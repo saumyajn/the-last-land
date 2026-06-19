@@ -2,7 +2,6 @@ import React, { useCallback, useContext, useEffect, useState, lazy, Suspense } f
 import { Alert, Container, Typography, Box, Paper, TextField, Stack, Skeleton } from "@mui/material";
 import ImageUpload from "./ImageUpload";
 import { usePermissionSnackbar } from "../Permissions";
-import { parseData, parseDataFromVisionWords } from "../../utils/parseData";
 import { AuthContext } from "../../utils/authContext";
 import { updateDocument, deleteDocument } from "../../utils/dbActions";
 import { DEFAULT_STAT_WEIGHTS, DESIRED_STAT_KEYS } from "../../utils/appConstants";
@@ -135,33 +134,11 @@ export default function StatsPage() {
         .map(getStructuredExtraction)
         .filter(Boolean);
 
-      const allExtracted = structuredEntries.length
-        ? JSON.stringify(structuredEntries.length === 1 ? structuredEntries[0] : structuredEntries, null, 2)
-        : extractedResults
-          .map((entry) => (typeof entry === "string" ? entry : entry?.text))
-          .filter(Boolean)
-          .join("\n");
-      const allWords = structuredEntries.length
-        ? []
-        : extractedResults.flatMap((entry) =>
-          Array.isArray(entry?.words) ? entry.words : []
-        );
-
-      let attributes = structuredEntries.length
-        ? mergeStructuredAttributes(structuredEntries, DESIRED_STAT_KEYS)
-        : parseData(allExtracted, DESIRED_STAT_KEYS);
-
-      if (!structuredEntries.length && allWords.length) {
-        const wordAttributes = parseDataFromVisionWords(allWords, DESIRED_STAT_KEYS);
-        attributes = DESIRED_STAT_KEYS.reduce((merged, key) => {
-          if (merged[key] === "NA" && wordAttributes[key] !== "NA") {
-            merged[key] = wordAttributes[key];
-          }
-
-          return merged;
-        }, { ...attributes });
+      if (!structuredEntries.length) {
+        throw new Error("The extraction response was empty or invalid. The saved player data was not changed.");
       }
 
+      let attributes = mergeStructuredAttributes(structuredEntries, DESIRED_STAT_KEYS);
       let missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
 
       const extractedCount = DESIRED_STAT_KEYS.length - missingKeys.length;

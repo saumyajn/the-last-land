@@ -8,7 +8,6 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
     const [pasteSnackbarOpen, setPasteSnackbarOpen] = React.useState(false);
     const [extractionError, setExtractionError] = React.useState("");
 
-    // We need two states: one for preview URLs (images) and one for actual File objects (files)
     const [images, setImages] = React.useState([]);
     const [files, setFiles] = React.useState([]);
     const imagesRef = React.useRef([]);
@@ -88,11 +87,9 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
     };
 
     const deleteImage = (index) => {
-        // Revoke URL to prevent memory leaks
         const url = images[index];
         if (url) URL.revokeObjectURL(url);
 
-        // Remove from both arrays
         setImages(prev => prev.filter((_, i) => i !== index));
         setFiles(prev => prev.filter((_, i) => i !== index));
     };
@@ -110,7 +107,6 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
                 })
             );
 
-            // Pass the extracted text back to the parent component
             if (onExtract) {
                 await onExtract(extractedResults);
             }
@@ -126,7 +122,6 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
     return (
         <Box sx={{ mt: 2 }}>
-            {/* Hidden file input */}
             <input
                 type="file"
                 accept="image/*"
@@ -135,10 +130,9 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
                 ref={fileInputRef}
                 disabled={!name.trim()}
                 className="hidden-data"
-                style={{ display: 'none' }} // Ensure it's hidden
+                style={{ display: 'none' }}
             />
 
-            {/* Upload and Extract Buttons inline */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
                 <Button
                     variant="outlined"
@@ -150,7 +144,7 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
 
                 <Button
                     variant="contained"
-                    onClick={handleExtractClick} // Changed from onExtract to local handler
+                    onClick={handleExtractClick}
                     disabled={!files.length || loading || parentLoading || !name.trim()}
                 >
                     {loading || parentLoading? <CircularProgress size={24} color="inherit" /> : "Extract Text"}
@@ -163,7 +157,6 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
                 </Alert>
             )}
 
-            {/* Image Previews */}
             {images.length > 0 && (
                 <Paper elevation={3} sx={{ mt: 2, p: 1, borderRadius: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
                     {images.map((img, idx) => (
@@ -188,13 +181,12 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
                 </Paper>
             )}
 
-            {/* Snackbar */}
             <Snackbar
                 open={pasteSnackbarOpen}
                 autoHideDuration={2000}
                 onClose={() => setPasteSnackbarOpen(false)}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                message="📥 Image(s) pasted!"
+                message="Image(s) pasted."
                 slotProps={{
                     root: {
                         sx: {
@@ -211,3 +203,4 @@ export default function ImageUpload({ onUpload, onExtract, name, loading: parent
         </Box>
     );
 }
+

@@ -11,12 +11,12 @@ const workflows = [
   {
     icon: <QueryStatsIcon />,
     title: "Stat Extraction",
-    detail: "Google Vision OCR parses player stat screenshots into structured Firestore records.",
+    detail: "Gemini parses player stat screenshots into structured Firestore records.",
   },
   {
     icon: <AssessmentIcon />,
     title: "Report Matching",
-    detail: "OpenCV template matching locates troop rows and keeps report data editable before saving.",
+    detail: "Gemini extracts troop rows and keeps report data editable before saving.",
   },
   {
     icon: <BarChartIcon />,
@@ -31,7 +31,7 @@ const workflows = [
 ];
 
 const proofItems = [
-  "OCR + OpenCV extraction pipeline",
+  "Gemini extraction pipeline",
   "Firebase Auth, Firestore, and local emulators",
   "Regression fixtures around parser and formulas",
   "Read-only charts and spreadsheet export support",
@@ -61,7 +61,7 @@ export default function AboutPage() {
         >
           <Box>
             <Chip
-              label="The Last Land OCR Analytics"
+              label="The Last Land Analytics"
               color="primary"
               variant="outlined"
               sx={{ mb: 2, backgroundColor: "primary.light" }}

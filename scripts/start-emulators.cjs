@@ -38,23 +38,22 @@ const checkPort = (host, port) =>
 
 const startReactApp = () => {
   const child = spawn(
-  process.execPath,
-  [reactScriptsBin, "start"],
-  {
-    stdio: "inherit",
-    shell: false,
-    env: {
-      ...process.env,
-      BROWSER: process.env.BROWSER || "none",
-      PORT: process.env.PORT || "3001",
-      REACT_APP_USE_FIREBASE_EMULATORS: "true",
-      REACT_APP_FIREBASE_EMULATOR_HOST: emulatorHost,
-      REACT_APP_FIREBASE_AUTH_EMULATOR_PORT: String(emulatorPorts.auth),
-      REACT_APP_FIRESTORE_EMULATOR_PORT: String(emulatorPorts.firestore),
-      REACT_APP_FUNCTIONS_EMULATOR_PORT: String(emulatorPorts.functions),
-      REACT_APP_EMULATOR_OCR_SOURCE: process.env.REACT_APP_EMULATOR_OCR_SOURCE || "functions-emulator",
-    },
-  }
+    process.execPath,
+    [reactScriptsBin, "start"],
+    {
+      stdio: "inherit",
+      shell: false,
+      env: {
+        ...process.env,
+        BROWSER: process.env.BROWSER || "none",
+        PORT: process.env.PORT || "3001",
+        REACT_APP_USE_FIREBASE_EMULATORS: "true",
+        REACT_APP_FIREBASE_EMULATOR_HOST: emulatorHost,
+        REACT_APP_FIREBASE_AUTH_EMULATOR_PORT: String(emulatorPorts.auth),
+        REACT_APP_FIRESTORE_EMULATOR_PORT: String(emulatorPorts.firestore),
+        REACT_APP_FUNCTIONS_EMULATOR_PORT: String(emulatorPorts.functions),
+      },
+    }
   );
 
   child.on("error", (error) => {

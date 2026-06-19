@@ -1,9 +1,9 @@
 # Architecture
 
-The Last Land is an OCR analytics platform with three important boundaries:
+The Last Land is an analytics platform with three important boundaries:
 
-- Screenshot extraction and OCR
-- Deterministic parsing and calculations
+- Screenshot extraction
+- Deterministic calculations
 - Firebase-backed persistence and analytics
 
 ## Frontend
@@ -11,30 +11,27 @@ The Last Land is an OCR analytics platform with three important boundaries:
 The frontend is a React CRA application using Material UI. It owns:
 
 - Authentication UI and route-level workflow.
-- Stats upload and parsing views.
+- Stats upload views.
 - Formation planning views.
 - Battle report extraction and manual correction.
 - Analytics summaries and export actions.
 
-## OCR Flow
+## Extraction Flow
 
 Stats extraction:
 
 1. The user uploads screenshots in the stats workflow.
-2. Image data is sent to the Firebase callable OCR function.
-3. Google Cloud Vision returns raw text.
-4. `parseData` maps raw OCR text to desired stat keys.
-5. `calcs` computes derived damage values.
-6. Admin users persist the result into Firestore.
+2. Image data is sent to the Firebase callable Gemini extraction function.
+3. The function returns structured stat keys.
+4. `calcs` computes derived damage values.
+5. Admin users persist the result into Firestore.
 
 Report extraction:
 
 1. The user uploads or pastes a battle report screenshot.
-2. OpenCV.js performs multi-scale template matching against troop icon assets.
-3. Matched rows are cropped.
-4. Crops are sent to Google Cloud Vision.
-5. OCR text is cleaned into Kills, Losses, Wounded, and Survivors.
-6. Admin users persist report data and trigger KPT/LPT aggregation.
+2. Image data is sent to the Firebase callable Gemini extraction function.
+3. The function returns structured Kills, Losses, Wounded, and Survivors values.
+4. Admin users persist report data and trigger KPT/LPT aggregation.
 
 ## Firestore Collections
 
@@ -62,9 +59,7 @@ Recommended future direction:
 
 Do not change these without approval and regression fixtures:
 
-- OCR cleanup rules
-- Template match thresholds and scale loop
-- Stat parser key matching
+- Extraction prompt and output shape
 - Damage formulas
 - KPT/LPT formulas
 - Firestore collection/document shapes

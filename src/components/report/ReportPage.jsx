@@ -24,13 +24,12 @@ import {
   calculateGroupLPT,
 } from "../../utils/kptCalculations";
 
-const templateMap = Object.fromEntries(TROOP_ORDER.map((troopType) => [troopType, [troopType]]));
-const templateKeys = Object.keys(templateMap);
+const templateKeys = TROOP_ORDER;
 const labels = REPORT_LABELS;
 
 export default function ReportPage() {
   const { isAdmin } = useContext(AuthContext);
-  const [status, setStatus] = useState("⏳ Waiting for upload...");
+  const [status, setStatus] = useState("Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImageFile, setMainImageFile] = useState(null);
   const [playerName, setPlayerName] = useState("");
@@ -108,7 +107,7 @@ export default function ReportPage() {
           const file = item.getAsFile();
           if (file) {
             setMainImageFromFile(file);
-            setStatus("📥 Image pasted from clipboard");
+            setStatus("Image pasted from clipboard.");
           }
         }
       }
@@ -121,19 +120,19 @@ export default function ReportPage() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setMainImageFromFile(file, "✅ Image selected");
+    setMainImageFromFile(file, "Image selected.");
   };
 
   const processImage = async () => {
     const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
     if (!mainImageFile || !finalPlayerName) {
-      setStatus("❌ Please select an image and enter a player name.");
+      setStatus("Please select an image and enter a player name.");
       return;
     }
 
     try {
       setLoading(true);
-      setStatus("📸 Processing AI Vision Extraction...");
+      setStatus("Processing image extraction...");
 
       const base64 = await fileToBase64(mainImageFile);
       const extractedData = await extractGameData(base64, "REPORT")
@@ -150,10 +149,8 @@ export default function ReportPage() {
         freshData[key] = { ...freshData[key], ...value };
       }
 
-      // Save the individual report to Firestore
       await setDoc(doc(db, "reports", finalPlayerName), freshData);
 
-      // 🔄 TRIGGER GLOBAL ANALYTICS UPDATE (both KPT and Summary)
       await updateTroopTypeKpt(isAdmin);
 
       setStructuredResults((prev = []) => {
@@ -161,10 +158,10 @@ export default function ReportPage() {
         return [{ name: finalPlayerName, data: freshData }, ...updated];
       });
 
-      setStatus("✅ Report extracted and Global Analytics Updated.");
+      setStatus("Report extracted and global analytics updated.");
     } catch (err) {
       console.error("Extraction failed", err);
-      setStatus(`❌ Extraction failed: ${err.message || "Unknown error"}`);
+      setStatus(`Extraction failed: ${err.message || "Unknown error"}`);
     } finally {
       setLoading(false);
     }
@@ -204,7 +201,6 @@ export default function ReportPage() {
     setStructuredResults(updatedResults);
 
     try {
-      // Update individual report in Firestore
       await setDoc(doc(db, "reports", targetPlayerName), {
         ...updatedPlayer.data,
         archerKPT: updatedPlayer.archerKPT,
@@ -216,7 +212,7 @@ export default function ReportPage() {
       await updateTroopTypeKpt(isAdmin);
 
     } catch (err) {
-      console.error("❌ Error updating Firestore:", err);
+      console.error("Error updating Firestore:", err);
     }
   };
 
@@ -235,7 +231,7 @@ export default function ReportPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom color="primary">🧠 Report Extraction</Typography>
+      <Typography variant="h5" gutterBottom color="primary">Report Extraction</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Player Name</InputLabel>
@@ -283,3 +279,4 @@ export default function ReportPage() {
     </Box>
   );
 }
+

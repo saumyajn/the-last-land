@@ -10,7 +10,6 @@ import FormationForm from "./FormationForm";
 import FormationTable from "./FormationTable";
 import { AuthContext } from "../../utils/authContext";
 
-// 🔥 Added Firebase imports
 import { db } from "../../utils/firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { getRenderableThresholdColor, normalizeThresholds } from "../../utils/colorUtils";
@@ -18,7 +17,6 @@ import { getRenderableThresholdColor, normalizeThresholds } from "../../utils/co
 export default function FormationPage() {
   const { isAdmin } = useContext(AuthContext);
 
-  // 🔥 Moved all state here from App.js
   const [groupedData, setGroupedData] = useState({});
   const [groupedCavalryData, setGroupedCavalryData] = useState({});
   const [groupedAverageData, setGroupedAverageData] = useState({});
@@ -30,7 +28,6 @@ export default function FormationPage() {
   const [towerFormationRefresh, setTowerFormationRefresh] = useState(0);
   const [throneFormationRefresh, setThroneFormationRefresh] = useState(0);
 
-  // 🔥 Moved the fetch logic here! It now runs fresh every time this page opens.
   useEffect(() => {
     const fetchThresholdsAndData = async () => {
       setLoading(true);
@@ -64,19 +61,15 @@ export default function FormationPage() {
           const cavalryVal = parseFloat(data["Final Cavalry Damage"]) || 0;
           const avgVal = parseFloat((data["Average Damage"])) || 0;
 
-          // Archer grouping
           const archerMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => archerVal >= t.limit);
           const archerColor = archerMatch?.color || "default";
           if (!newGroupedData[archerColor]) newGroupedData[archerColor] = [{ colorName: colorNames[archerColor] || archerColor }];
           newGroupedData[archerColor].push({ name: playerName, damage: archerVal });
 
-          // Cavalry grouping
           const cavalryMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => cavalryVal >= t.limit);
           const cavalryColor = cavalryMatch?.color || "default";
           if (!newGroupedCavalryData[cavalryColor]) newGroupedCavalryData[cavalryColor] = [{ colorName: colorNames[cavalryColor] || cavalryColor }];
           newGroupedCavalryData[cavalryColor].push({ name: playerName, damage: cavalryVal });
-
-          // Average grouping (🔥 With Safety Check added)
 
           const avgMatch = tData.slice().sort((a, b) => b.limit - a.limit).find(t => avgVal >= t.limit);
           const avgColor = avgMatch?.color || "default";
@@ -84,7 +77,6 @@ export default function FormationPage() {
           newGroupedAverageData[avgColor].push({ name: playerName, damage: avgVal });
         });
 
-        // Calculate Average math
         const computeAverages = (group) => {
           for (const color in group) {
             const players = group[color].filter(p => typeof p === "object" && "damage" in p);
@@ -111,7 +103,7 @@ export default function FormationPage() {
     };
 
     fetchThresholdsAndData();
-  }, []); // Runs once every time the Formation component mounts
+  }, []);
 
   const colorSortOrder = thresholds?.map(t => t.color) || [];
   const getSortedGroups = (data) => Object.keys(data).sort((a, b) => colorSortOrder.indexOf(b) - colorSortOrder.indexOf(a));
@@ -242,3 +234,4 @@ export default function FormationPage() {
     </Box>
   );
 }
+

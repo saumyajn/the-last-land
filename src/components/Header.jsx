@@ -66,7 +66,7 @@ export default function Header() {
                 The Last Land
               </Typography>
               <Typography variant="caption" noWrap sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.secondary', fontWeight: 650 }}>
-                OCR analytics workspace
+                Extraction analytics workspace
               </Typography>
             </Box>
           </Box>

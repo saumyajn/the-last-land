@@ -17,7 +17,7 @@ The app depends on:
 - Firebase Auth
 - Firestore
 - Firebase Cloud Functions
-- Google Cloud Vision API
+- Gemini API
 
 Deploy functions:
 
@@ -27,7 +27,7 @@ firebase deploy --only functions
 
 ## Cloud Function CORS
 
-The callable OCR function currently allows:
+The callable extraction function currently allows:
 
 - `https://the-last-land-analytics.vercel.app`
 - `http://localhost:3000`
@@ -48,7 +48,7 @@ Keep both lists synchronized until the project migrates to custom claims or Fire
 Before deploying changes that touch data logic:
 
 1. Export or back up Firestore data.
-2. Run parser/calculator tests.
+2. Run calculator and analytics tests.
 3. Test against representative screenshots.
 4. Verify `stats`, `reports`, `analytics`, `formation`, and `settings` still have expected shapes.
 

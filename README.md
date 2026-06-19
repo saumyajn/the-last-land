@@ -1,14 +1,13 @@
-# The Last Land OCR Analytics Platform
+# The Last Land Analytics Platform
 
-The Last Land is a real-workflow OCR analytics platform for alliance stats, formations, and battle reports. It converts game screenshots into structured Firebase data using Google Cloud Vision OCR, OpenCV template matching, deterministic parsing, and analytics dashboards.
+The Last Land is a real-workflow analytics platform for alliance stats, formations, and battle reports. It converts game screenshots into structured Firebase data using a Gemini-backed extraction function and analytics dashboards.
 
 This repository is intentionally treated as a production-sensitive app because it is used with real data.
 
 ## What It Does
 
 - Extracts player stat screenshots into structured stat records.
-- Uses Google Cloud Vision through Firebase Cloud Functions for OCR.
-- Uses OpenCV.js template matching to locate troop report rows from screenshots.
+- Uses Gemini through Firebase Cloud Functions for screenshot extraction.
 - Stores stats, formations, reports, settings, and analytics in Firestore.
 - Computes derived combat metrics plus KPT and LPT summaries.
 - Supports admin-only writes and view-only access for non-admin users.
@@ -20,7 +19,6 @@ Do not change parsing, formulas, Firebase collection shapes, report aggregation,
 
 Protected files include:
 
-- `src/utils/parseData.js`
 - `src/utils/calcs.js`
 - `src/utils/dbActions.js`
 - `src/components/report/ReportPage.jsx`
@@ -35,11 +33,8 @@ flowchart LR
   User["Admin or viewer"] --> UI["React CRA + MUI app"]
   UI --> Auth["Firebase Auth"]
   UI --> Firestore["Firestore collections"]
-  UI --> OCR["Firebase Callable Function"]
-  OCR --> Vision["Google Cloud Vision API"]
-  UI --> CV["OpenCV.js template matching"]
-  CV --> Parser["Deterministic parsing and cleanup"]
-  Parser --> Calcs["Current stat, KPT, and LPT formulas"]
+  UI --> Extract["Firebase Callable Gemini extraction"]
+  Extract --> Calcs["Current stat, KPT, and LPT formulas"]
   Calcs --> Firestore
   Firestore --> Analytics["Analytics and export views"]
 ```
@@ -59,8 +54,7 @@ More detail:
 - Firebase Auth
 - Firebase Firestore
 - Firebase Cloud Functions for Python
-- Google Cloud Vision API
-- OpenCV.js
+- Gemini API
 - Jest and React Scripts test runner
 
 ## Local Development
@@ -80,7 +74,7 @@ Production Firebase remains the default unless emulator mode is explicitly enabl
 
 ## Local Data Testing With Emulators
 
-Use this path when testing parser, report, analytics, or UI changes without touching real Firebase data.
+Use this path when testing extraction, report, analytics, or UI changes without touching real Firebase data.
 
 Terminal 1:
 
@@ -104,7 +98,7 @@ npm.cmd run start:emulators
 
 The seed script writes synthetic data only to the Firestore emulator.
 
-Report extraction in emulator mode still uses the production Google Vision-backed OCR endpoint, but all app reads and writes use local Auth and Firestore emulators. This keeps extraction behavior aligned with production without requiring local `gcloud`, service account JSON files, or the Functions emulator.
+Extraction in emulator mode uses the local Functions emulator and Gemini API. App reads and writes use local Auth and Firestore emulators.
 
 In PowerShell, use `npm.cmd` instead of `npm` if script execution policy blocks `npm.ps1`.
 
@@ -114,9 +108,7 @@ In PowerShell, use `npm.cmd` instead of `npm` if script execution policy blocks 
 npm test -- --watchAll=false
 ```
 
-Current tests are characterization tests. They lock down existing parser, calculator, and export-helper behavior so future refactors do not accidentally change real data workflows.
-
-Sanitized fixtures live in `src/testFixtures/lastLandFixtures.js`. They intentionally avoid real player identities, alliance data, screenshots, and Firebase exports.
+Current tests lock down calculator, KPT/LPT, color, troop summary, and export-helper behavior so future refactors do not accidentally change real data workflows.
 
 ## Build
 
@@ -137,8 +129,8 @@ firebase deploy --only functions
 
 The strongest next steps are not UI-heavy. They are:
 
-- Add fixture-based OCR/parser regression tests using representative screenshots.
+- Add fixture-based extraction regression tests using representative screenshots.
 - Move admin authorization from hardcoded email lists toward custom claims or a Firestore role document.
-- Add extraction confidence and manual review states without changing current parsing output.
+- Add extraction confidence and manual review states without changing current saved output.
 - Migrate carefully from CRA to Vite + TypeScript only after behavior is locked by tests.
 - Document Firebase rules and collection contracts before changing access control.

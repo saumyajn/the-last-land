@@ -274,7 +274,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                             Player Stats Database
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Editable OCR output, derived damage scores, thresholds, and Atlantis values.
+                            Editable extraction output, derived damage scores, thresholds, and Atlantis values.
                         </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: 0.5 }}>
