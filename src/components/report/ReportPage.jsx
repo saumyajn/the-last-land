@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { db } from "../../utils/firebase";
-import { detectText, fileToBase64 } from "../../utils/googleVisions";
+import { detectText, detectTextWithWords, fileToBase64 } from "../../utils/googleVisions";
 import { doc, setDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import {
   Box,
@@ -29,6 +29,7 @@ import {
   DEFAULT_REPORT_MATCH_THRESHOLD,
   DEFAULT_REPORT_OCR_SCALE,
   rectanglesOverlap,
+  parseReportTableOneToOne,
 } from "../../utils/reportExtraction";
 import { ensureOpenCvReady, isOpenCvReady } from "../../utils/opencvLoader";
 
@@ -41,12 +42,13 @@ export default function ReportPage() {
   const [status, setStatus] = useState("⏳ Waiting for upload...");
   const [structuredResults, setStructuredResults] = useState([]);
   const [mainImage, setMainImage] = useState(null);
+  const [mainImageFile, setMainImageFile] = useState(null);
   const [playerName, setPlayerName] = useState("");
   const [customPlayerName, setCustomPlayerName] = useState("");
   const [playerOptions, setPlayerOptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isCvLoaded, setIsCvLoaded] = useState(isOpenCvReady());
-  const [cvLoadError, setCvLoadError] = useState(false);
+  const [, setIsCvLoaded] = useState(isOpenCvReady());
+  const [, setCvLoadError] = useState(false);
   const canvasRef = useRef();
   const mainImageUrlRef = useRef(null);
   const { showNoPermission } = usePermissionSnackbar();
@@ -63,6 +65,7 @@ export default function ReportPage() {
 
     const objectUrl = URL.createObjectURL(file);
     mainImageUrlRef.current = objectUrl;
+    setMainImageFile(file);
 
     const img = new Image();
     img.src = objectUrl;
@@ -179,19 +182,70 @@ export default function ReportPage() {
   const processImage = async () => {
     const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
 
-    if (!isOpenCvReady()) {
+    if (!mainImageFile && !isOpenCvReady()) {
       setIsCvLoaded(false);
       setStatus("⏳ OpenCV is still initializing. Please wait a moment and try again.");
       return;
     }
 
-    if (!mainImage || !finalPlayerName) {
+    if (!mainImageFile || !finalPlayerName) {
       setStatus("❌ Please select an image and enter a player name.");
       return;
     }
 
     try {
       setLoading(true);
+      setStatus("Running whole-image OCR...");
+
+      if (mainImageFile) {
+        const base64 = await fileToBase64(mainImageFile);
+        const ocrResult = await detectTextWithWords(base64);
+        const parsedReport = parseReportTableOneToOne(ocrResult.words, {
+          labels,
+          rowKeys: TROOP_ORDER,
+          rowTolerance: 18,
+        });
+
+        if (!parsedReport.isValid) {
+          if (process.env.NODE_ENV === "development") {
+            console.log("Strict report extraction failed:", parsedReport);
+          }
+
+          const details = [
+            parsedReport.debug?.missingHeaders?.length ? `missing headers: ${parsedReport.debug.missingHeaders.join(", ")}` : "",
+            parsedReport.debug?.missingRows?.length ? `missing rows: ${parsedReport.debug.missingRows.join(", ")}` : "",
+            parsedReport.debug?.missingCells?.length ? `missing cells: ${parsedReport.debug.missingCells.length}` : "",
+            parsedReport.debug?.ambiguousCells?.length ? `ambiguous cells: ${parsedReport.debug.ambiguousCells.length}` : "",
+          ].filter(Boolean).join("; ");
+
+          setStatus(`No report saved. Strict table extraction failed (${parsedReport.reason})${details ? `: ${details}` : "."}`);
+          return;
+        }
+
+        if (!isAdmin) {
+          showNoPermission();
+          return;
+        }
+
+        const freshData = {};
+        templateKeys.forEach(key => {
+          freshData[key] = labels.reduce((acc, label) => ({ ...acc, [label]: "0" }), {});
+        });
+        for (const [key, value] of Object.entries(parsedReport.entriesByTroopType)) {
+          freshData[key] = { ...freshData[key], ...value };
+        }
+
+        await setDoc(doc(db, "reports", finalPlayerName), freshData);
+        await updateTroopTypeKpt(isAdmin);
+
+        setStructuredResults((prev = []) => {
+          const updated = prev.filter(p => p.name !== finalPlayerName);
+          return [{ name: finalPlayerName, data: freshData }, ...updated];
+        });
+
+        setStatus("Report saved from strict whole-image OCR and analytics updated.");
+        return;
+      }
       setStatus("📸 Processing image...");
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
@@ -495,9 +549,9 @@ export default function ReportPage() {
         <Button
           variant="contained"
           onClick={processImage}
-          disabled={loading || !isCvLoaded}
+          disabled={loading}
         >
-          {!isCvLoaded ? (cvLoadError ? "Engine Load Failed" : "Initializing Engine...") : (loading ? <CircularProgress size={20} /> : "Upload & Scan")}
+          {loading ? <CircularProgress size={20} /> : "Upload & Scan"}
         </Button>
       </Box>
       <Typography variant="body2" color="text.secondary">{status}</Typography>

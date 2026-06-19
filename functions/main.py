@@ -135,6 +135,7 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
                 content_type="application/json",
             )
         base64_image = request_json["image"]
+        include_words = bool(request_json.get("includeWords"))
     except Exception as e:
         return https_fn.Response(
             json.dumps({"error": f"Request parsing failed: {str(e)}"}),
@@ -145,7 +146,7 @@ def extract_text_from_image(req: https_fn.Request) -> https_fn.Response:
 
     # --- 3. GOOGLE VISION API ---
     try:
-        response_data = extract_text_with_google_vision(base64_image)
+        response_data = extract_text_with_google_vision(base64_image, include_words)
 
         return https_fn.Response(
             json.dumps(response_data),

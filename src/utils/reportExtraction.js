@@ -215,6 +215,175 @@ const clusterRowsByY = (cellWords, rowTolerance) => {
   return clusters.sort((a, b) => a.centerY - b.centerY);
 };
 
+const getColumnBands = (columns, labels) => {
+  const sorted = labels
+    .map((label) => ({ label, x: columns[label] }))
+    .filter((column) => Number.isFinite(column.x))
+    .sort((a, b) => a.x - b.x);
+
+  return sorted.reduce((bands, column, index) => {
+    const previous = sorted[index - 1];
+    const next = sorted[index + 1];
+    const left = previous ? (previous.x + column.x) / 2 : column.x - ((next?.x - column.x) || 70) / 2;
+    const right = next ? (column.x + next.x) / 2 : column.x + ((column.x - previous?.x) || 70) / 2;
+
+    bands[column.label] = { left, right, center: column.x };
+    return bands;
+  }, {});
+};
+
+const assignWordToColumnBand = (word, bands, labels) => {
+  const center = centerOfWord(word);
+  return labels.find((label) => {
+    const band = bands[label];
+    return band && center.x >= band.left && center.x < band.right;
+  }) || null;
+};
+
+const emptyReportEntry = (labels) =>
+  labels.reduce((acc, label) => ({ ...acc, [label]: "0" }), {});
+
+export const parseReportTableOneToOne = (
+  words = [],
+  {
+    labels = REPORT_LABELS,
+    rowKeys = [],
+    rowTolerance = 16,
+  } = {},
+) => {
+  const debug = {
+    expectedRows: rowKeys.length,
+    rowCount: 0,
+    missingRows: [],
+    missingCells: [],
+    ambiguousCells: [],
+    extraRows: [],
+  };
+  const { columns, headerBottom } = findReportHeaderColumns(words, labels);
+  const missingHeaders = labels.filter((label) => columns[label] === undefined);
+
+  if (missingHeaders.length) {
+    return {
+      isValid: false,
+      reason: "missing-header",
+      entriesByTroopType: {},
+      rows: [],
+      columns,
+      debug: { ...debug, missingHeaders },
+    };
+  }
+
+  const bands = getColumnBands(columns, labels);
+  const numericWords = words
+    .map((word) => ({
+      ...word,
+      value: getNumericValueFromWord(word),
+    }))
+    .filter((word) => word.value !== null && centerOfWord(word).y > headerBottom);
+
+  const cellWords = numericWords
+    .map((word) => ({
+      ...word,
+      label: assignWordToColumnBand(word, bands, labels),
+    }))
+    .filter((word) => word.label);
+
+  const clusters = clusterRowsByY(cellWords, rowTolerance);
+  debug.rowCount = clusters.length;
+
+  const rows = clusters.map((cluster, index) => {
+    const cells = labels.reduce((acc, label) => ({ ...acc, [label]: [] }), {});
+
+    cluster.words.forEach((word) => {
+      cells[word.label].push(word);
+    });
+
+    const entry = emptyReportEntry(labels);
+    const troopType = rowKeys[index] || null;
+
+    labels.forEach((label) => {
+      if (cells[label].length === 1) {
+        entry[label] = cells[label][0].value;
+      } else if (cells[label].length === 0) {
+        debug.missingCells.push({ rowIndex: index, troopType, label });
+      } else {
+        debug.ambiguousCells.push({
+          rowIndex: index,
+          troopType,
+          label,
+          values: cells[label].map((word) => word.value),
+        });
+      }
+    });
+
+    return {
+      troopType,
+      y: cluster.centerY,
+      entry,
+      cells,
+      isValid: labels.every((label) => cells[label].length === 1),
+    };
+  });
+
+  if (rowKeys.length && rows.length !== rowKeys.length) {
+    if (rows.length < rowKeys.length) {
+      debug.missingRows = rowKeys.slice(rows.length);
+    } else {
+      debug.extraRows = rows.slice(rowKeys.length).map((row, index) => ({
+        rowIndex: rowKeys.length + index,
+        y: row.y,
+      }));
+    }
+
+    return {
+      isValid: false,
+      reason: rows.length < rowKeys.length ? "missing-row" : "extra-row",
+      entriesByTroopType: {},
+      rows,
+      columns,
+      debug,
+    };
+  }
+
+  if (debug.missingCells.length) {
+    return {
+      isValid: false,
+      reason: "missing-cell",
+      entriesByTroopType: {},
+      rows,
+      columns,
+      debug,
+    };
+  }
+
+  if (debug.ambiguousCells.length) {
+    return {
+      isValid: false,
+      reason: "ambiguous-cell",
+      entriesByTroopType: {},
+      rows,
+      columns,
+      debug,
+    };
+  }
+
+  const entriesByTroopType = rows.reduce((acc, row) => {
+    if (row.troopType) {
+      acc[row.troopType] = row.entry;
+    }
+    return acc;
+  }, {});
+
+  return {
+    isValid: true,
+    reason: "ok",
+    entriesByTroopType,
+    rows,
+    columns,
+    debug,
+  };
+};
+
 export const parseReportTableFromVisionWords = (
   words = [],
   {

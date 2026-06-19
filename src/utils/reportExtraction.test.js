@@ -3,6 +3,7 @@ import {
   cleanReportOcrValues,
   estimateReportRowsFromOcrText,
   findReportHeaderColumns,
+  parseReportTableOneToOne,
   parseReportRowsFromOcrText,
   parseReportTableFromVisionWords,
   rectanglesOverlap,
@@ -112,6 +113,115 @@ describe("reportExtraction", () => {
         Survivors: "13000",
       },
     });
+  });
+
+  it("strictly maps report rows one-to-one by row and column", () => {
+    const header = [
+      { text: "Kills", x: 143, y: 20, width: 24, height: 10 },
+      { text: "Losses", x: 207, y: 20, width: 38, height: 10 },
+      { text: "Wounded", x: 285, y: 20, width: 49, height: 10 },
+      { text: "Survives", x: 374, y: 20, width: 46, height: 10 },
+    ];
+    const rowOne = [
+      { text: "1466", x: 142, y: 50, width: 27, height: 12 },
+      { text: "1154", x: 214, y: 50, width: 28, height: 12 },
+      { text: "2846", x: 296, y: 50, width: 28, height: 12 },
+      { text: "0", x: 394, y: 50, width: 7, height: 12 },
+    ];
+    const rowTwo = [
+      { text: "6140", x: 142, y: 91, width: 27, height: 12 },
+      { text: "0", x: 224, y: 91, width: 7, height: 12 },
+      { text: "0", x: 306, y: 91, width: 7, height: 12 },
+      { text: "13000", x: 381, y: 91, width: 36, height: 12 },
+    ];
+
+    const parsed = parseReportTableOneToOne([...header, ...rowTwo, ...rowOne], {
+      rowKeys: ["T10_guards", "T10_cavalry"],
+    });
+
+    expect(parsed).toMatchObject({ isValid: true, reason: "ok" });
+    expect(parsed.entriesByTroopType).toEqual({
+      T10_guards: {
+        Kills: "1466",
+        Losses: "1154",
+        Wounded: "2846",
+        Survivors: "0",
+      },
+      T10_cavalry: {
+        Kills: "6140",
+        Losses: "0",
+        Wounded: "0",
+        Survivors: "13000",
+      },
+    });
+  });
+
+  it("rejects strict report parsing when a troop row is missing", () => {
+    const words = [
+      { text: "Kills", x: 143, y: 20, width: 24, height: 10 },
+      { text: "Losses", x: 207, y: 20, width: 38, height: 10 },
+      { text: "Wounded", x: 285, y: 20, width: 49, height: 10 },
+      { text: "Survives", x: 374, y: 20, width: 46, height: 10 },
+      { text: "1466", x: 142, y: 50, width: 27, height: 12 },
+      { text: "1154", x: 214, y: 50, width: 28, height: 12 },
+      { text: "2846", x: 296, y: 50, width: 28, height: 12 },
+      { text: "0", x: 394, y: 50, width: 7, height: 12 },
+    ];
+
+    const parsed = parseReportTableOneToOne(words, {
+      rowKeys: ["T10_guards", "T10_cavalry"],
+    });
+
+    expect(parsed).toMatchObject({
+      isValid: false,
+      reason: "missing-row",
+    });
+    expect(parsed.debug.missingRows).toEqual(["T10_cavalry"]);
+  });
+
+  it("rejects strict report parsing when a required column header is missing", () => {
+    const parsed = parseReportTableOneToOne([
+      { text: "Kills", x: 143, y: 20, width: 24, height: 10 },
+      { text: "Losses", x: 207, y: 20, width: 38, height: 10 },
+      { text: "Wounded", x: 285, y: 20, width: 49, height: 10 },
+    ], {
+      rowKeys: ["T10_guards"],
+    });
+
+    expect(parsed).toMatchObject({
+      isValid: false,
+      reason: "missing-header",
+    });
+    expect(parsed.debug.missingHeaders).toEqual(["Survivors"]);
+  });
+
+  it("rejects strict report parsing when one cell has duplicate values", () => {
+    const parsed = parseReportTableOneToOne([
+      { text: "Kills", x: 143, y: 20, width: 24, height: 10 },
+      { text: "Losses", x: 207, y: 20, width: 38, height: 10 },
+      { text: "Wounded", x: 285, y: 20, width: 49, height: 10 },
+      { text: "Survives", x: 374, y: 20, width: 46, height: 10 },
+      { text: "1466", x: 142, y: 50, width: 27, height: 12 },
+      { text: "1467", x: 147, y: 51, width: 27, height: 12 },
+      { text: "1154", x: 214, y: 50, width: 28, height: 12 },
+      { text: "2846", x: 296, y: 50, width: 28, height: 12 },
+      { text: "0", x: 394, y: 50, width: 7, height: 12 },
+    ], {
+      rowKeys: ["T10_guards"],
+    });
+
+    expect(parsed).toMatchObject({
+      isValid: false,
+      reason: "ambiguous-cell",
+    });
+    expect(parsed.debug.ambiguousCells).toEqual([
+      {
+        rowIndex: 0,
+        troopType: "T10_guards",
+        label: "Kills",
+        values: ["1466", "1467"],
+      },
+    ]);
   });
 
   it("extracts report rows from plain OCR text when word boxes are unavailable", () => {
