@@ -115,20 +115,20 @@ export default function StatsPage() {
 
       setText(allExtracted);
 
-      let attributes = allWords.length
-        ? parseDataFromVisionWords(allWords, DESIRED_STAT_KEYS)
-        : parseData(allExtracted, DESIRED_STAT_KEYS);
-      let missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
+      let attributes = parseData(allExtracted, DESIRED_STAT_KEYS);
 
-      if (allWords.length && allExtracted) {
-        const fallbackAttributes = parseData(allExtracted, DESIRED_STAT_KEYS);
-        const fallbackMissingKeys = DESIRED_STAT_KEYS.filter((key) => fallbackAttributes[key] === "NA");
+      if (allWords.length) {
+        const wordAttributes = parseDataFromVisionWords(allWords, DESIRED_STAT_KEYS);
+        attributes = DESIRED_STAT_KEYS.reduce((merged, key) => {
+          if (merged[key] === "NA" && wordAttributes[key] !== "NA") {
+            merged[key] = wordAttributes[key];
+          }
 
-        if (fallbackMissingKeys.length < missingKeys.length) {
-          attributes = fallbackAttributes;
-          missingKeys = fallbackMissingKeys;
-        }
+          return merged;
+        }, { ...attributes });
       }
+
+      let missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
 
       const extractedCount = DESIRED_STAT_KEYS.length - missingKeys.length;
 

@@ -15,10 +15,12 @@ const getCleanLines = (rawText = "") =>
     .filter(Boolean);
 
 const buildLabelRegex = (key) => {
-  const flexibleKey = key
-    .split(/\s+/)
-    .map(escapeRegex)
-    .join("\\s+");
+  const flexibleKey = getLabelVariants(key)
+    .map((variant) => variant
+      .split(/\s+/)
+      .map(escapeRegex)
+      .join("\\s+"))
+    .join("|");
 
   return new RegExp(`(^|[^a-zA-Z])(${flexibleKey})(?![a-zA-Z])`, "gi");
 };
@@ -34,11 +36,65 @@ const normalizeLabel = (value = "") =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
+const getLabelVariants = (key) => {
+  const variants = new Set([key]);
+
+  if (key.startsWith("Troop ")) {
+    const suffix = key.replace(/^Troop\s+/, "");
+    variants.add(`Troops ${suffix}`);
+  }
+
+  Array.from(variants).forEach((variant) => {
+    if (variant.includes("Damage Received")) {
+      variants.add(variant.replace("Damage Received", "Damage Recieved"));
+      variants.add(variant.replace("Damage Received", "Dmg Received"));
+      variants.add(variant.replace("Damage Received", "DMG Received"));
+    }
+
+    if (variant.includes("Attack Blessing")) {
+      variants.add(variant.replace("Attack Blessing", "Attack Bless"));
+    }
+
+    if (variant.includes("Protection Blessing")) {
+      variants.add(variant.replace("Protection Blessing", "Protection Bless"));
+    }
+  });
+
+  return Array.from(variants);
+};
+
 const isOnlyNumber = (value = "") => NUMBER_PATTERN.test(value) && normalizeValue(value.match(NUMBER_PATTERN)[0]) === normalizeValue(value);
 
 const getExactLabelKey = (value, desiredKeys) => {
   const normalizedValue = normalizeLabel(value);
-  return desiredKeys.find((key) => normalizeLabel(key) === normalizedValue) || null;
+  return desiredKeys.find((key) =>
+    getLabelVariants(key).some((variant) => normalizeLabel(variant) === normalizedValue)
+  ) || null;
+};
+
+const getInlineLabelValue = (line, desiredKeys) => {
+  const matches = desiredKeys
+    .map((key) => {
+      const regex = buildLabelRegex(key);
+      const match = regex.exec(line);
+      return match
+        ? {
+          key,
+          start: match.index + (match[1]?.length || 0),
+          end: match.index + (match[1]?.length || 0) + match[2].length,
+          length: match[2].length,
+        }
+        : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.start - b.start || b.length - a.length);
+
+  if (matches.length !== 1) return null;
+
+  const valueText = line.slice(matches[0].end);
+  const valueMatch = valueText.match(NUMBER_PATTERN);
+
+  return valueMatch ? { key: matches[0].key, value: normalizeValue(valueMatch[0]) } : null;
 };
 
 const wordCenterY = (word) => Number(word.y || 0) + Number(word.height || 0) / 2;
@@ -68,34 +124,38 @@ const findLabelBoxes = (words, desiredKeys) => {
   const matches = [];
 
   desiredKeys.forEach((key) => {
-    const keyParts = key
-      .split(/\s+/)
-      .map(normalizeLabel)
-      .filter(Boolean);
+    const variantParts = getLabelVariants(key)
+      .map((variant) => variant
+        .split(/\s+/)
+        .map(normalizeLabel)
+        .filter(Boolean))
+      .filter((parts) => parts.length);
 
-    if (!keyParts.length) return;
+    if (!variantParts.length) return;
 
-    for (let index = 0; index <= sortedWords.length - keyParts.length; index += 1) {
-      const slice = sortedWords.slice(index, index + keyParts.length);
-      const sliceParts = slice.map((word) => normalizeLabel(word.text));
+    for (const keyParts of variantParts) {
+      for (let index = 0; index <= sortedWords.length - keyParts.length; index += 1) {
+        const slice = sortedWords.slice(index, index + keyParts.length);
+        const sliceParts = slice.map((word) => normalizeLabel(word.text));
 
-      if (sliceParts.join("") !== keyParts.join("")) continue;
+        if (sliceParts.join("") !== keyParts.join("")) continue;
 
-      const minX = Math.min(...slice.map((word) => word.x));
-      const minY = Math.min(...slice.map((word) => word.y));
-      const maxX = Math.max(...slice.map((word) => word.x + word.width));
-      const maxY = Math.max(...slice.map((word) => word.y + word.height));
+        const minX = Math.min(...slice.map((word) => word.x));
+        const minY = Math.min(...slice.map((word) => word.y));
+        const maxX = Math.max(...slice.map((word) => word.x + word.width));
+        const maxY = Math.max(...slice.map((word) => word.y + word.height));
 
-      matches.push({
-        key,
-        x: minX,
-        y: minY,
-        width: maxX - minX,
-        height: maxY - minY,
-        right: maxX,
-        bottom: maxY,
-        centerY: minY + (maxY - minY) / 2,
-      });
+        matches.push({
+          key,
+          x: minX,
+          y: minY,
+          width: maxX - minX,
+          height: maxY - minY,
+          right: maxX,
+          bottom: maxY,
+          centerY: minY + (maxY - minY) / 2,
+        });
+      }
     }
   });
 
@@ -182,6 +242,73 @@ const findLabelMatches = (text, desiredKeys) => {
     .sort((a, b) => a.start - b.start);
 };
 
+const parseDataFromFlatText = (rawText, desiredKeys) => {
+  const text = normalizeOcrText(rawText);
+  const labelMatches = findLabelMatches(text, desiredKeys);
+  const attributes = Object.fromEntries(desiredKeys.map((key) => [key, "NA"]));
+
+  labelMatches.forEach((match, index) => {
+    const nextLabelStart = labelMatches[index + 1]?.start ?? text.length;
+    const valueText = text.slice(match.end, nextLabelStart);
+    const valueMatch = valueText.match(NUMBER_PATTERN);
+
+    attributes[match.key] = valueMatch ? normalizeValue(valueMatch[0]) : "NA";
+  });
+
+  return attributes;
+};
+
+const parseDataFromLines = (rawText, desiredKeys) => {
+  const lines = getCleanLines(rawText);
+  const attributes = Object.fromEntries(desiredKeys.map((key) => [key, "NA"]));
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const labels = [];
+    let cursor = index;
+
+    while (cursor < lines.length) {
+      const labelKey = getExactLabelKey(lines[cursor], desiredKeys);
+      if (!labelKey) break;
+
+      labels.push(labelKey);
+      cursor += 1;
+    }
+
+    if (labels.length > 1) {
+      const values = [];
+      let valueCursor = cursor;
+
+      while (valueCursor < lines.length && values.length < labels.length) {
+        if (!isOnlyNumber(lines[valueCursor])) break;
+        values.push(normalizeValue(lines[valueCursor].match(NUMBER_PATTERN)[0]));
+        valueCursor += 1;
+      }
+
+      if (values.length === labels.length) {
+        labels.forEach((label, labelIndex) => {
+          attributes[label] = values[labelIndex];
+        });
+        index = valueCursor - 1;
+        continue;
+      }
+    }
+
+    const exactLabel = getExactLabelKey(lines[index], desiredKeys);
+    if (exactLabel && isOnlyNumber(lines[index + 1] || "")) {
+      attributes[exactLabel] = normalizeValue(lines[index + 1].match(NUMBER_PATTERN)[0]);
+      index += 1;
+      continue;
+    }
+
+    const inlineValue = getInlineLabelValue(lines[index], desiredKeys);
+    if (inlineValue) {
+      attributes[inlineValue.key] = inlineValue.value;
+    }
+  }
+
+  return attributes;
+};
+
 const recoverStackedLabelValueBlocks = (rawText, desiredKeys, attributes) => {
   const lines = getCleanLines(rawText);
   const nextAttributes = { ...attributes };
@@ -222,16 +349,14 @@ const recoverStackedLabelValueBlocks = (rawText, desiredKeys, attributes) => {
 };
 
 export const parseData = (rawText, desiredKeys) => {
-  const text = normalizeOcrText(rawText);
-  const labelMatches = findLabelMatches(text, desiredKeys);
-  let attributes = Object.fromEntries(desiredKeys.map((key) => [key, "NA"]));
+  const lineAttributes = parseDataFromLines(rawText, desiredKeys);
+  const flatAttributes = parseDataFromFlatText(rawText, desiredKeys);
+  let attributes = { ...lineAttributes };
 
-  labelMatches.forEach((match, index) => {
-    const nextLabelStart = labelMatches[index + 1]?.start ?? text.length;
-    const valueText = text.slice(match.end, nextLabelStart);
-    const valueMatch = valueText.match(NUMBER_PATTERN);
-
-    attributes[match.key] = valueMatch ? normalizeValue(valueMatch[0]) : "NA";
+  desiredKeys.forEach((key) => {
+    if (attributes[key] === "NA" && flatAttributes[key] !== "NA") {
+      attributes[key] = flatAttributes[key];
+    }
   });
 
   attributes = recoverStackedLabelValueBlocks(rawText, desiredKeys, attributes);

@@ -63,6 +63,35 @@ describe("parseData", () => {
     });
   });
 
+  it("accepts plural Troops labels for troop stats", () => {
+    const rawText = [
+      "Troops Attack",
+      "226.6%",
+      "Troops Health 227.6%",
+      "Troops Defense",
+      "241.1%",
+      "Troops Damage Received",
+      "-41.5%",
+      "Troops Protection Bless",
+      "221.36%",
+    ].join("\n");
+    const desiredKeys = [
+      "Troop Attack",
+      "Troop Health",
+      "Troop Defense",
+      "Troop Damage Received",
+      "Troop Protection Blessing",
+    ];
+
+    expect(parseData(rawText, desiredKeys)).toEqual({
+      "Troop Attack": "226.6%",
+      "Troop Health": "227.6%",
+      "Troop Defense": "241.1%",
+      "Troop Damage Received": "41.5%",
+      "Troop Protection Blessing": "221.36%",
+    });
+  });
+
   it("does not borrow the next label value when a matched label has no value", () => {
     const rawText = [
       "Troop Attack",
@@ -237,6 +266,27 @@ describe("parseData", () => {
       "Troop Health": "88.1%",
       "Archer Damage Received": "15%",
       "Missing Stat": "NA",
+    });
+  });
+
+  it("matches plural Troops labels in Vision word boxes", () => {
+    const word = (text, x, y, width = 40, height = 12) => ({ text, x, y, width, height });
+    const words = [
+      word("Troops", 10, 10, 48),
+      word("Attack", 66, 10),
+      word("226.6%", 260, 10, 52),
+      word("Troops", 10, 34, 48),
+      word("Protection", 66, 34, 78),
+      word("Bless", 150, 34, 42),
+      word("221.36%", 260, 34, 58),
+    ];
+
+    expect(parseDataFromVisionWords(words, [
+      "Troop Attack",
+      "Troop Protection Blessing",
+    ])).toEqual({
+      "Troop Attack": "226.6%",
+      "Troop Protection Blessing": "221.36%",
     });
   });
 });
