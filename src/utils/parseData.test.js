@@ -76,6 +76,142 @@ describe("parseData", () => {
     });
   });
 
+  it("recovers stacked labels followed by stacked values from OCR line order", () => {
+    const rawText = [
+      "Cavalry Protection Blessing",
+      "Archer Attack",
+      "Archer Health",
+      "Archer Defense",
+      "300%",
+      "1863%",
+      "1609.35%",
+      "1110%",
+      "Archer Damage",
+      "154.25%",
+    ].join("\n");
+    const desiredKeys = [
+      "Cavalry Protection Blessing",
+      "Archer Attack",
+      "Archer Health",
+      "Archer Defense",
+      "Archer Damage",
+    ];
+
+    expect(parseData(rawText, desiredKeys)).toEqual({
+      "Cavalry Protection Blessing": "300%",
+      "Archer Attack": "1863%",
+      "Archer Health": "1609.35%",
+      "Archer Defense": "1110%",
+      "Archer Damage": "154.25%",
+    });
+  });
+
+  it("parses the pasted raw OCR sample with stacked archer labels", () => {
+    const rawText = [
+      "Infantry Protection Blessing",
+      "338%",
+      "Cavalry Attack",
+      "2209.7%",
+      "Cavalry Health",
+      "1769.7%",
+      "Cavalry Defense",
+      "975%",
+      "Cavalry Damage",
+      "166.75%",
+      "Cavalry Damage Received",
+      "-138.75%",
+      "Cavalry Attack Blessing",
+      "528%",
+      "Cavalry Protection Blessing",
+      "Archer Attack",
+      "Archer Health",
+      "Archer Defense",
+      "300%",
+      "1863%",
+      "1609.35%",
+      "1110%",
+      "Archer Damage",
+      "154.25%",
+      "Archer Damage Received",
+      "-144.75%",
+      "Archer Attack Blessing",
+      "445%",
+      "Archer Protection Blessing",
+      "214%",
+      "Siege Attack",
+      "1294.5%",
+      "Siege Health",
+      "620%",
+      "Siege Defense",
+      "840%",
+      "Siege Damage",
+      "47%",
+      "Siege Damage Received",
+      "-41%",
+      "Siege Attack Blessing",
+      "239%",
+      "Siege Protection Blessing",
+      "130%",
+      "Troop Attack",
+      "226.6%",
+      "Troop Health",
+      "227.6%",
+      "Troop Defense",
+      "241.1%",
+      "Troop Damage",
+      "41.5%",
+      "Troop Damage Received",
+      "-41.5%",
+      "Troop Attack Blessing",
+      "600%",
+      "Troop Protection Blessing",
+      "221.36%",
+      "Revive",
+      "26%",
+      "Lethal Hit Rate",
+      "24%",
+    ].join("\n");
+    const desiredKeys = [
+      "Troop Attack",
+      "Troop Health",
+      "Troop Defense",
+      "Troop Damage",
+      "Troop Damage Received",
+      "Troop Attack Blessing",
+      "Troop Protection Blessing",
+      "Archer Attack",
+      "Archer Health",
+      "Archer Defense",
+      "Archer Damage",
+      "Archer Damage Received",
+      "Archer Attack Blessing",
+      "Archer Protection Blessing",
+      "Cavalry Attack",
+      "Cavalry Health",
+      "Cavalry Defense",
+      "Cavalry Damage",
+      "Cavalry Damage Received",
+      "Cavalry Attack Blessing",
+      "Cavalry Protection Blessing",
+      "Siege Attack",
+      "Siege Health",
+      "Siege Defense",
+      "Siege Damage",
+      "Siege Damage Received",
+      "Siege Attack Blessing",
+      "Siege Protection Blessing",
+      "Lethal Hit Rate",
+    ];
+
+    const parsed = parseData(rawText, desiredKeys);
+
+    expect(parsed["Cavalry Protection Blessing"]).toBe("300%");
+    expect(parsed["Archer Attack"]).toBe("1863%");
+    expect(parsed["Archer Health"]).toBe("1609.35%");
+    expect(parsed["Archer Defense"]).toBe("1110%");
+    expect(Object.values(parsed)).not.toContain("NA");
+  });
+
   it("extracts values from Vision word boxes by row position", () => {
     const word = (text, x, y, width = 40, height = 12) => ({ text, x, y, width, height });
     const words = [

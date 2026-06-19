@@ -8,6 +8,12 @@ const normalizeOcrText = (rawText = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
+const getCleanLines = (rawText = "") =>
+  rawText
+    .split("\n")
+    .map((line) => line.replace(/[\uFF1A:]/g, " ").trim())
+    .filter(Boolean);
+
 const buildLabelRegex = (key) => {
   const flexibleKey = key
     .split(/\s+/)
@@ -27,6 +33,13 @@ const normalizeLabel = (value = "") =>
   String(value)
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
+
+const isOnlyNumber = (value = "") => NUMBER_PATTERN.test(value) && normalizeValue(value.match(NUMBER_PATTERN)[0]) === normalizeValue(value);
+
+const getExactLabelKey = (value, desiredKeys) => {
+  const normalizedValue = normalizeLabel(value);
+  return desiredKeys.find((key) => normalizeLabel(key) === normalizedValue) || null;
+};
 
 const wordCenterY = (word) => Number(word.y || 0) + Number(word.height || 0) / 2;
 const wordCenterX = (word) => Number(word.x || 0) + Number(word.width || 0) / 2;
@@ -169,10 +182,49 @@ const findLabelMatches = (text, desiredKeys) => {
     .sort((a, b) => a.start - b.start);
 };
 
+const recoverStackedLabelValueBlocks = (rawText, desiredKeys, attributes) => {
+  const lines = getCleanLines(rawText);
+  const nextAttributes = { ...attributes };
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const labels = [];
+    let cursor = index;
+
+    while (cursor < lines.length) {
+      const labelKey = getExactLabelKey(lines[cursor], desiredKeys);
+      if (!labelKey) break;
+
+      labels.push(labelKey);
+      cursor += 1;
+    }
+
+    if (labels.length < 2) continue;
+
+    const values = [];
+    let valueCursor = cursor;
+
+    while (valueCursor < lines.length && values.length < labels.length) {
+      if (!isOnlyNumber(lines[valueCursor])) break;
+      values.push(normalizeValue(lines[valueCursor].match(NUMBER_PATTERN)[0]));
+      valueCursor += 1;
+    }
+
+    if (values.length !== labels.length) continue;
+
+    labels.forEach((label, labelIndex) => {
+      nextAttributes[label] = values[labelIndex];
+    });
+
+    index = valueCursor - 1;
+  }
+
+  return nextAttributes;
+};
+
 export const parseData = (rawText, desiredKeys) => {
   const text = normalizeOcrText(rawText);
   const labelMatches = findLabelMatches(text, desiredKeys);
-  const attributes = Object.fromEntries(desiredKeys.map((key) => [key, "NA"]));
+  let attributes = Object.fromEntries(desiredKeys.map((key) => [key, "NA"]));
 
   labelMatches.forEach((match, index) => {
     const nextLabelStart = labelMatches[index + 1]?.start ?? text.length;
@@ -181,6 +233,8 @@ export const parseData = (rawText, desiredKeys) => {
 
     attributes[match.key] = valueMatch ? normalizeValue(valueMatch[0]) : "NA";
   });
+
+  attributes = recoverStackedLabelValueBlocks(rawText, desiredKeys, attributes);
 
   if (process.env.NODE_ENV === "development") {
     console.log("Parsed attributes:", attributes);

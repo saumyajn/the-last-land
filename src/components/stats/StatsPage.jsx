@@ -31,6 +31,7 @@ export default function StatsPage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
   const [dataTable, setDataTable] = useState({});
+  const [parsedTextAttributes, setParsedTextAttributes] = useState({});
   const [name, setName] = useState("");
   const { showNoPermission } = usePermissionSnackbar();
   const [statWeights, setStatWeights] = useState(DEFAULT_STAT_WEIGHTS);
@@ -87,6 +88,7 @@ export default function StatsPage() {
     const files = Array.from(event.target.files);
     if (files.length) {
       setText("");
+      setParsedTextAttributes({});
     }
   }, []);
 
@@ -118,7 +120,7 @@ export default function StatsPage() {
         : parseData(allExtracted, DESIRED_STAT_KEYS);
       let missingKeys = DESIRED_STAT_KEYS.filter((key) => attributes[key] === "NA");
 
-      if (allWords.length && missingKeys.length > DESIRED_STAT_KEYS.length / 2) {
+      if (allWords.length && allExtracted) {
         const fallbackAttributes = parseData(allExtracted, DESIRED_STAT_KEYS);
         const fallbackMissingKeys = DESIRED_STAT_KEYS.filter((key) => fallbackAttributes[key] === "NA");
 
@@ -139,6 +141,8 @@ export default function StatsPage() {
           `Extracted ${extractedCount}/${DESIRED_STAT_KEYS.length} stat fields. Missing: ${missingKeys.slice(0, 6).join(", ")}${missingKeys.length > 6 ? "..." : ""}`,
         );
       }
+
+      setParsedTextAttributes(attributes);
 
       attributes["Archer Atlantis"] = "0";
       attributes["Cavalry Atlantis"] = "0";
@@ -223,7 +227,7 @@ export default function StatsPage() {
               setStatWeights={setStatWeights}
             />
           )}
-          <RawText text={text} />
+          <RawText text={text} parsedAttributes={parsedTextAttributes} desiredKeys={DESIRED_STAT_KEYS} />
         </Suspense>
       </Container>
     </Box>
