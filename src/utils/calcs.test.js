@@ -33,6 +33,20 @@ describe("calcs", () => {
     "Siege Protection Blessing": "1%",
     "Lethal Hit Rate": "20%",
   };
+  const fullWeights = {
+    archerAttack: 1000,
+    archerHealth: 1000,
+    archerDefense: 1000,
+    cavalryAttack: 1000,
+    cavalryHealth: 1000,
+    cavalryDefense: 1000,
+    siegeAttack: 1000,
+    siegeHealth: 1000,
+    siegeDefense: 1000,
+    archerRatio: 1,
+    cavalryRatio: 1,
+    siegeRatio: 1,
+  };
 
   it("returns only the configured role strength value", () => {
     const strength = calculateRoleOutputs(baseAttributes, "archer", "10%", {
@@ -62,6 +76,8 @@ describe("calcs", () => {
       calculateStatOutputs({
         ...baseAttributes,
         "Archer Atlantis": "10%",
+        "Cavalry Atlantis": "10%",
+        "Siege Atlantis": "10%",
       }, {
         archerAttack: 1,
         archerHealth: 1,
@@ -82,6 +98,37 @@ describe("calcs", () => {
       "Final Siege Damage": "0.00000",
       "Average Damage": "0.01",
     });
+  });
+
+  it("returns zero final values when any common damage input is zero", () => {
+    expect(
+      calculateStatOutputs({
+        ...baseAttributes,
+        "Troop Attack": "0%",
+        "Archer Atlantis": "10%",
+        "Cavalry Atlantis": "10%",
+        "Siege Atlantis": "10%",
+      }, fullWeights),
+    ).toEqual({
+      "Final Archer Damage": "0.00000",
+      "Final Cavalry Damage": "0.00000",
+      "Final Siege Damage": "0.00000",
+      "Average Damage": "0.00",
+    });
+  });
+
+  it("zeros only the corresponding final value when a role Atlantis value is zero", () => {
+    const output = calculateStatOutputs({
+      ...baseAttributes,
+      "Archer Atlantis": "0%",
+      "Cavalry Atlantis": "10%",
+      "Siege Atlantis": "10%",
+    }, fullWeights);
+
+    expect(output["Final Archer Damage"]).toBe("0.00000");
+    expect(parseFloat(output["Final Cavalry Damage"])).toBeGreaterThan(0);
+    expect(parseFloat(output["Final Siege Damage"])).toBeGreaterThan(0);
+    expect(parseFloat(output["Average Damage"])).toBeGreaterThan(0);
   });
 });
 
