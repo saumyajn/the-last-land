@@ -39,7 +39,7 @@ Use this map to jump straight to the implementation before changing any calculat
 | Report group KPT/LPT display | Uses shared group KPT/LPT helpers | `src/components/report/ReportResults.jsx` |
 | Report edit KPT/LPT save | Uses shared row/group KPT/LPT helpers before Firestore save | `src/components/report/ReportPage.jsx` |
 | Global troop KPT/LPT | Aggregates report docs through shared helper and writes `analytics/troop_type_kpt` | `src/utils/dbActions.js` |
-| Shared troop summary | `globalKPT`, `calculatedMarchSize`, guard exception, march percentage | `src/utils/troopSummaryCalculations.js:3-48` |
+| Shared troop summary | `calculatedMarchSize = Losses + Wounded + Survivors`, march percentage | `src/utils/troopSummaryCalculations.js:3-48` |
 | Analytics summary write/display | Uses shared troop summary helper | `src/components/analytics/AnalyticsPage.jsx:40-48`, `src/components/analytics/AnalyticsPage.jsx:73-75` |
 | Export TSV output | Header and row both include Final Archer, Final Siege, Final Cavalry damage | `src/utils/calcs.js:74-87` |
 | Formation damage troops | `damage_troops = total - guards` | `src/components/formation/FormationForm.jsx:34-48` |
@@ -260,15 +260,11 @@ Locations:
 Current formula:
 
 ```text
-totals exclude T10_guards
 totalDenominator = totalLosses + totalWounded + totalSurvivors
-globalKPT = totalKills / totalDenominator
 
 for each troop type:
-  calculatedMarchSize = Kills / globalKPT
+  calculatedMarchSize = Losses + Wounded + Survivors
   marchPercentage = calculatedMarchSize / totalDenominator
-
-T10_guards march size is forced to 0
 ```
 
 Status:
@@ -283,7 +279,7 @@ Risk:
 Recommendation:
 
 - Keep `calculateTroopTypeSummary` as the only source of truth.
-- Only change guard exclusion or march-size logic after real report fixtures confirm expected behavior.
+- Compare the denominator-based march-size output with sanitized real report fixtures before changing this summary again.
 
 ### Tower / Throne Formation
 

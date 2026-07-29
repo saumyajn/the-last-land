@@ -1,7 +1,7 @@
 import { calculateTroopTypeSummary } from "./troopSummaryCalculations";
 
 describe("troopSummaryCalculations", () => {
-  it("calculates current troop type summary and guard exception", () => {
+  it("calculates march size from losses, wounded, and survivors", () => {
     const summary = calculateTroopTypeSummary({
       T10_guards: {
         Kills: 100,
@@ -27,23 +27,23 @@ describe("troopSummaryCalculations", () => {
     });
 
     expect(summary.totals).toEqual({
-      Kills: 300,
-      Losses: 30,
-      Wounded: 40,
-      Survivors: 240,
-      KPT: "0.968",
-      LPT: "0.226",
-      totalMarchSize: 310,
+      Kills: 400,
+      Losses: 40,
+      Wounded: 50,
+      Survivors: 320,
+      KPT: "0.976",
+      LPT: "0.220",
+      totalMarchSize: 410,
     });
 
     expect(summary.troopDetails.T10_guards).toMatchObject({
-      calculatedMarchSize: 0,
-      marchPercentage: "0.00%",
+      calculatedMarchSize: 100,
+      marchPercentage: "24.39%",
     });
     expect(summary.troopDetails.T10_archer).toMatchObject({
       LPT: "0.25",
-      calculatedMarchSize: 207,
-      marchPercentage: "66.67%",
+      calculatedMarchSize: 200,
+      marchPercentage: "48.78%",
     });
   });
 });

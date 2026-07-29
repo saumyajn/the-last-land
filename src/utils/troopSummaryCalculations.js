@@ -1,4 +1,9 @@
-import { computeKPT, computeLPT } from "./kptCalculations";
+import { computeKPT, computeLPT, numberFromReportValue } from "./kptCalculations";
+
+const getMarchSize = (stats = {}) =>
+  numberFromReportValue(stats.Losses) +
+  numberFromReportValue(stats.Wounded) +
+  numberFromReportValue(stats.Survivors);
 
 export const calculateTroopTypeSummary = (kptData = {}) => {
   let totalKills = 0;
@@ -6,29 +11,26 @@ export const calculateTroopTypeSummary = (kptData = {}) => {
   let totalWounded = 0;
   let totalSurvivors = 0;
 
-  Object.entries(kptData).forEach(([type, stats]) => {
-    if (type === "T10_guards") return;
-
-    totalKills += stats.Kills || 0;
-    totalLosses += stats.Losses || 0;
-    totalWounded += stats.Wounded || 0;
-    totalSurvivors += stats.Survivors || 0;
+  Object.values(kptData).forEach((stats) => {
+    totalKills += numberFromReportValue(stats.Kills);
+    totalLosses += numberFromReportValue(stats.Losses);
+    totalWounded += numberFromReportValue(stats.Wounded);
+    totalSurvivors += numberFromReportValue(stats.Survivors);
   });
 
   const totalDenominator = totalLosses + totalWounded + totalSurvivors;
-  const globalKPTValue = totalDenominator > 0
-    ? totalKills / totalDenominator
-    : 0;
 
   const troopDetails = {};
   Object.entries(kptData).forEach(([type, stats]) => {
-    let marchSize = globalKPTValue > 0 ? (stats.Kills || 0) / globalKPTValue : 0;
-    if (type === "T10_guards") marchSize = 0;
+    const marchSize = getMarchSize(stats);
+    const losses = numberFromReportValue(stats.Losses);
+    const wounded = numberFromReportValue(stats.Wounded);
+    const survivors = numberFromReportValue(stats.Survivors);
 
     troopDetails[type] = {
       ...stats,
-      LPT: stats.LPT ?? computeLPT(stats.Losses || 0, stats.Wounded || 0, stats.Survivors || 0),
-      calculatedMarchSize: Math.round(marchSize),
+      LPT: stats.LPT ?? computeLPT(losses, wounded, survivors),
+      calculatedMarchSize: marchSize,
       marchPercentage: totalDenominator > 0
         ? `${((marchSize / totalDenominator) * 100).toFixed(2)}%`
         : "0.00%",
