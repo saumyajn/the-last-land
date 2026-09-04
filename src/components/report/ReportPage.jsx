@@ -10,8 +10,17 @@ import {
   Select,
   FormControl,
   InputLabel,
-  CircularProgress
+  CircularProgress,
+  Paper,
+  Stack,
+  Alert,
+  Divider,
+  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { usePermissionSnackbar } from "../Permissions";
 import ReportResultTable from "./ReportResults";
 import { AuthContext } from "../../utils/authContext";
@@ -23,9 +32,17 @@ import {
   calculateGroupKPT,
   calculateGroupLPT,
 } from "../../utils/kptCalculations";
+import {
+  GEMINI_REPORT_VIDEO_PROMPT,
+  parseManualGeminiReportImport,
+} from "../../utils/manualGeminiReportImport";
 
 const templateKeys = TROOP_ORDER;
 const labels = REPORT_LABELS;
+const CUSTOM_PLAYER_VALUE = "__custom__";
+
+const getFinalManualPlayerName = (row) =>
+  (row.selectedPlayerName === CUSTOM_PLAYER_VALUE ? row.customPlayerName : row.selectedPlayerName).trim();
 
 export default function ReportPage() {
   const { isAdmin } = useContext(AuthContext);
@@ -35,6 +52,9 @@ export default function ReportPage() {
   const [playerName, setPlayerName] = useState("");
   const [customPlayerName, setCustomPlayerName] = useState("");
   const [playerOptions, setPlayerOptions] = useState([]);
+  const [manualGeminiText, setManualGeminiText] = useState("");
+  const [manualImportRows, setManualImportRows] = useState([]);
+  const [manualImportError, setManualImportError] = useState("");
   const [loading, setLoading] = useState(true);
   const mainImageUrlRef = useRef(null);
   const { showNoPermission } = usePermissionSnackbar();
@@ -124,7 +144,7 @@ export default function ReportPage() {
   };
 
   const processImage = async () => {
-    const finalPlayerName = playerName === "__custom__" ? customPlayerName : playerName;
+    const finalPlayerName = playerName === CUSTOM_PLAYER_VALUE ? customPlayerName : playerName;
     if (!mainImageFile || !finalPlayerName) {
       setStatus("Please select an image and enter a player name.");
       return;
@@ -162,6 +182,112 @@ export default function ReportPage() {
     } catch (err) {
       console.error("Extraction failed", err);
       setStatus(`Extraction failed: ${err.message || "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopyGeminiPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(GEMINI_REPORT_VIDEO_PROMPT);
+      setManualImportError("");
+      setStatus("Gemini video prompt copied.");
+    } catch (error) {
+      setManualImportError("Could not copy the prompt. Select the prompt text and copy it manually.");
+    }
+  };
+
+  const handleManualGeminiParse = () => {
+    try {
+      const rows = parseManualGeminiReportImport(manualGeminiText, playerOptions).map((row) => ({
+        ...row,
+        selectedPlayerName: row.matchedPlayerName || CUSTOM_PLAYER_VALUE,
+        customPlayerName: row.matchedPlayerName ? "" : row.rawPlayerName,
+      }));
+
+      if (!rows.length) {
+        throw new Error("No report rows were found in the pasted Gemini response.");
+      }
+
+      setManualImportRows(rows);
+      setManualImportError("");
+      setStatus(`Parsed ${rows.length} video report${rows.length === 1 ? "" : "s"} from Gemini.`);
+    } catch (error) {
+      setManualImportRows([]);
+      setManualImportError(error.message || "Could not parse Gemini response.");
+    }
+  };
+
+  const handleManualImportChoice = (rowId, value) => {
+    setManualImportRows((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              selectedPlayerName: value,
+              customPlayerName: value === CUSTOM_PLAYER_VALUE ? row.customPlayerName || row.rawPlayerName : "",
+            }
+          : row,
+      ),
+    );
+  };
+
+  const handleManualImportCustomName = (rowId, value) => {
+    setManualImportRows((prev) =>
+      prev.map((row) => (row.id === rowId ? { ...row, customPlayerName: value } : row)),
+    );
+  };
+
+  const saveManualGeminiReports = async () => {
+    if (!isAdmin) {
+      showNoPermission();
+      return;
+    }
+
+    const rowsToSave = manualImportRows.map((row) => ({
+      ...row,
+      finalPlayerName: getFinalManualPlayerName(row),
+    }));
+    const missingName = rowsToSave.find((row) => !row.finalPlayerName);
+    if (missingName) {
+      setManualImportError("Every Gemini report needs a saved player name before importing.");
+      return;
+    }
+
+    const duplicateNames = rowsToSave
+      .map((row) => row.finalPlayerName.toLowerCase())
+      .filter((name, index, names) => names.indexOf(name) !== index);
+    if (duplicateNames.length) {
+      setManualImportError("Two imported reports are mapped to the same player. Review duplicates before saving.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setStatus("Saving Gemini video reports...");
+
+      await Promise.all(
+        rowsToSave.map((row) => setDoc(doc(db, "reports", row.finalPlayerName), row.data)),
+      );
+
+      await updateTroopTypeKpt(isAdmin);
+
+      setStructuredResults((prev = []) => {
+        const savedNames = new Set(rowsToSave.map((row) => row.finalPlayerName));
+        const updated = prev.filter((player) => !savedNames.has(player.name));
+        return [
+          ...rowsToSave.map((row) => ({ name: row.finalPlayerName, data: row.data })),
+          ...updated,
+        ];
+      });
+
+      setManualImportRows([]);
+      setManualGeminiText("");
+      setManualImportError("");
+      setStatus(`Saved ${rowsToSave.length} Gemini video report${rowsToSave.length === 1 ? "" : "s"}.`);
+    } catch (error) {
+      console.error("Manual Gemini import failed", error);
+      setManualImportError(error.message || "Could not save Gemini video reports.");
     } finally {
       setLoading(false);
     }
@@ -245,10 +371,10 @@ export default function ReportPage() {
             {playerOptions.map((name) => (
               <option key={name} value={name}>{name}</option>
             ))}
-            <option value="__custom__">Other...</option>
+            <option value={CUSTOM_PLAYER_VALUE}>Other...</option>
           </Select>
         </FormControl>
-        {playerName === "__custom__" && (
+        {playerName === CUSTOM_PLAYER_VALUE && (
           <TextField
             label="Enter Custom Name"
             value={customPlayerName}
@@ -265,6 +391,199 @@ export default function ReportPage() {
         </Button>
       </Box>
       <Typography variant="body2" color="text.secondary">{status}</Typography>
+
+      {isAdmin && (
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 3,
+            p: { xs: 1.5, md: 2 },
+            borderRadius: 2,
+            border: "1px solid rgba(15,23,42,0.08)",
+            boxShadow: "0 18px 45px rgba(15,23,42,0.06)",
+          }}
+        >
+          <Stack spacing={2}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 1.5, flexDirection: { xs: "column", sm: "row" } }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                Gemini Video Import
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Use Gemini for the video, then paste the JSON here to match and save reports.
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={1}>
+              <Button
+                component="a"
+                href="https://gemini.google.com/app"
+                target="_blank"
+                rel="noreferrer"
+                variant="outlined"
+              >
+                Open Gemini
+              </Button>
+            </Stack>
+          </Box>
+
+          <Accordion
+            disableGutters
+            elevation={0}
+            sx={{
+              border: "1px solid rgba(15,23,42,0.08)",
+              borderRadius: 1,
+              "&:before": { display: "none" },
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, width: "100%" }}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 900 }}>
+                    Gemini Prompt
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Open only when you need to view or copy the exact video instructions.
+                  </Typography>
+                </Box>
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleCopyGeminiPrompt();
+                  }}
+                  onFocus={(event) => event.stopPropagation()}
+                >
+                  Copy Prompt
+                </Button>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails sx={{ pt: 0 }}>
+              <TextField
+                value={GEMINI_REPORT_VIDEO_PROMPT}
+                multiline
+                minRows={3}
+                maxRows={4}
+                InputProps={{ readOnly: true }}
+                fullWidth
+              />
+            </AccordionDetails>
+          </Accordion>
+
+          <TextField
+            label="Paste Gemini JSON response"
+            value={manualGeminiText}
+            onChange={(event) => setManualGeminiText(event.target.value)}
+            multiline
+            minRows={5}
+            fullWidth
+          />
+
+          {manualImportError && <Alert severity="warning">{manualImportError}</Alert>}
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={handleManualGeminiParse}
+              disabled={!manualGeminiText.trim()}
+            >
+              Parse Response
+            </Button>
+          </Box>
+
+          {manualImportRows.length > 0 && (
+            <>
+              <Divider />
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>
+                  Review Matched Reports
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Chip
+                    size="small"
+                    label={`Matched ${manualImportRows.filter((row) => row.selectedPlayerName !== CUSTOM_PLAYER_VALUE).length}`}
+                    color="success"
+                    variant="outlined"
+                  />
+                  <Chip
+                    size="small"
+                    label={`Other ${manualImportRows.filter((row) => row.selectedPlayerName === CUSTOM_PLAYER_VALUE).length}`}
+                    color="warning"
+                    variant="outlined"
+                  />
+                </Stack>
+              </Box>
+
+              <Stack spacing={1.25}>
+                {manualImportRows.map((row) => (
+                  <Box
+                    key={row.id}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "1.1fr 1fr 1fr" },
+                      alignItems: "center",
+                      gap: 1,
+                      p: 1.25,
+                      borderRadius: 1,
+                      border: "1px solid rgba(15,23,42,0.08)",
+                      backgroundColor: "#f8fafc",
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                        {row.rawPlayerName || "Unnamed report"}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {row.timestamp ? `${row.timestamp} | ` : ""}Match: {row.matchConfidence}
+                      </Typography>
+                    </Box>
+
+                    <FormControl size="small" fullWidth>
+                      <InputLabel>Save As</InputLabel>
+                      <Select
+                        value={row.selectedPlayerName}
+                        onChange={(event) => handleManualImportChoice(row.id, event.target.value)}
+                        label="Save As"
+                        native
+                      >
+                        <option value={CUSTOM_PLAYER_VALUE}>Other / custom</option>
+                        {playerOptions.map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    {row.selectedPlayerName === CUSTOM_PLAYER_VALUE ? (
+                      <TextField
+                        label="Custom Name"
+                        size="small"
+                        value={row.customPlayerName}
+                        onChange={(event) => handleManualImportCustomName(row.id, event.target.value)}
+                        fullWidth
+                      />
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Ready to save over {row.selectedPlayerName}
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
+              </Stack>
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  variant="contained"
+                  onClick={saveManualGeminiReports}
+                  disabled={loading}
+                >
+                  Save Accepted Reports
+                </Button>
+              </Box>
+            </>
+          )}
+          </Stack>
+        </Paper>
+      )}
     
 
       {loading ? <CircularProgress color="secondary" /> : (
