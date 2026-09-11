@@ -4,7 +4,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, IconButton, TextField, Stack, Grid, Select, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, Skeleton, Tooltip, Divider
+    TableHead, TableRow, Paper, IconButton, TextField, Stack, Grid, Select, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Button, Skeleton, Tooltip, Divider, TableSortLabel
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -40,6 +40,7 @@ const extraColumns = [
     { label: "Actions", key: "Actions" }
 ];
 const weightKeysOrder = STAT_WEIGHT_KEYS;
+const SORTABLE_COLUMNS = new Set(["Average Damage"]);
 
 const CleanInput = ({ value, onChange, width = '75px' }) => (
     <TextField
@@ -71,6 +72,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const [cavalryOptions, setCavalryOptions] = useState([]);
     const [siegeOptions, setSiegeOptions] = useState([]);
     const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
 
     const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -83,6 +85,23 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     const { showNoPermission } = usePermissionSnackbar();
 
     const names = useMemo(() => Object.keys(localData), [localData]);
+    const sortedNames = useMemo(() => {
+        const directionMultiplier = sortConfig.direction === "asc" ? 1 : -1;
+
+        return [...names].sort((firstName, secondName) => {
+            if (sortConfig.key === "Average Damage") {
+                const firstDamage = getNumber(localData[firstName]?.["Average Damage"]);
+                const secondDamage = getNumber(localData[secondName]?.["Average Damage"]);
+                const damageCompare = firstDamage - secondDamage;
+                if (damageCompare !== 0) return damageCompare * directionMultiplier;
+            }
+
+            const firstDisplayName = String(localData[firstName]?.tempName || firstName);
+            const secondDisplayName = String(localData[secondName]?.tempName || secondName);
+            const nameCompare = firstDisplayName.localeCompare(secondDisplayName, undefined, { sensitivity: "base" });
+            return sortConfig.key === "name" ? nameCompare * directionMultiplier : nameCompare;
+        });
+    }, [localData, names, sortConfig]);
 
     // Shared stat output calculation: final damage and average damage.
     const calculateAll = useCallback((player, currentWeights) => {
@@ -90,10 +109,23 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
     }, []);
 
     const handleCopyTable = () => {
-        const tsvContent = buildCopyableTable(names, localData, desiredKeys);
+        const tsvContent = buildCopyableTable(sortedNames, localData, desiredKeys);
         navigator.clipboard.writeText(tsvContent)
             .then(() => setCopySnackbarOpen(true))
             .catch((err) => console.error("Failed to copy:", err));
+    };
+
+    const handleSort = (key) => {
+        setSortConfig((prev) => {
+            if (prev.key === key) {
+                return { ...prev, direction: prev.direction === "asc" ? "desc" : "asc" };
+            }
+
+            return {
+                key,
+                direction: key === "Average Damage" ? "desc" : "asc",
+            };
+        });
     };
 
     const handleEdit = useCallback((name, field, value) => {
@@ -295,7 +327,15 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                     <Table size="small" stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ position: 'sticky', left: 0, top: 0, zIndex: 1200, backgroundColor: '#f8fafc', borderRight: '1px solid rgba(15,23,42,0.12)' }} rowSpan={2}><b>Name</b></TableCell>
+                                <TableCell sx={{ position: 'sticky', left: 0, top: 0, zIndex: 1200, backgroundColor: '#f8fafc', borderRight: '1px solid rgba(15,23,42,0.12)' }} rowSpan={2}>
+                                    <TableSortLabel
+                                        active={sortConfig.key === "name"}
+                                        direction={sortConfig.key === "name" ? sortConfig.direction : "asc"}
+                                        onClick={() => handleSort("name")}
+                                    >
+                                        <Typography variant="caption" sx={{ fontWeight: 700 }}>Name</Typography>
+                                    </TableSortLabel>
+                                </TableCell>
                                 {columnGroups.map(group => (
                                     <TableCell key={group.label} align="center" colSpan={expandedGroups[group.label] ? group.keys.length : 1} sx={{ backgroundColor: '#f8fafc', cursor: "pointer", userSelect: "none", borderRight: "1px solid rgba(15,23,42,0.08)" }} onClick={() => handleGroupToggle(group.label)}>
                                         <Box display="flex" alignItems="center" justifyContent="center">
@@ -306,7 +346,17 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                                 ))}
                                 {extraColumns.map(col => (
                                     <TableCell key={col.key} rowSpan={2} align="center" sx={{ backgroundColor: '#f8fafc', minWidth: 80, lineHeight: 1.2 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 600 }}>{col.label}</Typography>
+                                        {SORTABLE_COLUMNS.has(col.key) ? (
+                                            <TableSortLabel
+                                                active={sortConfig.key === col.key}
+                                                direction={sortConfig.key === col.key ? sortConfig.direction : "desc"}
+                                                onClick={() => handleSort(col.key)}
+                                            >
+                                                <Typography variant="caption" sx={{ fontWeight: 600 }}>{col.label}</Typography>
+                                            </TableSortLabel>
+                                        ) : (
+                                            <Typography variant="caption" sx={{ fontWeight: 600 }}>{col.label}</Typography>
+                                        )}
                                     </TableCell>
                                 ))}
                             </TableRow>
@@ -319,7 +369,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {names.map((name) => {
+                            {sortedNames.map((name) => {
                                 const rowData = localData[name];
                                 const archerVal = getNumber(rowData["Final Archer Damage"]);
                                 const cavalryVal = getNumber(rowData["Final Cavalry Damage"]);
@@ -384,7 +434,7 @@ export default function DataTable({ tableData = {}, desiredKeys = [], onDelete, 
                 </TableContainer>
             </Paper>
 
-            <DamageCharts data={localData} />
+            <DamageCharts data={localData} thresholds={thresholds} />
 
             {/* Rename Dialog */}
             {renamePrompt && (

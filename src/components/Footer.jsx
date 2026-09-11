@@ -46,7 +46,7 @@ export default function Footer() {
 
         <Box sx={{ textAlign: { xs: 'center', md: 'right' } }}>
           <Typography variant="body2" color="text.secondary">
-            Designed & developed by Saumya Jain
+            Designed & developed by Saumya Jain Vaze
           </Typography>
           <Typography variant="body2" color="text.secondary">
             &copy; {new Date().getFullYear()} All rights reserved.

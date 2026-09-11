@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { getNumber } from "../../utils/calcs";
+import { getColorByThreshold, getRenderableThresholdColor } from "../../utils/colorUtils";
 
 const HISTOGRAM_WIDTH = 1120;
 const HISTOGRAM_HEIGHT = 430;
 const THRESHOLD_WIDTH = 1120;
 const THRESHOLD_HEIGHT = 230;
 const PADDING = { left: 64, right: 30, top: 44, bottom: 58 };
-const POINT_COLORS = ["#2563eb", "#059669", "#dc2626", "#7c3aed", "#ea580c", "#0891b2"];
 
 const formatDamage = (value) => Number(value || 0).toFixed(2);
 const formatPercent = (value) => `${Number(value || 0).toFixed(1)}%`;
@@ -65,7 +65,7 @@ const buildPercentBins = (max) => {
 
 const getShortName = (name) => (name.length > 13 ? `${name.slice(0, 12)}...` : name);
 
-export default function DamageCharts({ data = {} }) {
+export default function DamageCharts({ data = {}, thresholds = [] }) {
   const chart = useMemo(() => {
     const rows = buildChartRows(data);
     const values = rows.map((row) => row.averageDamage);
@@ -106,7 +106,7 @@ export default function DamageCharts({ data = {} }) {
           ...player,
           x: dotX,
           y: dotY,
-          color: POINT_COLORS[playerIndex % POINT_COLORS.length],
+          color: getRenderableThresholdColor(getColorByThreshold(player.averageDamage, thresholds)),
         };
       });
       return {
@@ -132,7 +132,7 @@ export default function DamageCharts({ data = {} }) {
       maxCount,
       yTicks,
     };
-  }, [data]);
+  }, [data, thresholds]);
 
   if (!chart.rows.length) return null;
 
