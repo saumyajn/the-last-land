@@ -201,7 +201,7 @@ export default function FormationPage() {
           TOWER FORMATION
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Editable tower troop distribution with saved Last Land formation values.
+          Editable tower troop distribution with saved formation values.
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12}>

@@ -70,11 +70,12 @@ Current allowlist locations:
 
 - `src/utils/config.js`
 - `functions/main.py`
+- `firestore.rules`
 
 Current risks:
 
-- Frontend and backend admin lists can drift.
-- Client-side admin checks help UX, but Firestore rules must still protect data.
+- Frontend, function, and Firestore rules admin lists can drift.
+- Production access requires deploying the Firestore rules and callable function after updating the frontend.
 - Email allowlists are harder to audit than custom claims or role documents.
 
 Recommended migration:

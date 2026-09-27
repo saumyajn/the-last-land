@@ -4,6 +4,8 @@ const projectId = process.env.REACT_APP_FIREBASE_PROJECT_ID || "image-to-data-9a
 const host = process.env.REACT_APP_FIREBASE_EMULATOR_HOST || "127.0.0.1";
 const port = Number(process.env.REACT_APP_FIRESTORE_EMULATOR_PORT || 8080);
 const baseUrl = `http://${host}:${port}/v1/projects/${projectId}/databases/(default)/documents`;
+const authPort = Number(process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_PORT || 9099);
+const emulatorAdmin = require("../src/utils/emulatorAdmin.json");
 
 const player = "Fixture Player";
 const statDoc = {
@@ -205,12 +207,12 @@ const documents = [
   ],
 ];
 
-function waitForPort(timeoutMs = 2500) {
+function waitForPort(targetPort = port, timeoutMs = 2500) {
   return new Promise((resolve, reject) => {
-    const socket = net.createConnection({ host, port });
+    const socket = net.createConnection({ host, port: targetPort });
     const timeout = setTimeout(() => {
       socket.destroy();
-      reject(new Error(`Firestore emulator is not reachable at ${host}:${port}. Start it with \`npm.cmd run emulators\` first.`));
+      reject(new Error(`Firebase emulator is not reachable at ${host}:${targetPort}. Start it with \`npm.cmd run emulators\` first.`));
     }, timeoutMs);
 
     socket.once("connect", () => {
@@ -220,7 +222,7 @@ function waitForPort(timeoutMs = 2500) {
     });
     socket.once("error", () => {
       clearTimeout(timeout);
-      reject(new Error(`Firestore emulator is not reachable at ${host}:${port}. Start it with \`npm.cmd run emulators\` first.`));
+      reject(new Error(`Firebase emulator is not reachable at ${host}:${targetPort}. Start it with \`npm.cmd run emulators\` first.`));
     });
   });
 }
@@ -262,7 +264,7 @@ async function writeDocument(collectionName, documentId, data) {
   const url = `${baseUrl}/${encodeURIComponent(collectionName)}/${encodeURIComponent(documentId)}`;
   const response = await fetch(url, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
     body: JSON.stringify(toFirestoreDocument(data)),
   });
 
@@ -274,6 +276,24 @@ async function writeDocument(collectionName, documentId, data) {
 
 async function seed() {
   await waitForPort();
+  await waitForPort(authPort);
+
+  const authResponse = await fetch(`http://${host}:${authPort}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
+    body: JSON.stringify({
+      localId: emulatorAdmin.uid,
+      email: emulatorAdmin.email,
+      password: emulatorAdmin.password,
+      emailVerified: true,
+    }),
+  });
+  if (!authResponse.ok) {
+    const authError = await authResponse.text();
+    if (!authError.includes("EMAIL_EXISTS") && !authError.includes("DUPLICATE_LOCAL_ID")) {
+      throw new Error(`Failed to seed Auth emulator admin: ${authResponse.status} ${authError}`);
+    }
+  }
 
   for (const [collectionName, documentId, data] of documents) {
     await writeDocument(collectionName, documentId, data);

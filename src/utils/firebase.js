@@ -4,9 +4,7 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import {
     connectFirestoreEmulator,
     initializeFirestore,
-    memoryLocalCache,
-    persistentLocalCache,
-    persistentMultipleTabManager
+    memoryLocalCache
 } from "firebase/firestore";
 import {
     firebaseEmulatorHost,
@@ -24,16 +22,9 @@ const firebaseConfig = {
     measurementId: "G-9R1GWTW2NG"
   };
 
-const shouldUsePersistentFirestoreCache =
-    process.env.NODE_ENV === "production" && !shouldUseFirebaseEmulators;
-
 export const app = initializeApp(firebaseConfig);
 export const db = initializeFirestore(app, {
-    localCache: shouldUsePersistentFirestoreCache
-        ? persistentLocalCache({
-            tabManager: persistentMultipleTabManager()
-        })
-        : memoryLocalCache()
+    localCache: memoryLocalCache()
 });
 export const auth = getAuth(app);
 

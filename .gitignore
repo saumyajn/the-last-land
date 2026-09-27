@@ -10,6 +10,7 @@
 
 # production
 /build
+/.private-assets/
 
 # misc
 .DS_Store

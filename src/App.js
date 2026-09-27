@@ -1,5 +1,5 @@
 // src/App.js
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy, useContext } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Box, Container, CssBaseline, LinearProgress, Stack, ThemeProvider, Typography } from "@mui/material";
@@ -8,9 +8,8 @@ import Header from "./components/Header";
 import HomeTabs from "./components/HomeTabs";
 import Footer from "./components/Footer";
 import { appTheme } from "./utils/theme";
-import { shouldUseFirebaseEmulators } from "./utils/firebaseEnv";
-
-import { getAuth, onAuthStateChanged, getRedirectResult } from "firebase/auth";
+import { AuthContext } from "./utils/authContext";
+import { Analytics } from "@vercel/analytics/react";
 
 const routeModules = {
   "/": () => import("./components/AboutPage"),
@@ -42,24 +41,12 @@ function PageLoading() {
 }
 
 export default function App() {
-  useEffect(() => {
-    if (shouldUseFirebaseEmulators) {
-      return undefined;
-    }
+  const { isAdmin, authReady } = useContext(AuthContext);
 
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log("Auth state:", firebaseUser);
-      }
-      getRedirectResult(auth)
-        .then((result) => {
-          if (result?.user) console.log("✅ Logged in via redirect:", result.user);
-        })
-        .catch((error) => console.error("❌ Redirect login failed:", error.message));
-    });
-    return () => unsubscribe();
-  }, []);
+  const adminPage = (page) => {
+    if (!authReady) return <PageLoading />;
+    return isAdmin ? page : <Navigate to="/" replace />;
+  };
 
   return (
     <ThemeProvider theme={appTheme}>
@@ -81,11 +68,11 @@ export default function App() {
           >
             <Suspense fallback={<PageLoading />}>
               <Routes>
-                <Route path="/" element={<AboutPage />} />
-                <Route path="/stats" element={<StatsPage />} />
-                <Route path="/formation" element={<FormationPage />} />
-                <Route path="/report" element={<ReportPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/" element={authReady ? <AboutPage /> : <PageLoading />} />
+                <Route path="/stats" element={adminPage(<StatsPage />)} />
+                <Route path="/formation" element={adminPage(<FormationPage />)} />
+                <Route path="/report" element={adminPage(<ReportPage />)} />
+                <Route path="/analytics" element={adminPage(<AnalyticsPage />)} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
@@ -93,6 +80,7 @@ export default function App() {
         </Router>
         <Footer />
       </Box>
+      <Analytics />
     </ThemeProvider>
   );
 }

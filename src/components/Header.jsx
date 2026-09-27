@@ -29,7 +29,7 @@ export default function Header() {
   const handleMenuClose = () => setAnchorEl(null);
 
   const isMenuOpen = Boolean(anchorEl);
-  const roleLabel = isEmulatorMode ? "Emulator Admin" : (isAdmin ? "Admin" : "View only");
+  const roleLabel = isAdmin ? (isEmulatorMode ? "Emulator Admin" : "Admin") : "Overview only";
   const roleIcon = isAdmin ? <AdminPanelSettingsIcon /> : <VisibilityIcon />;
 
   return (
@@ -63,7 +63,7 @@ export default function Header() {
             />
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="h6" noWrap sx={{ fontWeight: 900, lineHeight: 1.1, color: 'text.primary' }}>
-                The Last Land
+                Silent Analytics
               </Typography>
               <Typography variant="caption" noWrap sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.secondary', fontWeight: 650 }}>
                 Extraction analytics workspace
@@ -86,11 +86,9 @@ export default function Header() {
                   keepMounted
                 >
                   <MenuItem disabled>{user.displayName} ({roleLabel})</MenuItem>
-                  {!isEmulatorMode && (
-                    <MenuItem onClick={() => { logout(); handleMenuClose(); }}>
-                      <LogoutIcon sx={{ mr: 1 }} /> Logout
-                    </MenuItem>
-                  )}
+                  <MenuItem onClick={() => { logout(); handleMenuClose(); }}>
+                    <LogoutIcon sx={{ mr: 1 }} /> Logout
+                  </MenuItem>
                 </Menu>
               </>
             ) : (
@@ -110,11 +108,9 @@ export default function Header() {
                     '& .MuiChip-icon': { color: 'inherit' },
                   }}
                 />
-                {!isEmulatorMode && (
-                  <Button variant="outlined" size="small" color="primary" onClick={logout}>
-                    <LogoutIcon sx={{ mr: 1 }} /> Logout
-                  </Button>
-                )}
+                <Button variant="outlined" size="small" color="primary" onClick={logout}>
+                  <LogoutIcon sx={{ mr: 1 }} /> Logout
+                </Button>
               </>
             )
           ) : (

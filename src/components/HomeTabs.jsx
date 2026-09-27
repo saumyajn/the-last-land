@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Tabs, Tab, Box } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
@@ -6,6 +6,7 @@ import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
+import { AuthContext } from '../utils/authContext';
 
 const tabs = [
   { label: "Overview", value: "/", icon: <AutoAwesomeOutlinedIcon fontSize="small" /> },
@@ -16,10 +17,12 @@ const tabs = [
 ];
 
 export default function HomeTabs({ onPrefetchRoute }) {
+  const { isAdmin } = useContext(AuthContext);
   const location = useLocation();
+  const visibleTabs = isAdmin ? tabs : tabs.slice(0, 1);
   
   // Ensure the active tab exactly matches the current route
-  const currentPath = tabs.some(tab => tab.value === location.pathname) ? location.pathname : "/";
+  const currentPath = visibleTabs.some(tab => tab.value === location.pathname) ? location.pathname : "/";
 
   return (
     <Box
@@ -67,7 +70,7 @@ export default function HomeTabs({ onPrefetchRoute }) {
           },
         }}
       >
-        {tabs.map(tab => (
+        {visibleTabs.map(tab => (
           <Tab
             key={tab.value}
             label={tab.label}

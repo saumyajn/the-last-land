@@ -1,5 +1,6 @@
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "./firebase";
+import { shouldUseFirebaseEmulators } from "./firebaseEnv";
 
 auth.useDeviceLanguage();
 
@@ -20,6 +21,9 @@ export const signInWithGoogle = () => {
 };
 
 // Sign-out
-export const logout = () => signOut(auth);
+export const logout = async () => {
+  await signOut(auth);
+  if (!shouldUseFirebaseEmulators) window.location.replace("/");
+};
 
 // Do not export onAuthStateChanged or getCurrentUser here.

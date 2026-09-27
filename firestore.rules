@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'saums06@gmail.com',
+          'sanketvazesvsv@gmail.com',
+          'sanketvazesvsvsv@gmail.com',
+          'saumyajn1994@gmail.com',
+          'evil.micha.777@gmail.com',
+          'selistongama194@gmail.com',
+          'silenttkkiller2@gmail.com',
+          'angelaquino621@gmail.com',
+          'coemaincastle@gmail.com'
+        ];
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

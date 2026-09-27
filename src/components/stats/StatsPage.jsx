@@ -191,7 +191,7 @@ export default function StatsPage() {
               Data Upload
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Extract Last Land stat screenshots, review calculated fields, and update saved player records.
+              Extract player stat screenshots, review calculated fields, and update saved player records.
             </Typography>
           </Stack>
           <TextField

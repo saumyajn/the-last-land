@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
@@ -6,6 +6,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { AuthContext } from "../utils/authContext";
 
 const workflows = [
   {
@@ -39,6 +40,18 @@ const proofItems = [
 
 export default function AboutPage() {
   const navigate = useNavigate();
+  const { isAdmin } = useContext(AuthContext);
+
+  if (!isAdmin) {
+    return (
+      <Box sx={{ py: { xs: 5, md: 8 }, maxWidth: 680 }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>Silent Analytics</Typography>
+        <Typography variant="body1" color="text.secondary">
+          This workspace is available to admins. Sign in with an admin account to continue.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: "grid", gap: 3 }}>
@@ -61,7 +74,7 @@ export default function AboutPage() {
         >
           <Box>
             <Chip
-              label="The Last Land Analytics"
+              label="Silent Analytics"
               color="primary"
               variant="outlined"
               sx={{ mb: 2, backgroundColor: "primary.light" }}

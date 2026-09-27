@@ -1,44 +1,49 @@
 import { createContext, useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
-import { ADMIN_EMAILS } from "../utils/config"; // Put your admin emails here
+import { ADMIN_EMAILS } from "./config";
 import { shouldUseFirebaseEmulators } from "./firebaseEnv";
+import emulatorAdmin from "./emulatorAdmin.json";
 
 // Create the context
 export const AuthContext = createContext();
 
-const emulatorAdminUser = {
-  uid: "local-emulator-admin",
-  email: "local-emulator-admin@example.test",
-  displayName: "Local Emulator Admin",
-};
-
 // Context provider component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(
-    shouldUseFirebaseEmulators ? emulatorAdminUser : null,
-  );
-  const [isAdmin, setIsAdmin] = useState(shouldUseFirebaseEmulators);
+  const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    if (shouldUseFirebaseEmulators) {
-      setUser(emulatorAdminUser);
-      setIsAdmin(true);
-      return undefined;
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    let mounted = true;
+    const updateAuth = (firebaseUser) => {
+      if (!mounted) return;
       setUser(firebaseUser);
-      setIsAdmin(firebaseUser && ADMIN_EMAILS.includes(firebaseUser.email));
-
+      setIsAdmin(Boolean(firebaseUser && firebaseUser.emailVerified && ADMIN_EMAILS.includes(firebaseUser.email)));
+    };
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      updateAuth(firebaseUser);
+      if (!shouldUseFirebaseEmulators) setAuthReady(true);
     });
 
-    return () => unsubscribe();
+    if (shouldUseFirebaseEmulators) {
+      signInWithEmailAndPassword(auth, emulatorAdmin.email, emulatorAdmin.password)
+        .then(({ user: firebaseUser }) => updateAuth(firebaseUser))
+        .catch((error) => console.error("Emulator admin sign-in failed. Seed the emulators first:", error))
+        .finally(() => {
+          if (mounted) setAuthReady(true);
+        });
+    }
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, isAdmin, isEmulatorMode: shouldUseFirebaseEmulators }}
+      value={{ user, isAdmin, authReady, isEmulatorMode: shouldUseFirebaseEmulators }}
     >
       {children}
     </AuthContext.Provider>

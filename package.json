@@ -11,6 +11,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@vercel/analytics": "^2.0.1",
     "firebase": "^11.6.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -23,7 +24,7 @@
     "start:emulators": "node scripts/start-emulators.cjs",
     "emulators": "node scripts/start-firebase-emulators.cjs",
     "seed:emulators": "node scripts/seed-firestore-emulator.cjs",
-    "build": "react-scripts build",
+    "build": "node scripts/build.cjs",
     "test": "react-scripts test",
     "test:ci": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject"

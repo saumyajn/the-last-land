@@ -16,6 +16,17 @@ DEFAULT_GEMINI_BACKUP_MODELS = [
     "gemini-2.5-flash",
     "gemini-3.5-flash",
 ]
+ADMIN_EMAILS = {
+    "saums06@gmail.com",
+    "sanketvazesvsv@gmail.com",
+    "sanketvazesvsvsv@gmail.com",
+    "saumyajn1994@gmail.com",
+    "evil.micha.777@gmail.com",
+    "selistongama194@gmail.com",
+    "silenttkkiller2@gmail.com",
+    "angelaquino621@gmail.com",
+    "coemaincastle@gmail.com",
+}
 
 
 def get_gemini_client():
@@ -110,6 +121,15 @@ def remove_negative_signs(value):
     return value
 
 
+def require_admin(auth):
+    if auth is None:
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.UNAUTHENTICATED, "Sign in required.")
+
+    claims = auth.token
+    if claims.get("email_verified") is not True or claims.get("email") not in ADMIN_EMAILS:
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.PERMISSION_DENIED, "Admin access required.")
+
+
 @https_fn.on_call(
     secrets=[GEMINI_API_KEY_SECRET],
     cors=options.CorsOptions(
@@ -124,6 +144,8 @@ def remove_negative_signs(value):
     )
 )
 def process_image_extraction(req: https_fn.CallableRequest) -> dict:
+    require_admin(req.auth)
+
     image_base64 = req.data.get("image")
     expected_type = req.data.get("expectedType", "STATS")
 

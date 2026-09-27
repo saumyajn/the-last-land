@@ -1,6 +1,6 @@
-# The Last Land Analytics Platform
+# Silent Analytics
 
-The Last Land is a real-workflow analytics platform for alliance stats, formations, and battle reports. It converts game screenshots into structured Firebase data using a Gemini-backed extraction function and analytics dashboards.
+Silent Analytics is a real-workflow analytics platform for alliance stats, formations, and battle reports. It converts game screenshots into structured Firebase data using a Gemini-backed extraction function and analytics dashboards.
 
 This repository is intentionally treated as a production-sensitive app because it is used with real data.
 
@@ -10,7 +10,7 @@ This repository is intentionally treated as a production-sensitive app because i
 - Uses Gemini through Firebase Cloud Functions for screenshot extraction.
 - Stores stats, formations, reports, settings, and analytics in Firestore.
 - Computes derived combat metrics plus KPT and LPT summaries.
-- Supports admin-only writes and view-only access for non-admin users.
+- Restricts player data, workflows, and extraction to verified admin accounts; other visitors see Overview only.
 - Exports tabular data for spreadsheet workflows.
 
 ## Data Safety Rule
@@ -30,7 +30,7 @@ Protected files include:
 
 ```mermaid
 flowchart LR
-  User["Admin or viewer"] --> UI["React CRA + MUI app"]
+  User["Admin or visitor"] --> UI["React CRA + MUI app"]
   UI --> Auth["Firebase Auth"]
   UI --> Firestore["Firestore collections"]
   UI --> Extract["Firebase Callable Gemini extraction"]
