@@ -9,15 +9,7 @@ export const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Popup login success:", result.user);
-      }
-    })
-    .catch((error) => {
-      console.error("Popup login failed:", error.message, error);
-    });
+  return signInWithPopup(auth, provider);
 };
 
 // Sign-out

@@ -1,0 +1,30 @@
+ .gitignore                                 |   1 [32m+[m
+ .npmrc                                     |   1 [32m+[m
+ README.md                                  |   8 [32m++[m[31m--[m
+ docs/DATA_SAFETY.md                        |   5 [32m++[m[31m-[m
+ docs/DEPLOYMENT.md                         |  17 [32m++++++[m[31m--[m
+ firebase.json                              |   3 [32m++[m
+ firestore.rules                            |  24 [32m+++++++++++[m
+ functions/main.py                          |  22 [32m++++++++++[m
+ functions/test_auth.py                     |  33 [32m++++++++++++++[m
+ package-lock.json                          |  67 [32m++++++++++++++++++[m[31m-----------[m
+ package.json                               |   3 [32m+[m[31m-[m
+ public/Screenshot 2026-03-01 212403.png    | Bin [31m210173[m -> [32m0[m bytes
+ public/index.html                          |   4 [32m+[m[31m-[m
+ public/manifest.json                       |   4 [32m+[m[31m-[m
+ scripts/build.cjs                          |   2 [32m+[m
+ scripts/seed-firestore-emulator.cjs        |  30 [32m++++++++++[m[31m---[m
+ src/App.js                                 |  40 [32m++++++[m[31m-----------[m
+ src/App.test.js                            |  54 [32m+++++++++++++++++++++++[m
+ src/components/AboutPage.jsx               |  17 [32m+++++++[m[31m-[m
+ src/components/Footer.jsx                  |  31 [32m+++++++[m[31m------[m
+ src/components/Header.jsx                  |  20 [32m++++[m[31m-----[m
+ src/components/HomeTabs.jsx                |   9 [32m++[m[31m--[m
+ src/components/formation/FormationPage.jsx |   2 [32m+[m[31m-[m
+ src/components/stats/StatsPage.jsx         |   2 [32m+[m[31m-[m
+ src/setupTests.js                          |   4 [32m++[m
+ src/utils/auth.js                          |   6 [32m++[m[31m-[m
+ src/utils/authContext.js                   |  51 [32m++++++++++++[m[31m----------[m
+ src/utils/emulatorAdmin.json               |   5 [32m+++[m
+ src/utils/firebase.js                      |  13 [32m+[m[31m-----[m
+ 29 files changed, 339 insertions(+), 139 deletions(-)

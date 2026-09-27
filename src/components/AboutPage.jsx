@@ -42,17 +42,6 @@ export default function AboutPage() {
   const navigate = useNavigate();
   const { isAdmin } = useContext(AuthContext);
 
-  if (!isAdmin) {
-    return (
-      <Box sx={{ py: { xs: 5, md: 8 }, maxWidth: 680 }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>Silent Analytics</Typography>
-        <Typography variant="body1" color="text.secondary">
-          This workspace is available to admins. Sign in with an admin account to continue.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ display: "grid", gap: 3 }}>
       <Paper
@@ -85,12 +74,13 @@ export default function AboutPage() {
             <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 780, lineHeight: 1.75, mb: 3 }}>
               Upload screenshots, extract structured data, compare performance, tune formations, and export reports while keeping real Firebase data protected from local experiments.
             </Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-              <Button variant="contained" size="large" onClick={() => navigate("/stats")} startIcon={<PlayArrowIcon />}>
-                Start Data Upload
-              </Button>
-          
-            </Stack>
+            {isAdmin && (
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                <Button variant="contained" size="large" onClick={() => navigate("/stats")} startIcon={<PlayArrowIcon />}>
+                  Start Data Upload
+                </Button>
+              </Stack>
+            )}
           </Box>
 
           <Box

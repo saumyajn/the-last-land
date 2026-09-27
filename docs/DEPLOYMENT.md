@@ -19,6 +19,8 @@ The app depends on:
 - Firebase Cloud Functions
 - Gemini API
 
+In Firebase Console for project `image-to-data-9a90b`, open Authentication > Settings > Authorized domains and add `the-silent-analytics.vercel.app` (hostname only, without `https://`). This is required for Google popup sign-in on the deployed site; an `auth/unauthorized-domain` error means this setting is missing. Changing it does not require a frontend redeploy.
+
 Deploy functions:
 
 ```bash
@@ -38,7 +40,11 @@ Deploy the updated callable extraction function before publishing the frontend. 
 The callable extraction function currently allows:
 
 - `https://the-last-land-analytics.vercel.app`
+- `https://the-silent-analytics.vercel.app`
 - `http://localhost:3000`
+- `http://localhost:3001`
+- `http://127.0.0.1:3000`
+- `http://127.0.0.1:3001`
 
 If the frontend domain changes, update `functions/main.py` and redeploy functions.
 

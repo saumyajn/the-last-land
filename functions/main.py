@@ -135,6 +135,7 @@ def require_admin(auth):
     cors=options.CorsOptions(
         cors_origins=[
             "https://the-last-land-analytics.vercel.app",
+            "https://the-silent-analytics.vercel.app",
             "http://localhost:3000",
             "http://localhost:3001",
             "http://127.0.0.1:3000",

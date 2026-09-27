@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import {
   Box, Avatar, AppBar, Toolbar, IconButton, Typography, Button,
-  useMediaQuery, Menu, MenuItem, Chip
+  useMediaQuery, Menu, MenuItem, Chip, Snackbar, Alert
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import LoginIcon from '@mui/icons-material/Login';
@@ -16,6 +16,7 @@ import { AuthContext } from "../utils/authContext"
 export default function Header() {
   const { user, isAdmin, isEmulatorMode } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [loginError, setLoginError] = useState("");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
@@ -27,6 +28,19 @@ export default function Header() {
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
+  const handleLogin = async () => {
+    setLoginError("");
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error("Popup login failed:", error);
+      if (error.code === "auth/unauthorized-domain") {
+        setLoginError("Login is not enabled for this site yet. The site owner must add this domain in Firebase Authentication settings.");
+      } else if (error.code !== "auth/popup-closed-by-user") {
+        setLoginError(`Login failed (${error.code || "unknown error"}). Please try again.`);
+      }
+    }
+  };
 
   const isMenuOpen = Boolean(anchorEl);
   const roleLabel = isAdmin ? (isEmulatorMode ? "Emulator Admin" : "Admin") : "Overview only";
@@ -114,12 +128,17 @@ export default function Header() {
               </>
             )
           ) : (
-            <Button variant="contained" size="small" color="primary" onClick={signInWithGoogle}>
+            <Button variant="contained" size="small" color="primary" onClick={handleLogin}>
               <LoginIcon sx={{ mr: 1 }} /> Login
             </Button>
           )}
         </Toolbar>
       </AppBar>
+      <Snackbar open={Boolean(loginError)} autoHideDuration={10000} onClose={() => setLoginError("")}>
+        <Alert severity="error" onClose={() => setLoginError("")} sx={{ width: "100%" }}>
+          {loginError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

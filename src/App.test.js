@@ -30,11 +30,19 @@ test.each(["/stats", "/formation", "/report", "/analytics"])(
     renderWithAuth({ user: null, isAdmin: false, authReady: true });
 
     await waitFor(() => expect(window.location.pathname).toBe("/"));
-    expect(await screen.findByText("This workspace is available to admins. Sign in with an admin account to continue.")).toBeInTheDocument();
+    expect(await screen.findByText("Production-sensitive analytics for messy game screenshots and real alliance workflows.")).toBeInTheDocument();
+    expect(screen.getByText("Stat Extraction")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start Data Upload" })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Data Upload|Analytics|Formations|Reports/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/Protected .* page/)).not.toBeInTheDocument();
   }
 );
+
+test("Overview is visible while authentication is still loading", async () => {
+  renderWithAuth({ user: null, isAdmin: false, authReady: false });
+
+  expect(await screen.findByText("Production-sensitive analytics for messy game screenshots and real alliance workflows.")).toBeInTheDocument();
+});
 
 test("admin can open a protected page after authentication resolves", async () => {
   window.history.replaceState({}, "", "/stats");

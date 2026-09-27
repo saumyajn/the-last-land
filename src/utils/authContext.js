@@ -21,10 +21,18 @@ export const AuthProvider = ({ children }) => {
       setUser(firebaseUser);
       setIsAdmin(Boolean(firebaseUser && firebaseUser.emailVerified && ADMIN_EMAILS.includes(firebaseUser.email)));
     };
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      updateAuth(firebaseUser);
-      if (!shouldUseFirebaseEmulators) setAuthReady(true);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        updateAuth(firebaseUser);
+        if (!shouldUseFirebaseEmulators) setAuthReady(true);
+      },
+      (error) => {
+        console.error("Firebase authentication state failed:", error);
+        updateAuth(null);
+        if (mounted) setAuthReady(true);
+      },
+    );
 
     if (shouldUseFirebaseEmulators) {
       signInWithEmailAndPassword(auth, emulatorAdmin.email, emulatorAdmin.password)

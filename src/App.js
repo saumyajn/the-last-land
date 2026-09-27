@@ -68,7 +68,7 @@ export default function App() {
           >
             <Suspense fallback={<PageLoading />}>
               <Routes>
-                <Route path="/" element={authReady ? <AboutPage /> : <PageLoading />} />
+                <Route path="/" element={<AboutPage />} />
                 <Route path="/stats" element={adminPage(<StatsPage />)} />
                 <Route path="/formation" element={adminPage(<FormationPage />)} />
                 <Route path="/report" element={adminPage(<ReportPage />)} />
